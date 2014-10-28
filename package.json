@@ -31,6 +31,9 @@
     "url": "https://github.com/futoin/core-js-ri-invoker/issues",
     "email": "support@futoin.eu"
   },
+  "dependencies": {
+    "futoin-asyncsteps": "^1.0.0"
+  },
   "devDependencies": {
     "istanbul": "^0.3.2",
     "jscs": "^1.7.1",
