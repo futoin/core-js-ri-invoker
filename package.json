@@ -32,7 +32,8 @@
     "email": "support@futoin.eu"
   },
   "dependencies": {
-    "futoin-asyncsteps": "^1.0.0"
+    "futoin-asyncsteps": "^1.0.0",
+    "lodash" : "^2.4.1"
   },
   "devDependencies": {
     "istanbul": "^0.3.2",
