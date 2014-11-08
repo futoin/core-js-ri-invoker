@@ -252,6 +252,12 @@ describe( 'SimpleCCM', function()
             ccm.iface( 'aiface2' )
         }, 'InvokerError' );
     });
+    
+    it('should fail on not implemented Burst API', function(){
+        assert.throws( function(){
+            ccm.burst();
+        }, 'InvokerError' );
+    });
 } );
 
 describe( 'AdvancedCCM', function()
@@ -275,6 +281,26 @@ describe( 'AdvancedCCM', function()
                 throw e;
             }
             as.add(function(as){ done(); as.success(); });
+            as.execute();
+        }
+    );
+    
+    it('should behave as cache miss on initFromCache',
+        function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    ccm.initFromCache( as, 'http://localhost:12345' );
+                },
+                function( as, err )
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:12345' );
+                    ccm.cacheInit( as );
+                    done();
+                }
+            );
+            
             as.execute();
         }
     );
