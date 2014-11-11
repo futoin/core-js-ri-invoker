@@ -4,6 +4,7 @@ var async_steps = require( 'futoin-asyncsteps' );
 var invoker;
 var as;
 var ccm;
+var _ = require( 'lodash' );
 
 describe( 'Invoker Basic', function()
 {
@@ -292,11 +293,13 @@ describe( 'AdvancedCCM', function()
                 function( as )
                 {
                     ccm.initFromCache( as, 'http://localhost:12345' );
+                    as.successStep();
                 },
                 function( as, err )
                 {
                     ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:12345' );
                     ccm.cacheInit( as );
+                    as.successStep();
                     done();
                 }
             );
@@ -304,4 +307,80 @@ describe( 'AdvancedCCM', function()
             as.execute();
         }
     );
+});
+
+describe( 'NativeIface', function()
+{
+    describe('#ifaceInfo() - SimpleCCM', function(){
+        beforeEach(function(){
+            as = async_steps();
+            var opts = {};
+            ccm = new invoker.SimpleCCM( opts );
+        });
+        
+        it( 'should return ifaceInfo without details', function(){
+            ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:12345' );
+            var info = ccm.iface( 'myiface' ).ifaceInfo();
+            ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+            
+            info.name().should.equal( 'fileface.a' );
+            info.version().should.equal( '1.1' );
+            info.inherits().length.should.equal( 0 );
+            _.isEmpty( info.funcs() ).should.be.true;
+            _.isEmpty( info.constraints() ).should.be.true;
+        });
+    });
+    
+    describe('#ifaceInfo() - AdvancedCCM', function(){
+        beforeEach(function(){
+            as = async_steps();
+            var opts = {};
+            opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = __dirname + '/specs';
+            ccm = new invoker.AdvancedCCM( opts );
+        });
+        
+        it( 'should return ifaceInfo with details', function( done ){
+            as.add(
+                function(as){
+                    try {
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:12345' );
+                        as.successStep();
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    console.log( err + ": " + as.state.error_info );
+                }
+            ).add(
+                function(as){
+                    try {
+                        var info = ccm.iface( 'myiface' ).ifaceInfo();
+                        ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+                        
+                        info.name().should.equal( 'fileface.a' );
+                        info.version().should.equal( '1.1' );
+                        info.inherits().length.should.equal( 0 );
+                        _.isEmpty( info.funcs() ).should.be.false;
+                        _.isEmpty( info.constraints() ).should.be.false;
+                        
+                        done();
+                        as.success();
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    console.log( err + ": " + as.state.error_info );
+                }
+            );
+            as.execute();
+        });
+    });
 });

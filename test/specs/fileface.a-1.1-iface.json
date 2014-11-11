@@ -1,0 +1,23 @@
+{
+    "iface" : "fileface.a",
+    "version" : "1.1",
+    "funcs" : {
+        "testFunc" : {
+            "params" : {
+                "a" : {
+                    "type" : "string"
+                },
+                "n" : {
+                    "type" : "number"
+                },
+                "o" : {
+                    "type" : "map"
+                }
+            }
+        }
+    },
+    "requires" : [
+        "AllowAnonymous",
+        "MyRequire"
+    ]
+}
