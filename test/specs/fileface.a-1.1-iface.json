@@ -21,11 +21,21 @@
             }
         },
         "rawUploadFunc" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            },
             "rawupload" : true
         },
         "rawUploadFuncParams" : {
             "params" : {
                 "a" : {
+                    "type" : "string"
+                }
+            },
+            "result" : {
+                "ok" : {
                     "type" : "string"
                 }
             },
@@ -44,7 +54,9 @@
             "rawresult" : true
         },
         "triggerError" : {
-            "throws" : "MY_ERROR"
+            "throws" : [
+                "MY_ERROR"
+            ]
         }
     },
     "requires" : [
