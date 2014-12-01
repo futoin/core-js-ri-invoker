@@ -13,7 +13,38 @@
                 "o" : {
                     "type" : "map"
                 }
+            },
+            "result" : {
+                "res" : {
+                    "type" : "string"
+                }
             }
+        },
+        "rawUploadFunc" : {
+            "rawupload" : true
+        },
+        "rawUploadFuncParams" : {
+            "params" : {
+                "a" : {
+                    "type" : "string"
+                }
+            },
+            "rawupload" : true
+        },
+        "call" : {
+        },
+        "noResult" : {
+            "params" : {
+                "a" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "rawDownload" : {
+            "rawresult" : true
+        },
+        "triggerError" : {
+            "throws" : "MY_ERROR"
         }
     },
     "requires" : [
