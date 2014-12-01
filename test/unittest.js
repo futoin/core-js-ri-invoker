@@ -1,13 +1,17 @@
 
 var assert = require('assert');
+var http = require('http');
+var url = require( 'url' );
+var _ = require( 'lodash' );
+var WebSocketServer = require('ws').Server;
+
 var async_steps = require( 'futoin-asyncsteps' );
 var invoker;
 var as;
 var ccm;
-var _ = require( 'lodash' );
-var http = require('http');
 var httpsrv;
-var url = require( 'url' );
+var wssrv;
+
 
 describe( 'Invoker Basic', function()
 {
@@ -317,7 +321,7 @@ function processTestServerRequest( request, data )
 {
     var freq;
 
-    if ( request.url !== '/ftn' )
+    if ( request && request.url !== '/ftn' )
     {
         var parsed_url = url.parse( request.url, true );
         var path = parsed_url.path.split('/');
@@ -433,14 +437,51 @@ function createTestHttpServer( cb )
         });
     });
     httpsrv.listen( 23456, '127.0.0.1', 10, cb );
+    
+    wssrv = new WebSocketServer( { 
+        server : httpsrv,
+        path : '/ftn'
+    } );
+    
+    wssrv.on('connection', function( ws ){
+        ws.on('message', function( msg ){
+            var frsp = processTestServerRequest( null, msg );
+            
+            if ( !( 'e' in frsp ) )
+            {
+                frsp = { r : frsp };
+            }
+            
+            msg = JSON.parse( msg );
+            frsp.rid = msg.rid;
+
+            frsp = JSON.stringify( frsp );
+            ws.send( frsp );
+        });
+    } );
 }
+
+function closeTestHttpServer( done )
+{
+    if ( httpsrv )
+    {
+        wssrv.close();
+        httpsrv.close( function(){ done(); } );
+        httpsrv = null;
+    }
+    else
+    {
+        done();
+    }
+}
+
 
 var call_remotes_model_as = async_steps();
 call_remotes_model_as.add(
     function(as){
         var iface = ccm.iface( 'myiface' );
 
-        as.add(function(as){
+        as.add(function(as){try{
             iface.call(
                 as,
                 'testFunc',
@@ -450,7 +491,11 @@ call_remotes_model_as.add(
                     o : { m : 3 }
                 }
             );
-        }).add(function(as, res){
+        } catch ( e ){
+            console.dir( e.stack );
+            console.log( as.state.error_info );
+            throw e;
+        }}).add(function(as, res){
             res.res.should.equal('MY_RESULT');
             
             iface.call(
@@ -498,9 +543,15 @@ call_remotes_model_as.add(
         }}).add(function(as, res){
             res.ok.should.equal("OK");
 
+            if ( iface._raw_info.endpoint.split(':')[0] === 'ws' )
+            {
+                as.success( "MY_DOWNLOAD" );
+                return;
+            }
+
             iface.call(
                 as,
-                "rawDownload"
+                "rawDownload"                
             );
         }).add(
             function(as, res){
@@ -540,15 +591,7 @@ describe( 'NativeIface', function()
         });
         
         afterEach(function( done ){
-            if ( httpsrv )
-            {
-                httpsrv.close( function(){ done(); } );
-                httpsrv = null;
-            }
-            else
-            {
-                done();
-            }
+            closeTestHttpServer( done );
         });
         
         it( 'should return ifaceInfo without details', function(){
@@ -573,6 +616,32 @@ describe( 'NativeIface', function()
                 function(as){
                     try {
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456/ftn' );
+                        
+                        as.add(function( as ){
+                            createTestHttpServer( function(){ as.success(); } );
+                            as.setTimeout( 100 );
+                        });
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    as.state.done( new Error( err + ": " + as.state.error_info ) );
+                }
+            );
+            as.copyFrom( call_remotes_model_as );
+            as.state.done = done;
+            as.execute();
+        });
+        
+        it( 'should call WS remotes', function( done ){
+            as.add(
+                function(as){
+                    try {
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
