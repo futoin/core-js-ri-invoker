@@ -360,7 +360,8 @@ function processTestServerRequest( request, data )
     {
         case 'testFunc' :
             freq.p.a.should.equal( '1' );
-            freq.p.n.should.equal( 2 );
+            freq.p.n.should.equal( 2.8 );
+            freq.p.i.should.equal( 4 );
             freq.p.o.m.should.equal( 3 );
             return { res : 'MY_RESULT' };
         
@@ -489,8 +490,9 @@ call_remotes_model_as.add(
                 'testFunc',
                 {
                     a : "1",
-                    n : 2,
-                    o : { m : 3 }
+                    n : 2.8,
+                    o : { m : 3 },
+                    i : 4
                 }
             );
         } catch ( e ){
@@ -558,7 +560,9 @@ call_remotes_model_as.add(
                 {
                     a : "123"
                 },
-                "MY_UPLOAD"
+                "MY_UPLOAD",
+                null,
+                3e3
             );
         } catch ( e ) {
             console.dir( e.stack );
@@ -589,6 +593,74 @@ call_remotes_model_as.add(
                     as,
                     "triggerError"
                 );
+            },
+            function( as, err )
+            {
+                err.should.equal("MY_ERROR");
+                as.success( "YES" );
+            }
+        ).add(function(as, res){
+            res.should.equal("YES");
+            as.success();
+        });
+    },
+    function( as, err )
+    {
+        as.state.done( new Error( err + ": " + as.state.error_info + "("+as.state.step+")" ) );
+    }
+).add( function( as ){
+    as.state.done();
+});;
+
+
+var call_interceptors_model_as = async_steps();
+call_interceptors_model_as.add(
+    function(as){
+        var iface = ccm.iface( 'myiface' );
+
+        as.add(function(as){try{
+            as.state.step = "testFunc";
+
+            iface.testFunc(
+                as,
+                "1",
+                2.8,
+                { m : 3 },
+                4
+            );
+        } catch ( e ){
+            console.dir( e.stack );
+            console.log( as.state.error_info );
+            throw e;
+        }}).add(function(as, res){
+            res.res.should.equal('MY_RESULT');
+            
+            as.state.step = "noResult";
+            
+            iface.noResult(
+                as,
+                "123"
+            );
+        }).add(function(as, res){
+            if ( iface._raw_info.funcs.noResult )
+            {
+                assert.strictEqual( undefined, res );
+            }
+            else
+            {
+                res.should.be.empty;
+            }
+            
+            as.state.step = "rawDownload";
+
+            iface.rawDownload( as );
+        }).add(
+            function(as, res){
+                res.should.equal("MY_DOWNLOAD");
+                
+                as.state.step = "triggerError";
+
+                iface.triggerError( as );
             },
             function( as, err )
             {
@@ -690,6 +762,34 @@ describe( 'NativeIface', function()
             as.state.done = done;
             as.execute();
         });
+        
+        it( 'should fail with unknown scheme', function( done ){
+            as.add(
+                function(as){
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'unknown://localhost:23456/ftn' );
+                    as.successStep();
+                }
+            );
+            as.add(
+                function(as){
+                    ccm.iface('myiface').call( as, 'someFunc' );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InvokerError' );
+                        as.state.error_info.should.match( /^Unknown endpoint schema/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            as.execute();
+        });
     });
     
     describe('#ifaceInfo() - AdvancedCCM', function(){
@@ -728,7 +828,7 @@ describe( 'NativeIface', function()
                         
                         info.name().should.equal( 'fileface.a' );
                         info.version().should.equal( '1.1' );
-                        info.inherits().length.should.equal( 0 );
+                        info.inherits().length.should.equal( 1 );
                         _.isEmpty( info.funcs() ).should.be.false;
                         _.isEmpty( info.constraints() ).should.be.false;
                         
@@ -810,6 +910,624 @@ describe( 'NativeIface', function()
             );
             as.copyFrom( call_remotes_model_as );
             as.state.done = done;
+            as.execute();
+        });
+        
+        it( 'should call WS remotes through interceptors', function( done ){
+            as.add(
+                function(as){
+                    try {
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+                        
+                        as.add(function( as ){
+                            createTestHttpServer( function(){ as.success(); } );
+                            as.setTimeout( 100 );
+                        });
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    as.state.done( new Error( err + ": " + as.state.error_info ) );
+                }
+            );
+            as.copyFrom( call_interceptors_model_as );
+            as.state.done = done;
+            as.execute();
+        });
+        
+        it( 'should throw on not implemented UNIX transport', function( done ){
+            as.add(
+                function(as)
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'unix://tmp.sock/' );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    done( new Error( err + ": " + as.state.error_info ) );
+                }
+            ).add(
+                function(as)
+                {
+                    ccm.iface('myiface').call(
+                        as,
+                        "noResult",
+                        {
+                            a : "123"
+                        }
+                    );
+                },
+                function( as, err )
+                {
+                    err.should.equal( "InvokerError" );
+                    done();
+                }
+            );
+            as.execute();
+        });
+        
+        it( 'should throw on missing spec', function( done ){
+            as.add(
+                function(as)
+                {
+                    ccm.register( as , 'myiface', 'fileface.missign:1.1', 'unix://tmp.sock/' );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    err.should.equal( "InternalError" );
+                    done();
+                }
+            );
+            as.execute();
+        });
+    });
+    
+    describe( 'SpecTools', function(){
+        var spectools;
+        var testspec = {
+            'iface' : 'test.spec',
+            'version' : '2.3',
+            funcs : {
+            }
+        };
+        
+        before(function(){
+            spectools = require('../lib/advancedccm_impl').SpecTools;
+        });
+
+        after(function(){
+            spectools = null;
+        });
+        
+        it ('should fail to find iface without funcs', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : 2.4
+                        },
+                        [ 'somedir', testspec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Failed to load valid spec for/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail to find iface without funcs', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.4'
+                        },
+                        [ 'somedir',
+                            {
+                                iface : 'test.spec',
+                                version : '2.4'
+                            }
+                        ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Failed to load valid spec for/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail to load iface with different version', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.4'
+                        },
+                        [ 'somedir', testspec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Failed to load valid spec for/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on params without type', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingParam = {
+                        params : {
+                            a : {
+                                type : "string"
+                            },
+                            b : {
+                                default : "B"
+                            }
+                        }
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Missing type for params/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on result without type', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : {
+                            a : {
+                                type : "string"
+                            },
+                            b : {}
+                        }
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Missing type for result/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on params not object', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        params : true
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Invalid params object/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on param not object', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        params : {
+                            a : true
+                        }
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Invalid param object/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on result not object', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : true
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Invalid result object/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on resultvar not object', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : {
+                            a : true
+                        }
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^Invalid resultvar object/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on throws not array', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : {
+                            a : {
+                                type : "string"
+                            }
+                        },
+                        throws : true
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^"throws" is not array/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on requires not array', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : {
+                            a : {
+                                type : "string"
+                            }
+                        },
+                        throws : [ 'SomeError' ]
+                    };
+                    spec.requires = true;
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.match( /^"requires" is not array/ );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should load with no requires', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    var spec = _.cloneDeep( testspec );
+                    spec.funcs.missingResult = {
+                        result : {
+                            a : {
+                                type : "string"
+                            }
+                        },
+                        throws : [ 'SomeError' ]
+                    };
+
+                    spectools.loadSpec(
+                        as,
+                        {
+                            iface : 'test.spec',
+                            version : '2.3'
+                        },
+                        [ 'somedir', spec ]
+                    );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    done( new Error( err + ": " + as.state.error_info ) );
+                }
+            ).add( function( as ){ done(); } );
+            
+            as.execute();
+        });
+        
+        it ('should fail on integer type mismatch', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    spectools.checkFutoInType( as, 'integer', 'var', 1 );
+                    as.state.var = true;
+                    spectools.checkFutoInType( as, 'integer', 'var2', 1.3 );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InvalidRequest' );
+                        as.state.error_info.should.match( /^Type mismatch for parameter/ );
+                        as.state.var.should.be.true;
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
+            as.execute();
+        });
+        
+        it ('should fail on type mismatch', function( done )
+        {
+            as.add(
+                function( as )
+                {
+                    spectools.checkFutoInType( as, 'boolean', 'var', true );
+                    as.state.var = true;
+                    spectools.checkFutoInType( as, 'boolean', 'var2', 'true' );
+                    as.successStep();
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InvalidRequest' );
+                        as.state.error_info.should.match( /^Type mismatch for parameter/ );
+                        as.state.var.should.be.true;
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                }
+            );
+            
             as.execute();
         });
     });

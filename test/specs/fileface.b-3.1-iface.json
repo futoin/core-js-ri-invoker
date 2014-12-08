@@ -1,7 +1,6 @@
 {
-    "iface" : "fileface.a",
-    "version" : "1.1",
-    "inherit" : "fileface.b:3.1",
+    "iface" : "fileface.b",
+    "version" : "3.1",
     "funcs" : {
         "testFunc" : {
             "params" : {
@@ -16,10 +15,6 @@
                 },
                 "i" : {
                     "type" : "integer"
-                },
-                "d" : {
-                    "type" : "string",
-                    "default" : "DefAult"
                 }
             },
             "result" : {
@@ -28,35 +23,13 @@
                 }
             }
         },
-        "rawUploadFuncParams" : {
-            "params" : {
-                "a" : {
-                    "type" : "string"
-                }
-            },
+        "rawUploadFunc" : {
             "result" : {
                 "ok" : {
                     "type" : "string"
                 }
             },
             "rawupload" : true
-        },
-        "call" : {
-        },
-        "noResult" : {
-            "params" : {
-                "a" : {
-                    "type" : "string"
-                }
-            }
-        },
-        "rawDownload" : {
-            "rawresult" : true
-        },
-        "triggerError" : {
-            "throws" : [
-                "MY_ERROR"
-            ]
         }
     },
     "requires" : [
