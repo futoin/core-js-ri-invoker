@@ -1,3 +1,5 @@
+**!!! WARNING: not yet fully tested !!!** 
+
 [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
 
 # FutoIn reference implementation

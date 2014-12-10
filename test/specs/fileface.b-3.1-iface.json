@@ -30,10 +30,72 @@
                 }
             },
             "rawupload" : true
+        },
+        "wrongDataResult" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "missingResultVar" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                },
+                "missing_var" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "rawResultExpected" : {
+            "rawresult" : true
+        },
+        "wrongException" : {
+            "rawresult" : true
+        },
+        "unexpectedUpload" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "noParams" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "unknownParam" : {
+            "params" : {
+                "a" : {
+                    "type" : "string"
+                }
+            },
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            }
+        },
+        "pingPong" : {
+            "params" : {
+                "ping" : {
+                    "type" : "string"
+                }
+            },
+            "result" : {
+                "pong" : {
+                    "type" : "string"
+                }
+            }
         }
     },
     "requires" : [
         "AllowAnonymous",
-        "MyRequire"
+        "MyRequire",
+        "SecureChannel"
     ]
 }

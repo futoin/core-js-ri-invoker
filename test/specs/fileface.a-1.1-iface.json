@@ -54,6 +54,11 @@
             "rawresult" : true
         },
         "triggerError" : {
+            "result" : {
+                "ok" : {
+                    "type" : "string"
+                }
+            },
             "throws" : [
                 "MY_ERROR"
             ]
@@ -61,6 +66,7 @@
     },
     "requires" : [
         "AllowAnonymous",
-        "MyRequire"
+        "MyRequire",
+        "SecureChannel"
     ]
 }

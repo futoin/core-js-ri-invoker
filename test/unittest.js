@@ -387,8 +387,27 @@ function processTestServerRequest( request, data )
             freq.p.should.be.empty;
             return "MY_DOWNLOAD";
             
+        case "wrongDataResult":
+            freq.p.should.be.empty;
+            return "MY_DOWNLOAD";
+            
+        case "missingResultVar":
+        case "rawResultExpected":
+        case "unexpectedUpload":
+            freq.p.should.be.empty;
+            return { ok : "OK" };
+            
+        case "unknownParam":
+        case "noParams":
+            return { ok : "OK" };
+            
         case "triggerError":
+        case "wrongException":
+        case "unknownFunc":
             return { e : 'MY_ERROR' };
+            
+        case "pingPong":
+            return { pong : freq.p.ping };
     }
     
     return { e : 'InvalidFunction' };
@@ -448,6 +467,11 @@ function createTestHttpServer( cb )
         ws.on('message', function( msg ){
             var frsp = processTestServerRequest( null, msg );
             
+            if ( typeof frsp !== "object" )
+            {
+                return;
+            }
+            
             if ( !( 'e' in frsp ) )
             {
                 frsp = { r : frsp };
@@ -481,8 +505,9 @@ var call_remotes_model_as = async_steps();
 call_remotes_model_as.add(
     function(as){
         var iface = ccm.iface( 'myiface' );
+        var is_ws = ( iface._raw_info.endpoint.split(':')[0] === 'ws' );
 
-        as.add(function(as){try{
+        as.add(function(as){
             as.state.step = "testFunc";
 
             iface.call(
@@ -495,11 +520,7 @@ call_remotes_model_as.add(
                     i : 4
                 }
             );
-        } catch ( e ){
-            console.dir( e.stack );
-            console.log( as.state.error_info );
-            throw e;
-        }}).add(function(as, res){
+        }).add(function(as, res){
             res.res.should.equal('MY_RESULT');
             
             as.state.step = "noResult";
@@ -571,7 +592,7 @@ call_remotes_model_as.add(
         }}).add(function(as, res){
             res.ok.should.equal("OK");
 
-            if ( iface._raw_info.endpoint.split(':')[0] === 'ws' )
+            if ( is_ws )
             {
                 as.success( "MY_DOWNLOAD" );
                 return;
@@ -599,14 +620,267 @@ call_remotes_model_as.add(
                 err.should.equal("MY_ERROR");
                 as.success( "YES" );
             }
-        ).add(function(as, res){
-            res.should.equal("YES");
-            as.success();
-        });
+        ).add(
+            function(as, res){
+                res.should.equal("YES");
+                
+                as.state.step = "wrongDataResult";
+                
+                if ( is_ws )
+                {
+                    return;
+                }
+                
+                iface.call(
+                    as,
+                    "wrongDataResult"
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InternalError" );
+                as.state.error_info.should.equal( "Raw result is not expected" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.wrongDataResult )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else if ( !is_ws )
+                {
+                    res.should.equal("MY_DOWNLOAD");
+                }
+                
+                as.state.step = "missingResultVar";
+                
+                iface.call(
+                    as,
+                    "missingResultVar"
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InternalError" );
+                as.state.error_info.should.equal( "Missing result variables" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.wrongDataResult )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "rawResultExpected";
+                
+                if ( is_ws )
+                {
+                    return;
+                }
+                
+                iface.call(
+                    as,
+                    "rawResultExpected"
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InternalError" );
+                as.state.error_info.should.equal( "Raw result is expected" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.rawResultExpected )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else if ( !is_ws )
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "wrongException";
+                
+                iface.call(
+                    as,
+                    "wrongException"
+                );
+            },
+            function( as, err )
+            {
+                if ( iface._raw_info.funcs.wrongException )
+                {
+                    err.should.equal( "InternalError" );
+                    as.state.error_info.should.equal( "Not expected exception from Executor" );
+                }
+                else
+                {
+                    err.should.equal( "MY_ERROR" );
+                }
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                assert.strictEqual( undefined, res );
+                
+                as.state.step = "unknownFunc";
+                
+                iface.call(
+                    as,
+                    "unknownFunc"
+                );
+            },
+            function( as, err )
+            {
+                if ( iface._raw_info.funcs.wrongException )
+                {
+                    err.should.equal( "InvokerError" );
+                    as.state.error_info.should.equal( "Unknown interface function" );
+                }
+                else
+                {
+                    err.should.equal( "MY_ERROR" );
+                }
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                assert.strictEqual( undefined, res );
+                
+                as.state.step = "unexpectedUpload";
+                
+                iface.call(
+                    as,
+                    "unexpectedUpload",
+                    {},
+                    "MY_UPLOAD"
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InvokerError" );
+                as.state.error_info.should.equal( "Raw upload is not allowed" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.unexpectedUpload )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "noParams";
+                
+                iface.call(
+                    as,
+                    "noParams",
+                    { a : "a" }
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InvokerError" );
+                as.state.error_info.should.equal( "No params are defined" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.noParams )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "unknownParam";
+                
+                iface.call(
+                    as,
+                    "unknownParam",
+                    { a : "a", b : "b" }
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InvokerError" );
+                as.state.error_info.should.equal( "Unknown parameter b" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.noParams )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "missingParam";
+                
+                iface.call(
+                    as,
+                    "unknownParam",
+                    {}
+                );
+            },
+            function( as, err )
+            {
+                err.should.equal( "InvokerError" );
+                as.state.error_info.should.equal( "Missing parameter a" );
+
+                as.success();
+            }
+        ).add(
+            function(as, res){
+                if ( iface._raw_info.funcs.noParams )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.ok.should.equal("OK");
+                }
+                
+                as.state.step = "testUnicode";
+                
+                iface.call(
+                    as,
+                    "pingPong",
+                    { ping : "Мои данные на русском un latviešu valodā" }
+                );
+            }
+        ).add(
+            function( as, res ){
+                res.pong.should.equal( "Мои данные на русском un latviešu valodā" );
+            }
+        );
     },
     function( as, err )
     {
-        as.state.done( new Error( err + ": " + as.state.error_info + "("+as.state.step+")" ) );
+        as.state.done( new Error( err + ": " + as.state.error_info + " at "+as.state.step ) );
     }
 ).add( function( as ){
     as.state.done();
@@ -686,7 +960,15 @@ describe( 'NativeIface', function()
     describe('#ifaceInfo() - SimpleCCM', function(){
         beforeEach(function(){
             as = async_steps();
+            
             var opts = {};
+            opts[invoker.SimpleCCM.OPT_COMM_CONFIG_CB] = function( proto, agent_opts ) {
+                if ( proto === 'http' )
+                {
+                    agent_opts.maxSockets = 3;
+                }
+            };
+            
             ccm = new invoker.SimpleCCM( opts );
         });
         
@@ -715,7 +997,7 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456/ftn' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
@@ -741,7 +1023,7 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
@@ -865,7 +1147,7 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456/ftn' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
@@ -891,7 +1173,7 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
@@ -917,7 +1199,7 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
                             createTestHttpServer( function(){ as.success(); } );
@@ -936,6 +1218,38 @@ describe( 'NativeIface', function()
             );
             as.copyFrom( call_interceptors_model_as );
             as.state.done = done;
+            as.execute();
+        });
+        
+        it( 'should check secure channel', function( done ){
+            as.add(
+                function(as){
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+                    
+                    as.add(function( as ){
+                        createTestHttpServer( function(){ as.success(); } );
+                        as.setTimeout( 100 );
+                    });
+                    as.add(function( as ) {
+                        ccm.iface('myiface').call( as, 'missingResultVar' );
+                    });
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'SecurityError' );
+                        as.state.error_info.should.equal( "Requires secure channel" );
+                        done();
+                    }
+                    catch ( ex )
+                    {
+                        done( ex );
+                    }
+                    as.state.done( new Error( err + ": " + as.state.error_info ) );
+                }
+            );
+
             as.execute();
         });
         
