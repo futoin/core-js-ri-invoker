@@ -33,8 +33,10 @@
     "email": "support@futoin.eu"
   },
   "dependencies": {
+    "agentkeepalive": "^1.2.0",
     "detect-node": "^2.0.3",
     "futoin-asyncsteps": "^1.2.0",
+    "keep-alive-agent": "0.0.1",
     "lodash": "^2.4.1",
     "ws": "^0.4.32"
   },

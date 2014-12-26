@@ -424,6 +424,8 @@ function createTestHttpServer( cb )
     httpsrv = http.createServer(function (request, response) {
         var freq = [];
         
+        request.connection.setTimeout( 100 );
+        
         request.on( "data",function( chunk ) {
             freq.push( chunk );
         } );
