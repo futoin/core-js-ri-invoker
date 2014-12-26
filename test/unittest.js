@@ -324,7 +324,7 @@ function processTestServerRequest( request, data )
     if ( request && request.url !== '/ftn' )
     {
         var parsed_url = url.parse( request.url, true );
-        var path = parsed_url.path.split('/');
+        var path = parsed_url.pathname.split('/');
         
         freq = {
             f : path[2] + ':' + path[3] + ':' + path[4],
