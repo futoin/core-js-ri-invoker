@@ -55,26 +55,74 @@
                     },
                     loadSpec: function (as, info, specdirs) {
                         var raw_spec = null;
-                        var fn = info.iface + '-' + info.version + '-iface.json';
-                        for (var i = 0, v; i < specdirs.length; ++i) {
-                            v = specdirs[i];
-                            if (typeof v === 'string') {
-                                v = v + '/' + fn;
-                                if (fs && fs.existsSync(v)) {
-                                    v = fs.readFileSync(v, { encoding: 'utf8' });
-                                    v = JSON.parse(v);
-                                } else {
-                                    continue;
+                        as.forEach(specdirs, function (as, k, v) {
+                            var fn = info.iface + '-' + info.version + '-iface.json';
+                            as.add(function (read_as) {
+                                if (typeof v !== 'string' || !isNode) {
+                                    return;
                                 }
+                                v = v + '/' + fn;
+                                fs.readFile(v, { encoding: 'utf8' }, function (err, data) {
+                                    if (!err) {
+                                        v = JSON.parse(data);
+                                        if (read_as) {
+                                            read_as.success();
+                                        }
+                                    } else if (read_as) {
+                                        try {
+                                            read_as.continue();
+                                        } catch (e) {
+                                        }
+                                    }
+                                });
+                                read_as.setCancel(function (as) {
+                                    void as;
+                                    read_as = null;
+                                });
+                            }).add(function (as) {
+                                if (typeof v !== 'string' || isNode) {
+                                    return;
+                                }
+                                v = v + '/' + fn;
+                                var httpreq = new XMLHttpRequest();
+                                httpreq.onreadystatechange = function () {
+                                    if (this.readyState !== this.DONE) {
+                                        return;
+                                    }
+                                    var response = this.responseText;
+                                    if (response) {
+                                        try {
+                                            v = JSON.parse(response);
+                                            as.success();
+                                            return;
+                                        } catch (e) {
+                                        }
+                                    }
+                                    try {
+                                        as.continue();
+                                    } catch (ex) {
+                                    }
+                                };
+                                httpreq.open('GET', v, true);
+                                httpreq.send();
+                                as.setCancel(function (as) {
+                                    void as;
+                                    httpreq.abort();
+                                });
+                            }).add(function (as) {
+                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version && 'funcs' in v) {
+                                    raw_spec = v;
+                                    as.break();
+                                }
+                            });
+                        }).add(function (as) {
+                            if (raw_spec === null) {
+                                as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
                             }
-                            if (typeof v === 'object' && v.iface === info.iface && v.version === info.version && 'funcs' in v) {
-                                raw_spec = v;
-                                break;
-                            }
-                        }
-                        if (raw_spec === null) {
-                            as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
-                        }
+                            spectools._parseSpec(as, info, specdirs, raw_spec);
+                        });
+                    },
+                    _parseSpec: function (as, info, specdirs, raw_spec) {
                         info.funcs = _.cloneDeep(raw_spec.funcs);
                         var finfo;
                         var pn;
@@ -163,7 +211,14 @@
                         sup_info.iface = m[1];
                         sup_info.version = m[4];
                         spectools.loadSpec(as, sup_info, specdirs);
-                        for (f in sup_info.funcs) {
+                        as.add(function (as) {
+                            spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
+                        });
+                    },
+                    _parseInherit: function (as, info, specdirs, raw_spec, sup_info) {
+                        var i;
+                        var pn;
+                        for (var f in sup_info.funcs) {
                             var fdef = sup_info.funcs[f];
                             if (!(f in info.funcs)) {
                                 info.funcs[f] = fdef;
@@ -359,16 +414,168 @@
         },
         function (module, exports) {
             'use strict';
+            var EventEmitter = _require(10);
+            var common = _require(3);
+            var FutoInError = common.FutoInError;
+            var optname = common.Options;
+            var MyWebSocket = WebSocket;
             exports.HTTPComms = function () {
             };
             exports.HTTPComms.prototype = {
-                perform: function () {
+                perform: function (as, ctx, req) {
+                    var _this = this;
+                    as.add(function (as) {
+                        _this._perform(as, ctx, req);
+                    });
+                },
+                _perform: function (as, ctx, req) {
+                    var httpreq = new XMLHttpRequest();
+                    var url = ctx.endpoint;
+                    var rawreq = ctx.upload_data;
+                    var content_type;
+                    if (rawreq || rawreq === '') {
+                        content_type = 'application/octet-stream';
+                        if (url.charAt(url.length - 1) !== '/') {
+                            url += '/';
+                        }
+                        url += req.f.replace(/:/g, '/') + '/';
+                        if ('sec' in req) {
+                            url += req.sec + '/';
+                        }
+                        var params = [];
+                        for (var k in req.p) {
+                            params.push(encodeURIComponent(k) + '=' + encodeURIComponent(req.p[k]));
+                        }
+                        url += '?' + params.join('&');
+                    } else {
+                        content_type = 'application/futoin+json';
+                        rawreq = JSON.stringify(req);
+                    }
+                    if (ctx.expect_response) {
+                        if (ctx.download_stream) {
+                            httpreq.responseType = ctx.download_stream;
+                        }
+                        httpreq.onreadystatechange = function () {
+                            if (this.readyState !== this.DONE) {
+                                return;
+                            }
+                            var response = ctx.download_stream ? this.response : this.responseText;
+                            if (response) {
+                                as.success(response, this.getResponseHeader('content-type'));
+                            } else {
+                                try {
+                                    as.error(FutoInError.CommError, 'Low error');
+                                } catch (ex) {
+                                }
+                            }
+                        };
+                        as.setCancel(function () {
+                            httpreq.abort();
+                        });
+                    }
+                    httpreq.open('POST', url, true);
+                    httpreq.setRequestHeader('Content-Type', content_type);
+                    httpreq.send(rawreq);
+                    if (!ctx.expect_response) {
+                        as.success();
+                    }
                 }
             };
             exports.WSComms = function () {
+                this.rid = 1;
+                this.reqas = {};
+                this.evt = new EventEmitter();
             };
             exports.WSComms.prototype = {
-                perform: function () {
+                _waiting_open: false,
+                init: function (as, ctx) {
+                    var opts = {};
+                    var optcb = ctx.options[optname.OPT_COMM_CONFIG_CB];
+                    if (optcb) {
+                        optcb(ctx.endpoint.match(/^(wss?)/)[1], opts);
+                    }
+                    var ws = new MyWebSocket(ctx.endpoint);
+                    this.ws = ws;
+                    this._waiting_open = true;
+                    var reqas = this.reqas;
+                    var executor = opts.futoin_executor;
+                    var info = ctx.info;
+                    var _this = this;
+                    var send_executor_rsp = function (rsp) {
+                        ws.send(JSON.stringify(rsp));
+                    };
+                    var cleanup = function (event) {
+                        ws.close();
+                        delete _this.ws;
+                        for (var k in reqas) {
+                            try {
+                                reqas[k].error(FutoInError.CommError, event.wasClean ? 'Cleanup' : 'Error');
+                            } catch (ex) {
+                            }
+                        }
+                        delete _this.reqas;
+                        _this.reqas = {};
+                        _this._waiting_open = false;
+                    };
+                    ws.onclose = cleanup;
+                    ws.onerror = cleanup;
+                    ws.onopen = function (event) {
+                        void event;
+                        _this._waiting_open = false;
+                        _this.evt.emit('open');
+                    };
+                    ws.onmessage = function (event) {
+                        var rsp;
+                        try {
+                            rsp = JSON.parse(event.data);
+                        } catch (e) {
+                            return;
+                        }
+                        if ('rid' in rsp) {
+                            var rid = rsp.rid;
+                            if (rid in reqas) {
+                                reqas[rid].success(rsp, 'application/futoin+json');
+                                delete reqas[rid];
+                            } else if (rid.charAt(0) === 'S' && executor) {
+                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
+                            }
+                        }
+                    };
+                },
+                perform: function (as, ctx, req) {
+                    var _this = this;
+                    if (!('ws' in this)) {
+                        _this.init(as, ctx);
+                    }
+                    if (this._waiting_open) {
+                        as.add(function (as) {
+                            if (!_this._waiting_open) {
+                                return;
+                            }
+                            var on_open = function () {
+                                as.success();
+                            };
+                            _this.evt.once('open', on_open);
+                            as.setCancel(function () {
+                                _this.evt.removeListener('open', on_open);
+                            });
+                        });
+                    }
+                    as.add(function (as) {
+                        _this._perform(as, ctx, req);
+                    });
+                },
+                _perform: function (as, ctx, req) {
+                    var reqas = this.reqas;
+                    var rid = 'C' + this.rid++;
+                    if (ctx.expect_response) {
+                        reqas[rid] = as;
+                        as.setCancel(function () {
+                            delete reqas[rid];
+                        });
+                    }
+                    req.rid = rid;
+                    this.ws.send(JSON.stringify(req));
                 }
             };
         },
@@ -808,6 +1015,213 @@
         },
         function (module, exports) {
             module.exports = __external__;
+        },
+        function (module, exports) {
+            ;
+            (function () {
+                'use strict';
+                function EventEmitter() {
+                }
+                var proto = EventEmitter.prototype;
+                var exports = this;
+                var originalGlobalValue = exports.EventEmitter;
+                function indexOfListener(listeners, listener) {
+                    var i = listeners.length;
+                    while (i--) {
+                        if (listeners[i].listener === listener) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                }
+                function alias(name) {
+                    return function aliasClosure() {
+                        return this[name].apply(this, arguments);
+                    };
+                }
+                proto.getListeners = function getListeners(evt) {
+                    var events = this._getEvents();
+                    var response;
+                    var key;
+                    if (evt instanceof RegExp) {
+                        response = {};
+                        for (key in events) {
+                            if (events.hasOwnProperty(key) && evt.test(key)) {
+                                response[key] = events[key];
+                            }
+                        }
+                    } else {
+                        response = events[evt] || (events[evt] = []);
+                    }
+                    return response;
+                };
+                proto.flattenListeners = function flattenListeners(listeners) {
+                    var flatListeners = [];
+                    var i;
+                    for (i = 0; i < listeners.length; i += 1) {
+                        flatListeners.push(listeners[i].listener);
+                    }
+                    return flatListeners;
+                };
+                proto.getListenersAsObject = function getListenersAsObject(evt) {
+                    var listeners = this.getListeners(evt);
+                    var response;
+                    if (listeners instanceof Array) {
+                        response = {};
+                        response[evt] = listeners;
+                    }
+                    return response || listeners;
+                };
+                proto.addListener = function addListener(evt, listener) {
+                    var listeners = this.getListenersAsObject(evt);
+                    var listenerIsWrapped = typeof listener === 'object';
+                    var key;
+                    for (key in listeners) {
+                        if (listeners.hasOwnProperty(key) && indexOfListener(listeners[key], listener) === -1) {
+                            listeners[key].push(listenerIsWrapped ? listener : {
+                                listener: listener,
+                                once: false
+                            });
+                        }
+                    }
+                    return this;
+                };
+                proto.on = alias('addListener');
+                proto.addOnceListener = function addOnceListener(evt, listener) {
+                    return this.addListener(evt, {
+                        listener: listener,
+                        once: true
+                    });
+                };
+                proto.once = alias('addOnceListener');
+                proto.defineEvent = function defineEvent(evt) {
+                    this.getListeners(evt);
+                    return this;
+                };
+                proto.defineEvents = function defineEvents(evts) {
+                    for (var i = 0; i < evts.length; i += 1) {
+                        this.defineEvent(evts[i]);
+                    }
+                    return this;
+                };
+                proto.removeListener = function removeListener(evt, listener) {
+                    var listeners = this.getListenersAsObject(evt);
+                    var index;
+                    var key;
+                    for (key in listeners) {
+                        if (listeners.hasOwnProperty(key)) {
+                            index = indexOfListener(listeners[key], listener);
+                            if (index !== -1) {
+                                listeners[key].splice(index, 1);
+                            }
+                        }
+                    }
+                    return this;
+                };
+                proto.off = alias('removeListener');
+                proto.addListeners = function addListeners(evt, listeners) {
+                    return this.manipulateListeners(false, evt, listeners);
+                };
+                proto.removeListeners = function removeListeners(evt, listeners) {
+                    return this.manipulateListeners(true, evt, listeners);
+                };
+                proto.manipulateListeners = function manipulateListeners(remove, evt, listeners) {
+                    var i;
+                    var value;
+                    var single = remove ? this.removeListener : this.addListener;
+                    var multiple = remove ? this.removeListeners : this.addListeners;
+                    if (typeof evt === 'object' && !(evt instanceof RegExp)) {
+                        for (i in evt) {
+                            if (evt.hasOwnProperty(i) && (value = evt[i])) {
+                                if (typeof value === 'function') {
+                                    single.call(this, i, value);
+                                } else {
+                                    multiple.call(this, i, value);
+                                }
+                            }
+                        }
+                    } else {
+                        i = listeners.length;
+                        while (i--) {
+                            single.call(this, evt, listeners[i]);
+                        }
+                    }
+                    return this;
+                };
+                proto.removeEvent = function removeEvent(evt) {
+                    var type = typeof evt;
+                    var events = this._getEvents();
+                    var key;
+                    if (type === 'string') {
+                        delete events[evt];
+                    } else if (evt instanceof RegExp) {
+                        for (key in events) {
+                            if (events.hasOwnProperty(key) && evt.test(key)) {
+                                delete events[key];
+                            }
+                        }
+                    } else {
+                        delete this._events;
+                    }
+                    return this;
+                };
+                proto.removeAllListeners = alias('removeEvent');
+                proto.emitEvent = function emitEvent(evt, args) {
+                    var listeners = this.getListenersAsObject(evt);
+                    var listener;
+                    var i;
+                    var key;
+                    var response;
+                    for (key in listeners) {
+                        if (listeners.hasOwnProperty(key)) {
+                            i = listeners[key].length;
+                            while (i--) {
+                                listener = listeners[key][i];
+                                if (listener.once === true) {
+                                    this.removeListener(evt, listener.listener);
+                                }
+                                response = listener.listener.apply(this, args || []);
+                                if (response === this._getOnceReturnValue()) {
+                                    this.removeListener(evt, listener.listener);
+                                }
+                            }
+                        }
+                    }
+                    return this;
+                };
+                proto.trigger = alias('emitEvent');
+                proto.emit = function emit(evt) {
+                    var args = Array.prototype.slice.call(arguments, 1);
+                    return this.emitEvent(evt, args);
+                };
+                proto.setOnceReturnValue = function setOnceReturnValue(value) {
+                    this._onceReturnValue = value;
+                    return this;
+                };
+                proto._getOnceReturnValue = function _getOnceReturnValue() {
+                    if (this.hasOwnProperty('_onceReturnValue')) {
+                        return this._onceReturnValue;
+                    } else {
+                        return true;
+                    }
+                };
+                proto._getEvents = function _getEvents() {
+                    return this._events || (this._events = {});
+                };
+                EventEmitter.noConflict = function noConflict() {
+                    exports.EventEmitter = originalGlobalValue;
+                    return EventEmitter;
+                };
+                if (typeof define === 'function' && define.amd) {
+                    define(function () {
+                        return EventEmitter;
+                    });
+                } else if (typeof module === 'object' && module.exports) {
+                    module.exports = EventEmitter;
+                } else {
+                    exports.EventEmitter = EventEmitter;
+                }
+            }.call(this));
         }
     ];
     return _require(1);
