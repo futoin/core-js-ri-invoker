@@ -24,6 +24,8 @@ if ( typeof chai !== 'undefined' )
     };
     
     thisDir = '.';
+    
+    invoker = FutoInInvoker;
 }
 else
 {
@@ -38,12 +40,12 @@ else
     closeTestHttpServer = node_server.closeTestHttpServer;
     
     thisDir = __dirname;
+    
+    invoker = hidereq('../lib/invoker.js');
 }
 
 describe( 'Invoker Basic', function()
 {
-    invoker = require('../lib/invoker.js');
-
     it( 'should create Simple CCM', function(){
         var sccm = new invoker.SimpleCCM();
     });
@@ -846,8 +848,8 @@ describe( 'NativeIface', function()
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
                         
                         as.add(function( as ){
-                            createTestHttpServer( function(){ as.success(); } );
                             as.setTimeout( 100 );
+                            createTestHttpServer( function(){ as.success(); } );
                         });
                     } catch ( e ){
                         console.dir( e.stack );
@@ -872,8 +874,8 @@ describe( 'NativeIface', function()
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
-                            createTestHttpServer( function(){ as.success(); } );
                             as.setTimeout( 100 );
+                            createTestHttpServer( function(){ as.success(); } );
                         });
                     } catch ( e ){
                         console.dir( e.stack );
@@ -996,8 +998,8 @@ describe( 'NativeIface', function()
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
                         
                         as.add(function( as ){
-                            createTestHttpServer( function(){ as.success(); } );
                             as.setTimeout( 100 );
+                            createTestHttpServer( function(){ as.success(); } );
                         });
                     } catch ( e ){
                         console.dir( e.stack );
@@ -1022,8 +1024,8 @@ describe( 'NativeIface', function()
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
-                            createTestHttpServer( function(){ as.success(); } );
                             as.setTimeout( 100 );
+                            createTestHttpServer( function(){ as.success(); } );
                         });
                     } catch ( e ){
                         console.dir( e.stack );
@@ -1048,8 +1050,8 @@ describe( 'NativeIface', function()
                         ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
                         
                         as.add(function( as ){
-                            createTestHttpServer( function(){ as.success(); } );
                             as.setTimeout( 100 );
+                            createTestHttpServer( function(){ as.success(); } );
                         });
                     } catch ( e ){
                         console.dir( e.stack );
@@ -1073,8 +1075,8 @@ describe( 'NativeIface', function()
                     ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
                     
                     as.add(function( as ){
-                        createTestHttpServer( function(){ as.success(); } );
                         as.setTimeout( 100 );
+                        createTestHttpServer( function(){ as.success(); } );
                     });
                     as.add(function( as ) {
                         ccm.iface('myiface').call( as, 'missingResultVar' );
@@ -1157,7 +1159,7 @@ describe( 'NativeIface', function()
         };
         
         before(function(){
-            spectools = require('../lib/advancedccm_impl').SpecTools;
+            spectools = invoker.SpecTools;
         });
 
         after(function(){

@@ -25,7 +25,14 @@ function processTestServerRequest( request, data )
     }
     else
     {
-        freq = JSON.parse( data );
+        try
+        {
+            freq = JSON.parse( data );
+        }
+        catch ( e )
+        {
+            return { e : 'InvalidReuquest' };
+        }
     }
     
     var func = freq.f.split(':');
@@ -118,8 +125,16 @@ function createTestHttpServer( cb )
         } );
         request.on( "end",function(){
             freq = Buffer.concat( freq ).toString( 'utf8' );
+            var frsp;
             
-            var frsp = processTestServerRequest( request, freq );
+            if ( request.method !== 'OPTIONS' )
+            {
+                frsp = processTestServerRequest( request, freq );
+            }
+            else
+            {
+                frsp = '';
+            }
             var content_type;
             
             if ( typeof frsp !== 'string' )
@@ -140,6 +155,10 @@ function createTestHttpServer( cb )
             response.writeHead( 200, {
                 'Content-Type' : content_type,
                 'Content-Length' : Buffer.byteLength( frsp, 'utf8' ),
+                'Access-Control-Allow-Origin' : '*',
+                'Access-Control-Allow-Methods' : 'POST',
+                'Access-Control-Allow-Headers' : 'Content-Type'
+                
             } );
             response.write( frsp, 'utf8' );
             response.end();
@@ -197,4 +216,6 @@ if ( require.main === module )
     createTestHttpServer(function(){
         console.log('LISTENING');
     });
+    var hidereq = require;
+    hidereq( 'chai' ).should();
 }
