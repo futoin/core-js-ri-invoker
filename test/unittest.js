@@ -62,17 +62,19 @@ describe( 'SimpleCCM', function()
     
     it('should register interface',
         function( done ){
-            try
-            {
-                ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-            }
-            catch ( e )
-            {
-                console.log( as.state.error_info );
-                throw e;
-            }
-            as.add(function(as){ done(); as.success(); });
-            as.execute();
+            as
+                .add( function( as ){
+                    try {
+                        ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+                    } catch ( e ) {
+                        console.log( as.state.error_info );
+                        done( e );
+                    }
+                }, function( as, err ){
+                    done( new Error( err + ": " + as.state.error_info ) );
+                } )
+                .add(function(as){ done(); as.success(); })
+                .execute();
         }
     );
     
