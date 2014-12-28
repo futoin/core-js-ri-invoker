@@ -6,7 +6,8 @@ var as;
 var ccm;
 
 var createTestHttpServer;
-var closeTestHttpServer
+var closeTestHttpServer;
+var thisDir;
 
 if ( typeof chai !== 'undefined' )
 {
@@ -21,6 +22,8 @@ if ( typeof chai !== 'undefined' )
     closeTestHttpServer = function( done ){
         done();
     };
+    
+    thisDir = '.';
 }
 else
 {
@@ -33,6 +36,8 @@ else
     var node_server = hidereq('./node_server.js');
     createTestHttpServer = node_server.createTestHttpServer;
     closeTestHttpServer = node_server.closeTestHttpServer;
+    
+    thisDir = __dirname;
 }
 
 describe( 'Invoker Basic', function()
@@ -295,7 +300,7 @@ describe( 'AdvancedCCM', function()
     beforeEach(function(){
         as = async_steps();
         var opts = {};
-        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = __dirname + '/specs';
+        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
     });
     
@@ -917,7 +922,7 @@ describe( 'NativeIface', function()
         beforeEach(function(){
             as = async_steps();
             var opts = {};
-            opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = __dirname + '/specs';
+            opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
             ccm = new invoker.AdvancedCCM( opts );
         });
         

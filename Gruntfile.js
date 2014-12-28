@@ -15,11 +15,11 @@ module.exports = function (grunt) {
                     external : {
                         'futoin-asyncsteps' : {
                             'global' : '$as',
-                            'amd' : './node_modules/futoin-asyncsteps/dist/futoin-asyncsteps.min.js'
+                            'amd' : 'futoin-asyncsteps'
                         },
                         'lodash' : {
                             'global' : '_',
-                            'amd' : './node_modules/lodash/dist/lodash.compat.min.js'
+                            'amd' : 'lodash'
                         }
                     }
                 }
@@ -30,16 +30,16 @@ module.exports = function (grunt) {
                 },
                 options: {
                     map : true,
+                    exports: 'unittest',
                     external : {
                         'chai' : true,
-                        'assert' : true,
                         'futoin-asyncsteps' : {
                             'global' : '$as',
-                            'amd' : './node_modules/futoin-asyncsteps/dist/futoin-asyncsteps.min.js'
+                            'amd' : 'futoin-asyncsteps'
                         },
                         'lodash' : {
                             'global' : '_',
-                            'amd' : './node_modules/lodash/dist/lodash.compat.min.js'
+                            'amd' : 'lodash'
                         }
                     }
                 }
@@ -48,7 +48,7 @@ module.exports = function (grunt) {
         uglify: {
             dist: {
                 files: {
-                    'dist/futoin-asyncsteps.min.js' : [ 'dist/futoin-asyncsteps.js' ]
+                    'dist/futoin-invoker.min.js' : [ 'dist/futoin-invoker.js' ]
                 }
             }
         },

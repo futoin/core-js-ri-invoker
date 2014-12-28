@@ -191,3 +191,8 @@ function closeTestHttpServer( done )
 
 exports.createTestHttpServer = createTestHttpServer;
 exports.closeTestHttpServer = closeTestHttpServer;
+
+if ( require.main === module )
+{
+    createTestHttpServer();
+}
