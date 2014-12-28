@@ -60,6 +60,17 @@ module.exports = function (grunt) {
                 }
             }
         },
+        external_daemon: {
+            unittest: {
+                cmd:  'node',
+                args: ['test/node_server.js'],
+                options: {
+                    startCheck: function(stdout, stderr) {
+                        return /LISTENING/.test(stdout);
+                    }
+                }
+            }
+        },
         mocha_phantomjs: {
             all: {
                 options: {
@@ -103,13 +114,14 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks( 'grunt-pure-cjs' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
     grunt.loadNpmTasks( 'grunt-contrib-connect' );
+    grunt.loadNpmTasks( 'grunt-external-daemon' );
     grunt.loadNpmTasks( 'grunt-mocha-phantomjs' );
     grunt.loadNpmTasks( 'grunt-npm-helper' );
     grunt.loadNpmTasks( 'grunt-release' );
     grunt.loadNpmTasks( 'grunt-npm2bower-sync' );
 
     grunt.registerTask( 'build-browser', ['pure_cjs','uglify'] );
-    grunt.registerTask( 'test-browser', ['connect','mocha_phantomjs'] );
+    grunt.registerTask( 'test-browser', ['connect','external_daemon:unittest','mocha_phantomjs'] );
     
     grunt.registerTask( 'node', [ 'npm:test' ] );
     grunt.registerTask( 'browser', ['build-browser','test-browser'] );

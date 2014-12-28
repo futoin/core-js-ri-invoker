@@ -47,6 +47,7 @@
     "grunt": "*",
     "grunt-contrib-connect": "*",
     "grunt-contrib-uglify": "*",
+    "grunt-external-daemon": "^1.1.0",
     "grunt-mocha-phantomjs": "^*",
     "grunt-npm-helper": "0.0.2",
     "grunt-npm2bower-sync": "^0.4.0",
@@ -60,6 +61,7 @@
     "jshint-full-path": "*",
     "mocha": "*",
     "mocha-phantomjs": "*",
-    "performance-now": "*"
+    "performance-now": "*",
+    "wolfy87-eventemitter": "*"
   }
 }

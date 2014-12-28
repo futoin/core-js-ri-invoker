@@ -194,5 +194,7 @@ exports.closeTestHttpServer = closeTestHttpServer;
 
 if ( require.main === module )
 {
-    createTestHttpServer();
+    createTestHttpServer(function(){
+        console.log('LISTENING');
+    });
 }
