@@ -405,6 +405,7 @@
                     var AdvancedCCM = FutoInInvoker.AdvancedCCM;
                     window.AdvancedCCM = AdvancedCCM;
                     futoin.Invoker = FutoInInvoker;
+                    window.FutoInInvoker = FutoInInvoker;
                     window.FutoIn = futoin;
                     if (module) {
                         module.exports = FutoInInvoker;
