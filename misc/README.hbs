@@ -1,5 +1,10 @@
 [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
 
+# WARNING
+
+This project is in **active development** and *is not feature-complete yet*, but is already **mature enough**.
+The documentation of this specific implementation is not complete either.
+
 # FutoIn reference implementation
 
 Reference implementation of:
@@ -11,6 +16,60 @@ Spec: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/previ
 
 [Web Site](http://futoin.org/)
 
+[FTN3: FutoIn Interface Definition](http://specs.futoin.org/final/preview/ftn3_iface_definition.html).
+
+# About
+
+FutoIn Invoker is a peer which initiates a request - invokes a FutoIn interface method
+as described in [FTN3: FutoIn Interface Definition](http://specs.futoin.org/final/preview/ftn3_iface_definition.html).
+It is not necessary a client - e.g. server may initiate request for event delivery to client.
+
+The method can be implemented locally or remotely - it is transparent to invoking code.
+A similar concept can be found in CORBA and other more heavy request brokers.
+
+Strict FutoIn interface (iface) definition and transport protocol is defined in FTN3 spec mentioned above.
+**As it is based on JSON, both client and server can be implemented in a few minutes almost in
+any technology.** *However, Invoker and Executor concept provide significant benefits for 
+efficiency, reliability and error control.*
+
+**The core of invoker is CCM - Connection and Credentials Manager**.
+It has the following advantages:
+
+* A single place to configure & hold sensitive data (like credentials)
+* Transparent connection management (no need for special connect/request/response/disconnect logic)
+* Efficient use of communications (keep-alive, persistent WebSockets channels,
+    channel-based instead of message-based security, etc.)
+* Inversion of Control / Dependency Injection - implementations are referenced by 
+    static names like "mymodule.some.service" in code. The rest is hidden in CCM configuration.
+
+The primary communication channel is WebSockets. Large raw data upload and download
+is also supported through automatic fallback to HTTP(S).
+
+SimpleCCM - a light version without heavy processing of iface definition (ideal for browser)
+AdvancedCCM - full featured CCM (extends SimpleCCM)
+
+*Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
+is already available in JS and PHP. Hopefully, others are upcoming*
+
+
+# Installation for Node.js
+
+Command line:
+```sh
+$ npm install futoin-invoker --save
+```
+
+# Installation for Browser
+
+```sh
+$ bower install futoin-invoker --save
+```
+
+Note: there are the following globals available:
+
+* SimpleCCM - global reference to futoin-invoker.SimpleCCM class
+* AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
+* futoin.Invoker - global reference to futoin-invoker module
 
     
 # API documentation
