@@ -38,5 +38,9 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/futoin/core-js-ri-invoker"
+  },
+  "dependencies": {
+    "futoin-asyncsteps": "*",
+    "lodash": "*"
   }
 }
