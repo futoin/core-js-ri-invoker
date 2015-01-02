@@ -885,6 +885,51 @@
                             info.funcs = _.cloneDeep(raw_spec.funcs || {});
                             info.types = _.cloneDeep(raw_spec.types || {});
                         }
+                        spectools._parseFuncs(as, info);
+                        if ('requires' in raw_spec) {
+                            var requires = raw_spec.requires;
+                            if (!Array.isArray(requires)) {
+                                as.error(FutoInError.InternalError, '"requires" is not array');
+                            }
+                            info.constraints = _.object(requires, requires);
+                        } else {
+                            info.constraints = {};
+                        }
+                        info.inherits = [];
+                        if ('inherit' in raw_spec) {
+                            var m = raw_spec.inherit.match(common._ifacever_pattern);
+                            if (m === null) {
+                                as.error(FutoInError.InvokerError, 'Invalid inherit ifacever: ' + raw_spec.inherit);
+                            }
+                            var sup_info = {};
+                            sup_info.iface = m[1];
+                            sup_info.version = m[4];
+                            spectools.loadSpec(as, sup_info, specdirs);
+                            as.add(function (as) {
+                                spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
+                            });
+                        }
+                        if ('imports' in raw_spec) {
+                            info.imports = raw_spec.imports.slice();
+                            as.forEach(raw_spec.imports, function (as, k, v) {
+                                var m = v.match(common._ifacever_pattern);
+                                if (m === null) {
+                                    as.error(FutoInError.InvokerError, 'Invalid import ifacever: ' + v);
+                                }
+                                var imp_info = {};
+                                imp_info.iface = m[1];
+                                imp_info.version = m[4];
+                                spectools.loadSpec(as, imp_info, specdirs);
+                                as.add(function (as) {
+                                    Array.prototype.push.apply(info.imports, imp_info.imports);
+                                    spectools._parseImport(as, info, specdirs, raw_spec, imp_info);
+                                });
+                            });
+                        } else {
+                            info.imports = [];
+                        }
+                    },
+                    _parseFuncs: function (as, info) {
                         var finfo;
                         var pn;
                         for (var f in info.funcs) {
@@ -950,48 +995,6 @@
                             } else {
                                 finfo.throws = {};
                             }
-                        }
-                        if ('requires' in raw_spec) {
-                            var requires = raw_spec.requires;
-                            if (!Array.isArray(requires)) {
-                                as.error(FutoInError.InternalError, '"requires" is not array');
-                            }
-                            info.constraints = _.object(requires, requires);
-                        } else {
-                            info.constraints = {};
-                        }
-                        info.inherits = [];
-                        if ('inherit' in raw_spec) {
-                            var m = raw_spec.inherit.match(common._ifacever_pattern);
-                            if (m === null) {
-                                as.error(FutoInError.InvokerError, 'Invalid inherit ifacever: ' + raw_spec.inherit);
-                            }
-                            var sup_info = {};
-                            sup_info.iface = m[1];
-                            sup_info.version = m[4];
-                            spectools.loadSpec(as, sup_info, specdirs);
-                            as.add(function (as) {
-                                spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
-                            });
-                        }
-                        if ('imports' in raw_spec) {
-                            info.imports = raw_spec.imports.slice();
-                            as.forEach(raw_spec.imports, function (as, k, v) {
-                                var m = v.match(common._ifacever_pattern);
-                                if (m === null) {
-                                    as.error(FutoInError.InvokerError, 'Invalid import ifacever: ' + v);
-                                }
-                                var imp_info = {};
-                                imp_info.iface = m[1];
-                                imp_info.version = m[4];
-                                spectools.loadSpec(as, imp_info, specdirs);
-                                as.add(function (as) {
-                                    Array.prototype.push.apply(info.imports, imp_info.imports);
-                                    spectools._parseImport(as, info, specdirs, raw_spec, imp_info);
-                                });
-                            });
-                        } else {
-                            info.imports = [];
                         }
                     },
                     _parseInherit: function (as, info, specdirs, raw_spec, sup_info) {
