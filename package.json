@@ -1,7 +1,7 @@
 {
   "name": "futoin-invoker",
   "version": "0.2.0",
-  "description": "FutoIn Invoker - Reference Implementation",
+  "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition",
   "main": "lib/invoker.js",
   "browser": "dist/invoker-amd.js",
   "scripts": {
@@ -40,6 +40,7 @@
     "futoin-asyncsteps": "^1",
     "keep-alive-agent": "*",
     "lodash": "*",
+    "request": "^2.51.0",
     "ws": "^0.4.32"
   },
   "devDependencies": {

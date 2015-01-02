@@ -25,7 +25,7 @@
       "email": "andrey@futoin.eu"
     }
   ],
-  "description": "FutoIn Invoker - Reference Implementation",
+  "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition",
   "keywords": [
     "futoin",
     "async",

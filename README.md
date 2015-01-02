@@ -1,4 +1,11 @@
-[![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
+
+    [![NPM Version](https://img.shields.io/npm/v/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
+    [![NPM Downloads](https://img.shields.io/npm/dm/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
+    [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
+
+    [![NPM](https://nodei.co/npm/futoin-invoker.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-invoker/)
+
+**[Stability: 2 - Unstable](http://nodejs.org/api/documentation.html)**
 
 # WARNING
 
@@ -10,9 +17,14 @@ The documentation of this specific implementation is not complete either.
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.2
+    Version: 1.3
     
-Spec: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
+    FTN3: FutoIn Interface Definition
+    Version: 1.1
+
+    
+Spec FTN7: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
+Spec FTN3: [FTN3: FutoIn Interface Definition v1.x](http://specs.futoin.org/final/preview/ftn3_iface_definition.html)
 
 [Web Site](http://futoin.org/)
 
@@ -96,8 +108,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 
 **Classes**
 
-* [class: spectools](#spectools)
-  * [new spectools()](#new_spectools)
 * [class: InterfaceInfo](#InterfaceInfo)
   * [new InterfaceInfo()](#new_InterfaceInfo)
   * [interfaceInfo.name()](#InterfaceInfo#name)
@@ -111,6 +121,15 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
   * [nativeIface.burst()](#NativeIface#burst)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
+* [class: spectools](#spectools)
+  * [new spectools()](#new_spectools)
+  * [spectools.loadSpec(as, info, specdirs)](#spectools.loadSpec)
+  * [spectools.parseSpec(as, info, specdirs, raw_spec)](#spectools.parseSpec)
+  * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
+  * [spectools.checkType(info, type, val)](#spectools.checkType)
+  * [spectools.checkParameterType(as, info, varname, type, value)](#spectools.checkParameterType)
+  * [spectools.checkResultType(as, info, varname, type, value)](#spectools.checkResultType)
+  * [const: spectools.standard_errors](#spectools.standard_errors)
 
 **Members**
 
@@ -199,17 +218,6 @@ Useful base for custom implementation of NativeIface
 ###new futoin-invoker.InterfaceInfo()
 NativeInterface.ifaceInfo() class for custom implementations of NativeIface
 
-<a name="spectools"></a>
-#class: spectools
-**Members**
-
-* [class: spectools](#spectools)
-  * [new spectools()](#new_spectools)
-
-<a name="new_spectools"></a>
-##new spectools()
-SpecTools
-
 <a name="InterfaceInfo"></a>
 #class: InterfaceInfo
 **Members**
@@ -293,6 +301,97 @@ Returns extended API interface as defined in [FTN10 Burst Calls][]
 <a name="NativeIface#bindDerivedKey"></a>
 ##nativeIface.bindDerivedKey()
 Results with DerivedKeyAccessor through as.success()
+
+<a name="spectools"></a>
+#class: spectools
+**Members**
+
+* [class: spectools](#spectools)
+  * [new spectools()](#new_spectools)
+  * [spectools.loadSpec(as, info, specdirs)](#spectools.loadSpec)
+  * [spectools.parseSpec(as, info, specdirs, raw_spec)](#spectools.parseSpec)
+  * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
+  * [spectools.checkType(info, type, val)](#spectools.checkType)
+  * [spectools.checkParameterType(as, info, varname, type, value)](#spectools.checkParameterType)
+  * [spectools.checkResultType(as, info, varname, type, value)](#spectools.checkResultType)
+  * [const: spectools.standard_errors](#spectools.standard_errors)
+
+<a name="new_spectools"></a>
+##new spectools()
+SpecTools
+
+<a name="spectools.loadSpec"></a>
+##spectools.loadSpec(as, info, specdirs)
+Load FutoIn iface definition.
+
+NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
+
+**Params**
+
+- as `AsyncSteps`  
+- info `Object` - destination object with "iface" and "version" fields already set  
+- specdirs `Array` - each element - search path/url (string) or raw iface (object)  
+
+<a name="spectools.parseSpec"></a>
+##spectools.parseSpec(as, info, specdirs, raw_spec)
+Parse raw futoin spec (preloaded)
+
+**Params**
+
+- as `AsyncSteps`  
+- info `Object` - destination object with "iface" and "version" fields already set  
+- specdirs `Array` - each element - search path/url (string) or raw iface (object)  
+- raw_spec `Object` - iface definition object  
+
+<a name="spectools.checkConsistency"></a>
+##spectools.checkConsistency(as, info)
+Deeply check consistency of loaded interface.
+
+NOTE: not yet implemented
+
+**Params**
+
+- as `AsyncSteps`  
+- info `Object` - previously loaded iface  
+
+<a name="spectools.checkType"></a>
+##spectools.checkType(info, type, val)
+Check if value matches required type
+
+**Params**
+
+- info `Object` - previously loaded iface  
+- type `string` - standard or custom iface type  
+- val `*` - value to check  
+
+**Returns**: `Boolean`  
+<a name="spectools.checkParameterType"></a>
+##spectools.checkParameterType(as, info, varname, type, value)
+Check if parameter value matches required type
+
+**Params**
+
+- as `AsyncSteps`  
+- info `Object` - previously loaded iface  
+- varname `string` - parameter name  
+- type `string` - standard or custom iface type  
+- value `*` - value to check  
+
+<a name="spectools.checkResultType"></a>
+##spectools.checkResultType(as, info, varname, type, value)
+Check if result value matches required type
+
+**Params**
+
+- as `AsyncSteps`  
+- info `Object` - previously loaded iface  
+- varname `string` - result variable name  
+- type `string` - standard or custom iface type  
+- value `*` - value to check  
+
+<a name="spectools.standard_errors"></a>
+##const: spectools.standard_errors
+Enumeration of standard errors
 
 <a name="SimpleCCM"></a>
 #SimpleCCM

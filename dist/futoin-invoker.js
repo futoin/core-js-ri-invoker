@@ -27,268 +27,14 @@
     _require.modules = [
         function (module, exports) {
             'use strict';
+            var spectools = _require(7);
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var optname = common.Options;
             var simpleccm_impl = _require(6);
-            var fs;
-            var isNode = _require(7);
-            var _ = _require(9);
-            if (isNode) {
-                var hidereq = require;
-                fs = hidereq('fs');
-            }
             exports = module.exports = function (options) {
                 return new module.exports.AdvancedCCMImpl(options);
             };
-            var spectools = {
-                    standard_errors: {
-                        UnknownInterface: true,
-                        NotSupportedVersion: true,
-                        NotImplemented: true,
-                        Unauthorized: true,
-                        InternalError: true,
-                        InvalidRequest: true,
-                        DefenseRejected: true,
-                        PleaseReauth: true,
-                        SecurityError: true
-                    },
-                    loadSpec: function (as, info, specdirs) {
-                        var raw_spec = null;
-                        as.forEach(specdirs, function (as, k, v) {
-                            var fn = info.iface + '-' + info.version + '-iface.json';
-                            as.add(function (read_as) {
-                                if (typeof v !== 'string' || !isNode) {
-                                    return;
-                                }
-                                v = v + '/' + fn;
-                                fs.readFile(v, { encoding: 'utf8' }, function (err, data) {
-                                    if (!err) {
-                                        v = JSON.parse(data);
-                                        if (read_as) {
-                                            read_as.success();
-                                        }
-                                    } else if (read_as) {
-                                        try {
-                                            read_as.continue();
-                                        } catch (e) {
-                                        }
-                                    }
-                                });
-                                read_as.setCancel(function (as) {
-                                    void as;
-                                    read_as = null;
-                                });
-                            }).add(function (as) {
-                                if (typeof v !== 'string' || isNode) {
-                                    return;
-                                }
-                                v = v + '/' + fn;
-                                var httpreq = new XMLHttpRequest();
-                                httpreq.onreadystatechange = function () {
-                                    if (this.readyState !== this.DONE) {
-                                        return;
-                                    }
-                                    var response = this.responseText;
-                                    if (response) {
-                                        try {
-                                            v = JSON.parse(response);
-                                            as.success();
-                                            return;
-                                        } catch (e) {
-                                        }
-                                    }
-                                    try {
-                                        as.continue();
-                                    } catch (ex) {
-                                    }
-                                };
-                                httpreq.open('GET', v, true);
-                                httpreq.send();
-                                as.setCancel(function (as) {
-                                    void as;
-                                    httpreq.abort();
-                                });
-                            }).add(function (as) {
-                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version && 'funcs' in v) {
-                                    raw_spec = v;
-                                    as.break();
-                                }
-                            });
-                        }).add(function (as) {
-                            if (raw_spec === null) {
-                                as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
-                            }
-                            spectools._parseSpec(as, info, specdirs, raw_spec);
-                        });
-                    },
-                    _parseSpec: function (as, info, specdirs, raw_spec) {
-                        info.funcs = _.cloneDeep(raw_spec.funcs);
-                        var finfo;
-                        var pn;
-                        for (var f in info.funcs) {
-                            finfo = info.funcs[f];
-                            finfo.min_args = 0;
-                            if ('params' in finfo) {
-                                var fparams = finfo.params;
-                                if (typeof fparams !== 'object') {
-                                    as.error(FutoInError.InternalError, 'Invalid params object');
-                                }
-                                for (pn in fparams) {
-                                    var pinfo = fparams[pn];
-                                    if (typeof pinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid param object');
-                                    }
-                                    if (!('type' in pinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for params');
-                                    }
-                                    if (!('default' in pinfo)) {
-                                        finfo.min_args += 1;
-                                    }
-                                }
-                            } else {
-                                finfo.params = {};
-                            }
-                            finfo.expect_result = false;
-                            if ('result' in finfo) {
-                                var fresult = finfo.result;
-                                if (typeof fresult !== 'object') {
-                                    as.error(FutoInError.InternalError, 'Invalid result object');
-                                }
-                                for (var rn in fresult) {
-                                    var rinfo = fresult[rn];
-                                    if (typeof rinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid resultvar object');
-                                    }
-                                    if (!('type' in rinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for result');
-                                    }
-                                    finfo.expect_result = true;
-                                }
-                            } else {
-                                finfo.result = {};
-                            }
-                            if (!('rawupload' in finfo)) {
-                                finfo.rawupload = false;
-                            }
-                            if (!('rawresult' in finfo)) {
-                                finfo.rawresult = false;
-                            }
-                            if (finfo.rawresult) {
-                                finfo.expect_result = true;
-                            }
-                            if ('throws' in finfo) {
-                                if (!finfo.expect_result) {
-                                    as.error(FutoInError.InternalError, '"throws" without result');
-                                }
-                                var throws = finfo.throws;
-                                if (!Array.isArray(throws)) {
-                                    as.error(FutoInError.InternalError, '"throws" is not array');
-                                }
-                                finfo.throws = _.object(throws, throws);
-                            } else {
-                                finfo.throws = {};
-                            }
-                        }
-                        if ('requires' in raw_spec) {
-                            var requires = raw_spec.requires;
-                            if (!Array.isArray(requires)) {
-                                as.error(FutoInError.InternalError, '"requires" is not array');
-                            }
-                            info.constraints = _.object(requires, requires);
-                        } else {
-                            info.constraints = {};
-                        }
-                        info.inherits = [];
-                        if (!('inherit' in raw_spec)) {
-                            return;
-                        }
-                        var sup_info = {};
-                        var m = raw_spec.inherit.match(common._ifacever_pattern);
-                        if (m === null) {
-                            as.error(FutoInError.InvokerError, 'Invalid inherit ifacever: ' + raw_spec.inherit);
-                        }
-                        sup_info.iface = m[1];
-                        sup_info.version = m[4];
-                        spectools.loadSpec(as, sup_info, specdirs);
-                        as.add(function (as) {
-                            spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
-                        });
-                    },
-                    _parseInherit: function (as, info, specdirs, raw_spec, sup_info) {
-                        var i;
-                        var pn;
-                        for (var f in sup_info.funcs) {
-                            var fdef = sup_info.funcs[f];
-                            if (!(f in info.funcs)) {
-                                info.funcs[f] = fdef;
-                                continue;
-                            }
-                            var sup_params = fdef.params;
-                            var params = info.funcs[f].params;
-                            var sup_params_keys = Object.keys(sup_params);
-                            var params_keys = Object.keys(params);
-                            if (params_keys.length < sup_params_keys.length) {
-                                as.error(FutoInError.InternalError, 'Invalid param count for \'' + f + '\'');
-                            }
-                            for (i = 0; i < sup_params_keys.length; ++i) {
-                                pn = sup_params_keys[i];
-                                if (pn !== params_keys[i]) {
-                                    as.error(FutoInError.InternalError, 'Invalid param order for \'' + f + '/' + pn + '\'');
-                                }
-                                if (sup_params[pn].type !== params[pn].type) {
-                                    as.error(FutoInError.InternalError, 'Param type mismatch \'' + f + '/' + pn + '\'');
-                                }
-                            }
-                            for (; i < params_keys.length; ++i) {
-                                pn = params_keys[i];
-                                if (!(pn in sup_params) && !('default' in params[pn] || params[pn] === null)) {
-                                    as.error(FutoInError.InternalError, 'Missing default for \'' + f + '/' + pn + '\'');
-                                }
-                            }
-                            if (fdef.rawresult !== info.funcs[f].rawresult) {
-                                as.error(FutoInError.InternalError, '\'rawresult\' flag mismatch for \'' + f + '\'');
-                            }
-                            if (fdef.rawupload && !info.funcs[f].rawupload) {
-                                as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
-                            }
-                        }
-                        info.inherits.push(raw_spec.inherit);
-                        info.inherits = info.inherits.concat(sup_info.inherits);
-                        if (_.difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
-                            as.error(FutoInError.InternalError, 'Missing constraints from inherited');
-                        }
-                    },
-                    checkFutoInType: function (as, type, varname, val) {
-                        var rtype = '';
-                        switch (type) {
-                        case 'boolean':
-                        case 'string':
-                            rtype = type;
-                            break;
-                        case 'map':
-                            rtype = 'object';
-                            break;
-                        case 'number':
-                            rtype = 'number';
-                            break;
-                        case 'integer':
-                            if (typeof val !== 'number' || (val | 0) !== val) {
-                                as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
-                            }
-                            return;
-                        case 'array':
-                            if (!(val instanceof Array)) {
-                                as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
-                            }
-                            return;
-                        }
-                        if (typeof val !== rtype) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
-                        }
-                    }
-                };
-            exports.SpecTools = spectools;
             function AdvancedCCMImpl(options) {
                 options = options || {};
                 var spec_dirs = options[optname.OPT_SPEC_DIRS] || [];
@@ -301,6 +47,9 @@
             AdvancedCCMImpl.prototype = {
                 onRegister: function (as, info) {
                     spectools.loadSpec(as, info, this.options[optname.OPT_SPEC_DIRS]);
+                    if (!this.options[optname.OPT_PROD_MODE]) {
+                        spectools.checkConsistency(as, info);
+                    }
                 },
                 checkParams: function (as, ctx, params) {
                     var info = ctx.info;
@@ -326,7 +75,7 @@
                         if (!finfo.params.hasOwnProperty(k)) {
                             as.error(FutoInError.InvokerError, 'Unknown parameter ' + k);
                         }
-                        spectools.checkFutoInType(as, finfo.params[k].type, k, params[k]);
+                        spectools.checkParameterType(as, info, k, finfo.params[k].type, params[k]);
                     }
                     for (k in finfo.params) {
                         if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
@@ -372,7 +121,7 @@
                     var rescount = Object.keys(resvars).length;
                     for (var k in rsp.r) {
                         if (resvars.hasOwnProperty(k)) {
-                            spectools.checkFutoInType(as, resvars[k].type, k, rsp.r[k]);
+                            spectools.checkResultType(as, info, k, resvars[k].type, rsp.r[k]);
                             --rescount;
                         }
                     }
@@ -415,7 +164,7 @@
         },
         function (module, exports) {
             'use strict';
-            var EventEmitter = _require(10);
+            var EventEmitter = _require(11);
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var optname = common.Options;
@@ -582,7 +331,7 @@
         },
         function (module, exports) {
             'use strict';
-            var async_steps = _require(8);
+            var async_steps = _require(9);
             exports.AsyncSteps = async_steps;
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
@@ -599,9 +348,10 @@
             var common = _require(3);
             var futoin_error = common.FutoInError;
             var native_iface = _require(5);
-            var _ = _require(9);
+            var _ = _require(10);
             var simple_ccm = _require(6);
             var advanced_ccm = _require(0);
+            var spectools = _require(7);
             var SimpleCCMPublic = {
                     SVC_RESOLVER: '#resolver',
                     SVC_AUTH: '#auth',
@@ -782,13 +532,13 @@
             exports.FutoInError = futoin_error;
             exports.NativeIface = native_iface.NativeIface;
             exports.InterfaceInfo = native_iface.InterfaceInfo;
-            exports.SpecTools = advanced_ccm.SpecTools;
+            exports.SpecTools = spectools;
             exports.SpecTools._ifacever_pattern = common._ifacever_pattern;
         },
         function (module, exports) {
             'use strict';
             var invoker = _require(4);
-            var _ = _require(9);
+            var _ = _require(10);
             exports = module.exports = function (ccmimpl, info) {
                 return new module.exports.NativeIface(ccmimpl, info);
             };
@@ -932,8 +682,8 @@
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var optname = common.Options;
-            var isNode = _require(7);
-            var _ = _require(9);
+            var isNode = _require(8);
+            var _ = _require(10);
             var comms;
             if (isNode) {
                 var hidereq = require;
@@ -1003,6 +753,409 @@
                 }
             };
             exports.SimpleCCMImpl = SimpleCCMImpl;
+        },
+        function (module, exports) {
+            'use strict';
+            var common = _require(3);
+            var FutoInError = common.FutoInError;
+            var fs;
+            var request;
+            var isNode = _require(8);
+            var _ = _require(10);
+            if (isNode) {
+                var hidereq = require;
+                fs = hidereq('fs');
+                request = hidereq('request');
+            }
+            var spectools = {
+                    standard_errors: {
+                        UnknownInterface: true,
+                        NotSupportedVersion: true,
+                        NotImplemented: true,
+                        Unauthorized: true,
+                        InternalError: true,
+                        InvalidRequest: true,
+                        DefenseRejected: true,
+                        PleaseReauth: true,
+                        SecurityError: true
+                    },
+                    loadSpec: function (as, info, specdirs) {
+                        var raw_spec = null;
+                        as.forEach(specdirs, function (as, k, v) {
+                            var fn = info.iface + '-' + info.version + '-iface.json';
+                            as.add(function (read_as) {
+                                if (typeof v !== 'string' || !isNode) {
+                                    return;
+                                }
+                                var uri = v + '/' + fn;
+                                var on_read = function (data) {
+                                    if (!read_as) {
+                                        return;
+                                    }
+                                    try {
+                                        v = JSON.parse(data);
+                                        v._just_loaded = true;
+                                        read_as.success();
+                                        return;
+                                    } catch (e) {
+                                    }
+                                    try {
+                                        read_as.continue();
+                                    } catch (e) {
+                                    }
+                                };
+                                if (uri.substr(0, 4) === 'http') {
+                                    request(uri, function (error, response, body) {
+                                        on_read(body);
+                                    });
+                                } else {
+                                    fs.readFile(uri, { encoding: 'utf8' }, function (err, data) {
+                                        on_read(data);
+                                    });
+                                }
+                                read_as.setCancel(function (as) {
+                                    void as;
+                                    read_as = null;
+                                });
+                            }).add(function (as) {
+                                if (typeof v !== 'string' || isNode) {
+                                    return;
+                                }
+                                var uri = v + '/' + fn;
+                                var httpreq = new XMLHttpRequest();
+                                httpreq.onreadystatechange = function () {
+                                    if (this.readyState !== this.DONE) {
+                                        return;
+                                    }
+                                    var response = this.responseText;
+                                    if (response) {
+                                        try {
+                                            v = JSON.parse(response);
+                                            v._just_loaded = true;
+                                            as.success();
+                                            return;
+                                        } catch (e) {
+                                        }
+                                    }
+                                    try {
+                                        as.continue();
+                                    } catch (ex) {
+                                    }
+                                };
+                                httpreq.open('GET', uri, true);
+                                httpreq.send();
+                                as.setCancel(function (as) {
+                                    void as;
+                                    httpreq.abort();
+                                });
+                            }).add(function (as) {
+                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version && 'funcs' in v) {
+                                    raw_spec = v;
+                                    as.break();
+                                }
+                            });
+                        }).add(function (as) {
+                            if (raw_spec === null) {
+                                as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
+                            }
+                            spectools.parseSpec(as, info, specdirs, raw_spec);
+                        });
+                    },
+                    parseSpec: function (as, info, specdirs, raw_spec) {
+                        if (raw_spec._just_loaded) {
+                            info.funcs = raw_spec.funcs || {};
+                            info.types = raw_spec.types || {};
+                        } else {
+                            info.funcs = _.cloneDeep(raw_spec.funcs || {});
+                            info.types = _.cloneDeep(raw_spec.types || {});
+                        }
+                        var finfo;
+                        var pn;
+                        for (var f in info.funcs) {
+                            finfo = info.funcs[f];
+                            finfo.min_args = 0;
+                            if ('params' in finfo) {
+                                var fparams = finfo.params;
+                                if (typeof fparams !== 'object') {
+                                    as.error(FutoInError.InternalError, 'Invalid params object');
+                                }
+                                for (pn in fparams) {
+                                    var pinfo = fparams[pn];
+                                    if (typeof pinfo !== 'object') {
+                                        as.error(FutoInError.InternalError, 'Invalid param object');
+                                    }
+                                    if (!('type' in pinfo)) {
+                                        as.error(FutoInError.InternalError, 'Missing type for params');
+                                    }
+                                    if (!('default' in pinfo)) {
+                                        finfo.min_args += 1;
+                                    }
+                                }
+                            } else {
+                                finfo.params = {};
+                            }
+                            finfo.expect_result = false;
+                            if ('result' in finfo) {
+                                var fresult = finfo.result;
+                                if (typeof fresult !== 'object') {
+                                    as.error(FutoInError.InternalError, 'Invalid result object');
+                                }
+                                for (var rn in fresult) {
+                                    var rinfo = fresult[rn];
+                                    if (typeof rinfo !== 'object') {
+                                        as.error(FutoInError.InternalError, 'Invalid resultvar object');
+                                    }
+                                    if (!('type' in rinfo)) {
+                                        as.error(FutoInError.InternalError, 'Missing type for result');
+                                    }
+                                    finfo.expect_result = true;
+                                }
+                            } else {
+                                finfo.result = {};
+                            }
+                            if (!('rawupload' in finfo)) {
+                                finfo.rawupload = false;
+                            }
+                            if (!('rawresult' in finfo)) {
+                                finfo.rawresult = false;
+                            }
+                            if (finfo.rawresult) {
+                                finfo.expect_result = true;
+                            }
+                            if ('throws' in finfo) {
+                                if (!finfo.expect_result) {
+                                    as.error(FutoInError.InternalError, '"throws" without result');
+                                }
+                                var throws = finfo.throws;
+                                if (!Array.isArray(throws)) {
+                                    as.error(FutoInError.InternalError, '"throws" is not array');
+                                }
+                                finfo.throws = _.object(throws, throws);
+                            } else {
+                                finfo.throws = {};
+                            }
+                        }
+                        if ('requires' in raw_spec) {
+                            var requires = raw_spec.requires;
+                            if (!Array.isArray(requires)) {
+                                as.error(FutoInError.InternalError, '"requires" is not array');
+                            }
+                            info.constraints = _.object(requires, requires);
+                        } else {
+                            info.constraints = {};
+                        }
+                        info.inherits = [];
+                        if ('inherit' in raw_spec) {
+                            var m = raw_spec.inherit.match(common._ifacever_pattern);
+                            if (m === null) {
+                                as.error(FutoInError.InvokerError, 'Invalid inherit ifacever: ' + raw_spec.inherit);
+                            }
+                            var sup_info = {};
+                            sup_info.iface = m[1];
+                            sup_info.version = m[4];
+                            spectools.loadSpec(as, sup_info, specdirs);
+                            as.add(function (as) {
+                                spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
+                            });
+                        }
+                        if ('imports' in raw_spec) {
+                            info.imports = raw_spec.imports.slice();
+                            as.forEach(raw_spec.imports, function (as, k, v) {
+                                var m = v.match(common._ifacever_pattern);
+                                if (m === null) {
+                                    as.error(FutoInError.InvokerError, 'Invalid import ifacever: ' + v);
+                                }
+                                var imp_info = {};
+                                imp_info.iface = m[1];
+                                imp_info.version = m[4];
+                                spectools.loadSpec(as, imp_info, specdirs);
+                                as.add(function (as) {
+                                    Array.prototype.push.apply(info.imports, imp_info.imports);
+                                    spectools._parseImport(as, info, specdirs, raw_spec, imp_info);
+                                });
+                            });
+                        } else {
+                            info.imports = [];
+                        }
+                    },
+                    _parseInherit: function (as, info, specdirs, raw_spec, sup_info) {
+                        var i;
+                        var pn;
+                        for (var t in sup_info.types) {
+                            if (t in info.types) {
+                                as.error(FutoInError.InternalError, 'Iface type redifintion: ' + t);
+                                continue;
+                            }
+                            info.types[t] = sup_info.types[t];
+                        }
+                        for (var f in sup_info.funcs) {
+                            var fdef = sup_info.funcs[f];
+                            if (!(f in info.funcs)) {
+                                info.funcs[f] = fdef;
+                                continue;
+                            }
+                            var sup_params = fdef.params;
+                            var params = info.funcs[f].params;
+                            var sup_params_keys = Object.keys(sup_params);
+                            var params_keys = Object.keys(params);
+                            if (params_keys.length < sup_params_keys.length) {
+                                as.error(FutoInError.InternalError, 'Invalid param count for \'' + f + '\'');
+                            }
+                            for (i = 0; i < sup_params_keys.length; ++i) {
+                                pn = sup_params_keys[i];
+                                if (pn !== params_keys[i]) {
+                                    as.error(FutoInError.InternalError, 'Invalid param order for \'' + f + '/' + pn + '\'');
+                                }
+                                if (sup_params[pn].type !== params[pn].type) {
+                                    as.error(FutoInError.InternalError, 'Param type mismatch \'' + f + '/' + pn + '\'');
+                                }
+                            }
+                            for (; i < params_keys.length; ++i) {
+                                pn = params_keys[i];
+                                if (!(pn in sup_params) && !('default' in params[pn] || params[pn] === null)) {
+                                    as.error(FutoInError.InternalError, 'Missing default for \'' + f + '/' + pn + '\'');
+                                }
+                            }
+                            if (fdef.rawresult !== info.funcs[f].rawresult) {
+                                as.error(FutoInError.InternalError, '\'rawresult\' flag mismatch for \'' + f + '\'');
+                            }
+                            if (fdef.rawupload && !info.funcs[f].rawupload) {
+                                as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
+                            }
+                        }
+                        info.inherits.push(raw_spec.inherit);
+                        info.inherits = info.inherits.concat(sup_info.inherits);
+                        if (_.difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
+                            as.error(FutoInError.InternalError, 'Missing constraints from inherited');
+                        }
+                    },
+                    _parseImport: function (as, info, specdirs, raw_spec, imp_info) {
+                        for (var t in imp_info.types) {
+                            if (t in info.types) {
+                                continue;
+                            }
+                            info.types[t] = imp_info.types[t];
+                        }
+                        for (var f in imp_info.funcs) {
+                            if (f in info.funcs) {
+                                continue;
+                            }
+                            info.funcs[f] = imp_info.funcs[f];
+                        }
+                    },
+                    checkConsistency: function (as, info) {
+                        void as;
+                        void info;
+                    },
+                    checkType: function (info, type, val, _type_stack) {
+                        switch (type) {
+                        case 'any':
+                            return true;
+                        case 'boolean':
+                        case 'string':
+                        case 'number':
+                            return typeof val === type;
+                        case 'map':
+                            return typeof val === 'object';
+                        case 'integer':
+                            return typeof val === 'number' && (val | 0) === val;
+                        case 'array':
+                            return val instanceof Array;
+                        default:
+                            if (!('types' in info) || !(type in info.types)) {
+                                return false;
+                            }
+                        }
+                        if (type in info.types) {
+                            var tdef = info.types[type];
+                            _type_stack = _type_stack || {};
+                            var base_type = tdef.type;
+                            if (base_type in _type_stack) {
+                                if (console) {
+                                    console.log('[ERROR] Custom type recursion: ' + tdef);
+                                }
+                                throw new Error(FutoInError.InternalError);
+                            }
+                            _type_stack[type] = true;
+                            if (!this.checkType(info, base_type, val, _type_stack)) {
+                                return false;
+                            }
+                            switch (base_type) {
+                            case 'integer':
+                            case 'number':
+                                if ('min' in tdef && val < tdef.min) {
+                                    return false;
+                                }
+                                if ('max' in tdef && val > tdef.max) {
+                                    return false;
+                                }
+                                return true;
+                            case 'string':
+                                if ('regex' in tdef) {
+                                    var _comp_regex;
+                                    if ('_comp_regex' in info) {
+                                        _comp_regex = {};
+                                        info._comp_regex = _comp_regex;
+                                    } else {
+                                        _comp_regex = info._comp_regex;
+                                    }
+                                    if (type in _comp_regex) {
+                                        _comp_regex[type] = new RegExp(tdef.regex);
+                                    }
+                                    return val.match(_comp_regex[type]) !== null;
+                                }
+                                return true;
+                            case 'array':
+                                var val_len = val.length;
+                                if ('minlen' in tdef && val_len < tdef.minlen) {
+                                    return false;
+                                }
+                                if ('maxlen' in tdef && val_len > tdef.maxlen) {
+                                    return false;
+                                }
+                                if ('elemtype' in tdef) {
+                                    for (var i = 0; i < val_len; ++i) {
+                                        if (!this.checkType(info, tdef.elemtype, val, [])) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return true;
+                            case 'map':
+                                if ('fields' in tdef) {
+                                    var fields = tdef.fields;
+                                    for (var f in fields) {
+                                        var field_def = fields[f];
+                                        if (!field_def.optional && f in val) {
+                                            return false;
+                                        }
+                                        if (!this.checkType(info, field_def.type, val[f], [])) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    checkParameterType: function (as, info, varname, type, value) {
+                        if (!spectools.checkType(info, type, value)) {
+                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
+                        }
+                    },
+                    checkResultType: function (as, info, varname, type, value) {
+                        if (!spectools.checkType(info, type, value)) {
+                            as.error(FutoInError.InvalidRequest, 'Type mismatch for result: ' + varname);
+                        }
+                    },
+                    checkFutoInType: function (as, type, varname, value) {
+                        if (!spectools.checkType({}, type, value)) {
+                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
+                        }
+                    }
+                };
+            module.exports = spectools;
         },
         function (module, exports) {
             module.exports = false;
