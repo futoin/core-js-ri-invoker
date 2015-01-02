@@ -426,7 +426,8 @@
                         inherits: null,
                         funcs: null,
                         constraints: null,
-                        options: options
+                        options: options,
+                        _invoker_use: true
                     };
                 this._iface_info[name] = info;
                 this._impl.onRegister(as, info);
@@ -862,6 +863,21 @@
                         });
                     },
                     parseSpec: function (as, info, specdirs, raw_spec) {
+                        if (raw_spec.ftn3rev) {
+                            var rv = raw_spec.ftn3rev.match(common._ifacever_pattern);
+                            if (rv === null) {
+                                as.error(FutoInError.InternalError, 'Invalid ftn3rev field');
+                            }
+                            if (rv[5] === '1') {
+                                if (!info._invoker_use && rv[6] > 1) {
+                                    as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
+                                }
+                            } else {
+                                as.error(FutoInError.InternalError, 'Not supported FTN3 revision');
+                            }
+                        } else if (raw_spec.imports || raw_spec.types) {
+                            as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
+                        }
                         if (raw_spec._just_loaded) {
                             info.funcs = raw_spec.funcs || {};
                             info.types = raw_spec.types || {};
