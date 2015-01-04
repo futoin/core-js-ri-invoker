@@ -46,7 +46,7 @@
             }
             AdvancedCCMImpl.prototype = {
                 onRegister: function (as, info) {
-                    spectools.loadSpec(as, info, this.options[optname.OPT_SPEC_DIRS]);
+                    spectools.loadIface(as, info, this.options[optname.OPT_SPEC_DIRS]);
                     if (!this.options[optname.OPT_PROD_MODE]) {
                         spectools.checkConsistency(as, info);
                     }
@@ -75,7 +75,7 @@
                         if (!finfo.params.hasOwnProperty(k)) {
                             as.error(FutoInError.InvokerError, 'Unknown parameter ' + k);
                         }
-                        spectools.checkParameterType(as, info, k, finfo.params[k].type, params[k]);
+                        spectools.checkParameterType(as, info, name, k, params[k]);
                     }
                     for (k in finfo.params) {
                         if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
@@ -103,7 +103,8 @@
                 },
                 onMessageResponse: function (as, ctx, rsp) {
                     var info = ctx.info;
-                    var func_info = info.funcs[ctx.name];
+                    var name = ctx.name;
+                    var func_info = info.funcs[name];
                     if ('e' in rsp) {
                         var e = rsp.e;
                         if (e in func_info.throws || e in spectools.standard_errors) {
@@ -121,7 +122,7 @@
                     var rescount = Object.keys(resvars).length;
                     for (var k in rsp.r) {
                         if (resvars.hasOwnProperty(k)) {
-                            spectools.checkResultType(as, info, k, resvars[k].type, rsp.r[k]);
+                            spectools.checkResultType(as, info, name, k, rsp.r[k]);
                             --rescount;
                         }
                     }
@@ -780,7 +781,8 @@
                         PleaseReauth: true,
                         SecurityError: true
                     },
-                    loadSpec: function (as, info, specdirs) {
+                    _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
+                    loadIface: function (as, info, specdirs) {
                         var raw_spec = null;
                         as.forEach(specdirs, function (as, k, v) {
                             var fn = info.iface + '-' + info.version + '-iface.json';
@@ -850,7 +852,7 @@
                                     httpreq.abort();
                                 });
                             }).add(function (as) {
-                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version && 'funcs' in v) {
+                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version) {
                                     raw_spec = v;
                                     as.break();
                                 }
@@ -859,25 +861,11 @@
                             if (raw_spec === null) {
                                 as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
                             }
-                            spectools.parseSpec(as, info, specdirs, raw_spec);
+                            spectools.parseIface(as, info, specdirs, raw_spec);
                         });
                     },
-                    parseSpec: function (as, info, specdirs, raw_spec) {
-                        if (raw_spec.ftn3rev) {
-                            var rv = raw_spec.ftn3rev.match(common._ifacever_pattern);
-                            if (rv === null) {
-                                as.error(FutoInError.InternalError, 'Invalid ftn3rev field');
-                            }
-                            if (rv[5] === '1') {
-                                if (!info._invoker_use && rv[6] > 1) {
-                                    as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
-                                }
-                            } else {
-                                as.error(FutoInError.InternalError, 'Not supported FTN3 revision');
-                            }
-                        } else if (raw_spec.imports || raw_spec.types) {
-                            as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
-                        }
+                    parseIface: function (as, info, specdirs, raw_spec) {
+                        spectools._checkFTN3Rev(as, info, raw_spec);
                         if (raw_spec._just_loaded) {
                             info.funcs = raw_spec.funcs || {};
                             info.types = raw_spec.types || {};
@@ -886,6 +874,7 @@
                             info.types = _.cloneDeep(raw_spec.types || {});
                         }
                         spectools._parseFuncs(as, info);
+                        spectools._parseTypes(as, info);
                         if ('requires' in raw_spec) {
                             var requires = raw_spec.requires;
                             if (!Array.isArray(requires)) {
@@ -904,9 +893,11 @@
                             var sup_info = {};
                             sup_info.iface = m[1];
                             sup_info.version = m[4];
-                            spectools.loadSpec(as, sup_info, specdirs);
+                            spectools.loadIface(as, sup_info, specdirs);
                             as.add(function (as) {
-                                spectools._parseInherit(as, info, specdirs, raw_spec, sup_info);
+                                spectools._parseImportInherit(as, info, specdirs, raw_spec, sup_info);
+                                info.inherits.push(raw_spec.inherit);
+                                info.inherits = info.inherits.concat(sup_info.inherits);
                             });
                         }
                         if ('imports' in raw_spec) {
@@ -919,14 +910,37 @@
                                 var imp_info = {};
                                 imp_info.iface = m[1];
                                 imp_info.version = m[4];
-                                spectools.loadSpec(as, imp_info, specdirs);
+                                spectools.loadIface(as, imp_info, specdirs);
                                 as.add(function (as) {
-                                    Array.prototype.push.apply(info.imports, imp_info.imports);
-                                    spectools._parseImport(as, info, specdirs, raw_spec, imp_info);
+                                    spectools._parseImportInherit(as, info, specdirs, raw_spec, imp_info);
+                                    info.imports = info.imports.concat(imp_info.imports);
                                 });
                             });
                         } else {
                             info.imports = [];
+                        }
+                    },
+                    _checkFTN3Rev: function (as, info, raw_spec) {
+                        var ftn3rev = raw_spec.ftn3rev || '1.0';
+                        var rv = ftn3rev.match(spectools._ver_pattern);
+                        if (rv === null) {
+                            as.error(FutoInError.InternalError, 'Invalid ftn3rev field');
+                        }
+                        var mjr = parseInt(rv[1]);
+                        var mnr = parseInt(rv[2]);
+                        if (mjr === 1) {
+                            if (mnr < 1) {
+                                if (raw_spec.imports || raw_spec.types) {
+                                    as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
+                                }
+                            }
+                            if (mnr < 2) {
+                            }
+                            if (!info._invoker_use && mnr > 1) {
+                                as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
+                            }
+                        } else {
+                            as.error(FutoInError.InternalError, 'Not supported FTN3 revision');
                         }
                     },
                     _parseFuncs: function (as, info) {
@@ -997,7 +1011,27 @@
                             }
                         }
                     },
-                    _parseInherit: function (as, info, specdirs, raw_spec, sup_info) {
+                    _parseTypes: function (as, info) {
+                        var tinfo;
+                        for (var t in info.types) {
+                            tinfo = info.types[t];
+                            if (!('type' in tinfo)) {
+                                as.error(FutoInError.InternalError, 'Missing "type" for custom type');
+                            }
+                            if (tinfo.type === 'map') {
+                                if (!('fields' in tinfo)) {
+                                    tinfo.fields = {};
+                                    continue;
+                                }
+                                for (var f in tinfo.fields) {
+                                    if (!('type' in tinfo.fields[f])) {
+                                        as.error(FutoInError.InternalError, 'Missing "type" for custom type field');
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    _parseImportInherit: function (as, info, specdirs, raw_spec, sup_info) {
                         var i;
                         var pn;
                         for (var t in sup_info.types) {
@@ -1042,24 +1076,8 @@
                                 as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
                             }
                         }
-                        info.inherits.push(raw_spec.inherit);
-                        info.inherits = info.inherits.concat(sup_info.inherits);
                         if (_.difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
                             as.error(FutoInError.InternalError, 'Missing constraints from inherited');
-                        }
-                    },
-                    _parseImport: function (as, info, specdirs, raw_spec, imp_info) {
-                        for (var t in imp_info.types) {
-                            if (t in info.types) {
-                                continue;
-                            }
-                            info.types[t] = imp_info.types[t];
-                        }
-                        for (var f in imp_info.funcs) {
-                            if (f in info.funcs) {
-                                continue;
-                            }
-                            info.funcs[f] = imp_info.funcs[f];
                         }
                     },
                     checkConsistency: function (as, info) {
@@ -1067,6 +1085,9 @@
                         void info;
                     },
                     checkType: function (info, type, val, _type_stack) {
+                        if (val === null) {
+                            return false;
+                        }
                         switch (type) {
                         case 'any':
                             return true;
@@ -1075,7 +1096,7 @@
                         case 'number':
                             return typeof val === type;
                         case 'map':
-                            return typeof val === 'object';
+                            return typeof val === 'object' && !(val instanceof Array);
                         case 'integer':
                             return typeof val === 'number' && (val | 0) === val;
                         case 'array':
@@ -1111,17 +1132,17 @@
                                 return true;
                             case 'string':
                                 if ('regex' in tdef) {
-                                    var _comp_regex;
+                                    var comp_regex;
                                     if ('_comp_regex' in info) {
-                                        _comp_regex = {};
-                                        info._comp_regex = _comp_regex;
+                                        comp_regex = info._comp_regex;
                                     } else {
-                                        _comp_regex = info._comp_regex;
+                                        comp_regex = {};
+                                        info._comp_regex = comp_regex;
                                     }
-                                    if (type in _comp_regex) {
-                                        _comp_regex[type] = new RegExp(tdef.regex);
+                                    if (!(type in comp_regex)) {
+                                        comp_regex[type] = new RegExp(tdef.regex);
                                     }
-                                    return val.match(_comp_regex[type]) !== null;
+                                    return val.match(comp_regex[type]) !== null;
                                 }
                                 return true;
                             case 'array':
@@ -1133,24 +1154,27 @@
                                     return false;
                                 }
                                 if ('elemtype' in tdef) {
+                                    var elemtype = tdef.elemtype;
                                     for (var i = 0; i < val_len; ++i) {
-                                        if (!this.checkType(info, tdef.elemtype, val, [])) {
+                                        if (!this.checkType(info, elemtype, val[i], [])) {
                                             return false;
                                         }
                                     }
                                 }
                                 return true;
                             case 'map':
-                                if ('fields' in tdef) {
-                                    var fields = tdef.fields;
-                                    for (var f in fields) {
-                                        var field_def = fields[f];
-                                        if (!field_def.optional && f in val) {
-                                            return false;
+                                var fields = tdef.fields;
+                                for (var f in fields) {
+                                    var field_def = fields[f];
+                                    if (!(f in val) || val[f] === null) {
+                                        if (field_def.optional) {
+                                            val[f] = null;
+                                            return true;
                                         }
-                                        if (!this.checkType(info, field_def.type, val[f], [])) {
-                                            return false;
-                                        }
+                                        return false;
+                                    }
+                                    if (!this.checkType(info, field_def.type, val[f], [])) {
+                                        return false;
                                     }
                                 }
                                 return true;
@@ -1158,13 +1182,13 @@
                         }
                         return false;
                     },
-                    checkParameterType: function (as, info, varname, type, value) {
-                        if (!spectools.checkType(info, type, value)) {
+                    checkParameterType: function (as, info, funcname, varname, value) {
+                        if (!spectools.checkType(info, info.funcs[funcname].params[varname].type, value)) {
                             as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
                         }
                     },
-                    checkResultType: function (as, info, varname, type, value) {
-                        if (!spectools.checkType(info, type, value)) {
+                    checkResultType: function (as, info, funcname, varname, value) {
+                        if (!spectools.checkType(info, info.funcs[funcname].result[varname].type, value)) {
                             as.error(FutoInError.InvalidRequest, 'Type mismatch for result: ' + varname);
                         }
                     },

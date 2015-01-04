@@ -26,7 +26,8 @@ module.exports = function (grunt) {
             },
             unittest: {
                 files: {
-                    'dist/unittest.js' : 'test/unittest.js'
+                    'dist/unittest.js' : 'test/unittest.js',
+                    'dist/spectooltest.js' : 'test/spectooltest.js'
                 },
                 options: {
                     map : true,
@@ -57,6 +58,7 @@ module.exports = function (grunt) {
                 options: {
                     port: 8000,
                     base: '.',
+                    useAvailablePort: true
                 }
             }
         },
@@ -145,7 +147,7 @@ module.exports = function (grunt) {
     grunt.registerTask( 'build-browser', ['pure_cjs','uglify'] );
     grunt.registerTask( 'test-browser', ['connect','external_daemon:unittest','mocha_phantomjs'] );
     
-    grunt.registerTask( 'node', [ 'npm:test' ] );
+    grunt.registerTask( 'node', [ 'connect', 'npm:test' ] );
     grunt.registerTask( 'browser', ['build-browser','test-browser'] );
     
     grunt.registerTask( 'doc', [ 'jsdoc2md', 'replace:README' ] );

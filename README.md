@@ -1,9 +1,8 @@
 
-    [![NPM Version](https://img.shields.io/npm/v/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
-    [![NPM Downloads](https://img.shields.io/npm/dm/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
-    [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
-
-    [![NPM](https://nodei.co/npm/futoin-invoker.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-invoker/)
+  [![NPM Version](https://img.shields.io/npm/v/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
+  [![NPM Downloads](https://img.shields.io/npm/dm/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
+  [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
+  [![NPM](https://nodei.co/npm/futoin-invoker.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-invoker/)
 
 **[Stability: 2 - Unstable](http://nodejs.org/api/documentation.html)**
 
@@ -123,12 +122,12 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
 * [class: spectools](#spectools)
   * [new spectools()](#new_spectools)
-  * [spectools.loadSpec(as, info, specdirs)](#spectools.loadSpec)
-  * [spectools.parseSpec(as, info, specdirs, raw_spec)](#spectools.parseSpec)
+  * [spectools.loadIface(as, info, specdirs)](#spectools.loadIface)
+  * [spectools.parseIface(as, info, specdirs, raw_spec)](#spectools.parseIface)
   * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
   * [spectools.checkType(info, type, val)](#spectools.checkType)
-  * [spectools.checkParameterType(as, info, varname, type, value)](#spectools.checkParameterType)
-  * [spectools.checkResultType(as, info, varname, type, value)](#spectools.checkResultType)
+  * [spectools.checkParameterType(as, info, funcname, varname, value)](#spectools.checkParameterType)
+  * [spectools.checkResultType(as, info, funcname, varname, value)](#spectools.checkResultType)
   * [const: spectools.standard_errors](#spectools.standard_errors)
 
 **Members**
@@ -308,20 +307,20 @@ Results with DerivedKeyAccessor through as.success()
 
 * [class: spectools](#spectools)
   * [new spectools()](#new_spectools)
-  * [spectools.loadSpec(as, info, specdirs)](#spectools.loadSpec)
-  * [spectools.parseSpec(as, info, specdirs, raw_spec)](#spectools.parseSpec)
+  * [spectools.loadIface(as, info, specdirs)](#spectools.loadIface)
+  * [spectools.parseIface(as, info, specdirs, raw_spec)](#spectools.parseIface)
   * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
   * [spectools.checkType(info, type, val)](#spectools.checkType)
-  * [spectools.checkParameterType(as, info, varname, type, value)](#spectools.checkParameterType)
-  * [spectools.checkResultType(as, info, varname, type, value)](#spectools.checkResultType)
+  * [spectools.checkParameterType(as, info, funcname, varname, value)](#spectools.checkParameterType)
+  * [spectools.checkResultType(as, info, funcname, varname, value)](#spectools.checkResultType)
   * [const: spectools.standard_errors](#spectools.standard_errors)
 
 <a name="new_spectools"></a>
 ##new spectools()
 SpecTools
 
-<a name="spectools.loadSpec"></a>
-##spectools.loadSpec(as, info, specdirs)
+<a name="spectools.loadIface"></a>
+##spectools.loadIface(as, info, specdirs)
 Load FutoIn iface definition.
 
 NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
@@ -332,8 +331,8 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 - info `Object` - destination object with "iface" and "version" fields already set  
 - specdirs `Array` - each element - search path/url (string) or raw iface (object)  
 
-<a name="spectools.parseSpec"></a>
-##spectools.parseSpec(as, info, specdirs, raw_spec)
+<a name="spectools.parseIface"></a>
+##spectools.parseIface(as, info, specdirs, raw_spec)
 Parse raw futoin spec (preloaded)
 
 **Params**
@@ -366,27 +365,27 @@ Check if value matches required type
 
 **Returns**: `Boolean`  
 <a name="spectools.checkParameterType"></a>
-##spectools.checkParameterType(as, info, varname, type, value)
+##spectools.checkParameterType(as, info, funcname, varname, value)
 Check if parameter value matches required type
 
 **Params**
 
 - as `AsyncSteps`  
 - info `Object` - previously loaded iface  
+- funcname `string` - function name  
 - varname `string` - parameter name  
-- type `string` - standard or custom iface type  
 - value `*` - value to check  
 
 <a name="spectools.checkResultType"></a>
-##spectools.checkResultType(as, info, varname, type, value)
+##spectools.checkResultType(as, info, funcname, varname, value)
 Check if result value matches required type
 
 **Params**
 
 - as `AsyncSteps`  
 - info `Object` - previously loaded iface  
+- funcname `string` - function name  
 - varname `string` - result variable name  
-- type `string` - standard or custom iface type  
 - value `*` - value to check  
 
 <a name="spectools.standard_errors"></a>
