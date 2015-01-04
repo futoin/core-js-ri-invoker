@@ -329,6 +329,9 @@
                     this.ws.send(JSON.stringify(req));
                 }
             };
+            if (!MyWebSocket) {
+                exports.WSComms = exports.HTTPComms;
+            }
         },
         function (module, exports) {
             'use strict';
@@ -400,6 +403,7 @@
                 var mnr = m[6];
                 var secure_channel = false;
                 var impl = null;
+                var endpoint_scheme;
                 if (typeof endpoint === 'string') {
                     if (this._secure_replace.test(endpoint)) {
                         secure_channel = true;
@@ -408,9 +412,22 @@
                         secure_channel = true;
                     }
                     impl = this._native_iface_builder;
+                    endpoint_scheme = endpoint.split(':')[0];
+                    switch (endpoint_scheme) {
+                    case 'http':
+                    case 'https':
+                    case 'ws':
+                    case 'wss':
+                    case 'browser':
+                    case 'unix':
+                        break;
+                    default:
+                        as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
+                    }
                 } else {
                     impl = endpoint;
                     endpoint = null;
+                    endpoint_scheme = null;
                 }
                 options = options || {};
                 _.defaults(options, this._impl.options);
@@ -420,6 +437,7 @@
                         mjrver: mjr,
                         mnrver: mnr,
                         endpoint: endpoint,
+                        endpoint_scheme: endpoint_scheme,
                         creds: credentials || null,
                         secure_channel: secure_channel,
                         impl: impl,
@@ -583,16 +601,17 @@
             NativeIface.prototype = {
                 call: function (as, name, params, upload_data, download_stream, timeout) {
                     params = params || {};
+                    var raw_info = this._raw_info;
                     var ctx = {
                             ccmimpl: this._ccmimpl,
                             name: name,
-                            info: this._raw_info,
+                            info: raw_info,
                             upload_data: upload_data,
                             download_stream: download_stream,
                             rsp_content_type: null,
                             native_iface: this,
-                            options: this._raw_info.options,
-                            endpoint: this._raw_info.endpoint,
+                            options: raw_info.options,
+                            endpoint: raw_info.endpoint,
                             expect_response: true
                         };
                     var ccmimpl = this._ccmimpl;
@@ -606,10 +625,10 @@
                         if (timeout > 0) {
                             as.setTimeout(timeout);
                         }
-                        var schema = ctx.endpoint.split(':')[0];
-                        if (schema === 'http' || schema === 'https') {
+                        var scheme = raw_info.endpoint_scheme;
+                        if (scheme === 'http' || scheme === 'https') {
                             ccmimpl.perfomHTTP(as, ctx, req);
-                        } else if (schema === 'ws' || schema === 'wss') {
+                        } else if (scheme === 'ws' || scheme === 'wss') {
                             var finfo;
                             if (ctx.upload_data || ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult) {
                                 ctx.endpoint = ctx.endpoint.replace('ws', 'http');
@@ -621,10 +640,10 @@
                             as.error(invoker.FutoInError.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
                         } else if (ctx.download_stream) {
                             as.error(invoker.FutoInError.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
-                        } else if (schema === 'unix') {
+                        } else if (scheme === 'unix') {
                             ccmimpl.perfomUNIX(as, ctx, req);
                         } else {
-                            as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint schema');
+                            as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
                         }
                         as.add(function (as, rsp, content_type) {
                             if (!ctx.expect_response) {

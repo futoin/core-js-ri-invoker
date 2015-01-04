@@ -897,12 +897,6 @@ describe( 'NativeIface', function()
             as.add(
                 function(as){
                     ccm.register( as , 'myiface', 'fileface.a:1.1', 'unknown://localhost:23456/ftn' );
-                    as.successStep();
-                }
-            );
-            as.add(
-                function(as){
-                    ccm.iface('myiface').call( as, 'someFunc' );
                 },
                 function( as, err )
                 {
