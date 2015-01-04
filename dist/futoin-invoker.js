@@ -140,7 +140,8 @@
                 },
                 perfomHTTP: simpleccm_impl.SimpleCCMImpl.prototype.perfomHTTP,
                 perfomWebSocket: simpleccm_impl.SimpleCCMImpl.prototype.perfomWebSocket,
-                perfomUNIX: simpleccm_impl.SimpleCCMImpl.prototype.perfomUNIX
+                perfomUNIX: simpleccm_impl.SimpleCCMImpl.prototype.perfomUNIX,
+                perfomBrowser: simpleccm_impl.SimpleCCMImpl.prototype.perfomBrowser
             };
             exports.AdvancedCCMImpl = AdvancedCCMImpl;
         },
@@ -168,7 +169,6 @@
             var EventEmitter = _require(11);
             var common = _require(3);
             var FutoInError = common.FutoInError;
-            var optname = common.Options;
             var MyWebSocket = WebSocket;
             exports.HTTPComms = function () {
             };
@@ -240,16 +240,12 @@
             exports.WSComms.prototype = {
                 _waiting_open: false,
                 init: function (as, ctx) {
-                    var opts = {};
-                    var optcb = ctx.options[optname.OPT_COMM_CONFIG_CB];
-                    if (optcb) {
-                        optcb(ctx.endpoint.match(/^(wss?)/)[1], opts);
-                    }
+                    var opts = ctx.options;
                     var ws = new MyWebSocket(ctx.endpoint);
                     this.ws = ws;
                     this._waiting_open = true;
                     var reqas = this.reqas;
-                    var executor = opts.futoin_executor;
+                    var executor = opts.futoin_executor || null;
                     var info = ctx.info;
                     var _this = this;
                     var send_executor_rsp = function (rsp) {
@@ -332,6 +328,93 @@
             if (!MyWebSocket) {
                 exports.WSComms = exports.HTTPComms;
             }
+            exports.BrowserComms = function () {
+                this.rid = 1;
+                this.reqas = {};
+            };
+            exports.BrowserComms.prototype = {
+                init: function (as, ctx) {
+                    var opts = ctx.options;
+                    this.opts = opts;
+                    var target = ctx.endpoint.split('://', 2)[1];
+                    var browser_window = window;
+                    var iframe;
+                    if (target === 'parent') {
+                        target = browser_window.parent;
+                    } else if (target in browser_window && 'postMessage' in browser_window[target]) {
+                        target = browser_window[target];
+                    } else {
+                        var browser_document = document;
+                        iframe = browser_document.getElementById(target);
+                        if (iframe) {
+                            target = iframe.contentWindow;
+                        } else {
+                            as.error(FutoInError.CommError, 'Unknown target: ' + target);
+                        }
+                    }
+                    if (target === browser_window) {
+                        as.error(FutoInError.CommError, 'Target matches current window');
+                    }
+                    this.target = target;
+                    var reqas = this.reqas;
+                    var executor = opts.futoin_executor || null;
+                    var info = ctx.info;
+                    var target_origin = opts.targetOrigin;
+                    var send_executor_rsp = function (rsp) {
+                        target.postMessage(JSON.stringify(rsp), target_origin);
+                    };
+                    var on_message = function (event) {
+                        if (event.source && event.source !== target) {
+                            return;
+                        }
+                        if (target_origin && event.origin === target_origin) {
+                        } else if (iframe && iframe.src.indexOf(event.origin) === 0) {
+                        } else {
+                            console.log('Error: peer origin mismatch ');
+                            console.log('Error >origin: ' + event.origin);
+                            console.log('Error >required: ' + target_origin);
+                            return;
+                        }
+                        var rsp = event.data;
+                        if (typeof rsp !== 'object') {
+                            console.log('Not object response: ' + rsp);
+                            return;
+                        }
+                        if ('rid' in rsp) {
+                            var rid = rsp.rid;
+                            if (rid in reqas) {
+                                reqas[rid].success(rsp, 'application/futoin+json');
+                                delete reqas[rid];
+                            } else if (rid.charAt(0) === 'S' && executor) {
+                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
+                            }
+                        }
+                    };
+                    browser_window.addEventListener('message', on_message, false);
+                },
+                perform: function (as, ctx, req) {
+                    if (ctx.upload_data || ctx.download_stream) {
+                        as.error(FutoInError.CommError, 'Raw Data is not supported by Web Messaging yet');
+                    }
+                    if (!('target' in this)) {
+                        this.init(as, ctx);
+                    }
+                    var _this = this;
+                    as.add(function (as) {
+                        var reqas = _this.reqas;
+                        var rid = 'C' + _this.rid++;
+                        if (ctx.expect_response) {
+                            reqas[rid] = as;
+                            as.setCancel(function (as) {
+                                void as;
+                                delete reqas[rid];
+                            });
+                        }
+                        req.rid = rid;
+                        _this.target.postMessage(req, _this.opts.targetOrigin || '*');
+                    });
+                }
+            };
         },
         function (module, exports) {
             'use strict';
@@ -418,13 +501,18 @@
                     case 'https':
                     case 'ws':
                     case 'wss':
-                    case 'browser':
                     case 'unix':
+                        break;
+                    case 'browser':
+                        if (options && options.targetOrigin) {
+                            secure_channel = true;
+                        }
                         break;
                     default:
                         as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
                     }
                 } else {
+                    secure_channel = true;
                     impl = endpoint;
                     endpoint = null;
                     endpoint_scheme = null;
@@ -640,6 +728,8 @@
                             as.error(invoker.FutoInError.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
                         } else if (ctx.download_stream) {
                             as.error(invoker.FutoInError.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
+                        } else if (scheme === 'browser') {
+                            ccmimpl.perfomBrowser(as, ctx, req);
                         } else if (scheme === 'unix') {
                             ccmimpl.perfomUNIX(as, ctx, req);
                         } else {
@@ -770,7 +860,17 @@
                 perfomUNIX: function (as, ctx, req) {
                     void ctx;
                     void req;
-                    as.error(FutoInError.InvokerError, 'Not Implemented');
+                    as.error(FutoInError.InvokerError, 'Not implemented unix:// scheme');
+                },
+                perfomBrowser: function (as, ctx, req) {
+                    var native_iface = ctx.native_iface;
+                    if (!('_browser_comms' in native_iface)) {
+                        if (!('BrowserComms' in comms)) {
+                            as.error(FutoInError.InvokerError, 'Not implemented browser:// scheme');
+                        }
+                        native_iface._browser_comms = new comms.BrowserComms();
+                    }
+                    native_iface._browser_comms.perform(as, ctx, req);
                 }
             };
             exports.SimpleCCMImpl = SimpleCCMImpl;
@@ -884,7 +984,6 @@
                         });
                     },
                     parseIface: function (as, info, specdirs, raw_spec) {
-                        spectools._checkFTN3Rev(as, info, raw_spec);
                         if (raw_spec._just_loaded) {
                             info.funcs = raw_spec.funcs || {};
                             info.types = raw_spec.types || {};
@@ -903,6 +1002,7 @@
                         } else {
                             info.constraints = {};
                         }
+                        spectools._checkFTN3Rev(as, info, raw_spec);
                         info.inherits = [];
                         if ('inherit' in raw_spec) {
                             var m = raw_spec.inherit.match(common._ifacever_pattern);
@@ -949,7 +1049,7 @@
                         var mnr = parseInt(rv[2]);
                         if (mjr === 1) {
                             if (mnr < 1) {
-                                if (raw_spec.imports || raw_spec.types) {
+                                if (raw_spec.imports || raw_spec.types || 'BiDirectChannel' in info.constraints) {
                                     as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
                                 }
                             }

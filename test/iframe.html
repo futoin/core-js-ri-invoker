@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>tests</title>
+  </head>
+  <body>
+      <script src="../node_modules/chai/chai.js" type="text/javascript" charset="utf-8"></script>
+      <script type="text/javascript" charset="utf-8" src="./server_func.js"></script>
+      <script type="text/javascript" charset="utf-8">
+chai.should();
+window.addEventListener( 'message', function( event ){
+    try{
+        var freq = event.data;
+        var frsp = processServerRequest( freq, '' );
+        
+        if ( !( 'e' in frsp ) )
+        {
+            frsp = { r : frsp };
+        }
+        
+        frsp.rid = freq.rid;
+        
+        event.source.postMessage( frsp, event.origin );
+    }
+    catch ( e )
+    {
+        event.source.postMessage(  { e: 'InternalError', edesc: e.message, rid: event.data.rid }, event.origin );
+    }
+});
+
+var test_func = function()
+{
+    window.parent.postMessage( 'test', '*' );
+    setTimeout( test_func, 100 );
+};
+//test_func();
+      </script>
+  </body>
+</html>

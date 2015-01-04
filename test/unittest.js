@@ -354,6 +354,7 @@ call_remotes_model_as.add(
     function(as){
         var iface = ccm.iface( 'myiface' );
         var is_ws = ( iface._raw_info.endpoint.split(':')[0] === 'ws' );
+        var is_browser = ( iface._raw_info.endpoint.split(':')[0] === 'browser' );
 
         as.add(function(as){
             as.state.step = "testFunc";
@@ -407,6 +408,12 @@ call_remotes_model_as.add(
             }
             
             as.state.step = "rawUploadFunc";
+            
+            if ( is_browser )
+            {
+                as.success( { ok : 'OK' } );
+                return;
+            }
 
             iface.call(
                 as,
@@ -422,6 +429,12 @@ call_remotes_model_as.add(
             res.ok.should.equal("OK");
             
             as.state.step = "rawUploadFuncParams";
+            
+            if ( is_browser )
+            {
+                as.success( { ok : 'OK' } );
+                return;
+            }
 
             iface.call(
                 as,
@@ -440,7 +453,7 @@ call_remotes_model_as.add(
         }}).add(function(as, res){
             res.ok.should.equal("OK");
 
-            if ( is_ws )
+            if ( is_ws || is_browser )
             {
                 as.success( "MY_DOWNLOAD" );
                 return;
@@ -474,7 +487,7 @@ call_remotes_model_as.add(
                 
                 as.state.step = "wrongDataResult";
                 
-                if ( is_ws )
+                if ( is_ws || is_browser )
                 {
                     return;
                 }
@@ -497,7 +510,7 @@ call_remotes_model_as.add(
                 {
                     assert.strictEqual( undefined, res );
                 }
-                else if ( !is_ws )
+                else if ( !is_ws && !is_browser )
                 {
                     res.should.equal("MY_DOWNLOAD");
                 }
@@ -529,7 +542,7 @@ call_remotes_model_as.add(
                 
                 as.state.step = "rawResultExpected";
                 
-                if ( is_ws )
+                if ( is_ws || is_browser )
                 {
                     return;
                 }
@@ -552,7 +565,7 @@ call_remotes_model_as.add(
                 {
                     assert.strictEqual( undefined, res );
                 }
-                else if ( !is_ws )
+                else if ( !is_ws && !is_browser )
                 {
                     res.ok.should.equal("OK");
                 }
@@ -619,13 +632,21 @@ call_remotes_model_as.add(
             function( as, err )
             {
                 err.should.equal( "InvokerError" );
-                as.state.error_info.should.equal( "Raw upload is not allowed" );
+                if ( is_browser && !iface._raw_info.funcs.unexpectedUpload )
+                {
+                    as.state.error_info.should.equal( "Upload data is allowed only for HTTP/WS endpoints" );
+                }
+                else
+                {
+                    as.state.error_info.should.equal( "Raw upload is not allowed" );
+                }
+                    
 
                 as.success();
             }
         ).add(
             function(as, res){
-                if ( iface._raw_info.funcs.unexpectedUpload )
+                if ( iface._raw_info.funcs.unexpectedUpload || is_browser )
                 {
                     assert.strictEqual( undefined, res );
                 }
@@ -893,6 +914,33 @@ describe( 'NativeIface', function()
             as.execute();
         });
         
+    if ( typeof window !== 'undefined' )
+    {
+        it( 'should call browser:// remotes', function( done ){
+            as.add(
+                function(as){
+                    try {
+                        ccm.register(
+                                as , 'myiface', 'fileface.a:1.1',
+                                'browser://server_frame', null,
+                                { targetOrigin: 'http://localhost:8000' } );
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    as.state.done( new Error( err + ": " + as.state.error_info ) );
+                }
+            );
+            as.copyFrom( call_remotes_model_as );
+            as.state.done = done;
+            as.execute();
+        });
+    }
+        
         it( 'should fail with unknown scheme', function( done ){
             as.add(
                 function(as){
@@ -1036,6 +1084,34 @@ describe( 'NativeIface', function()
             as.state.done = done;
             as.execute();
         });
+        
+    if ( typeof window !== 'undefined' )
+    {
+        it( 'should call browser:// remotes', function( done ){
+            as.add(
+                function(as){
+                    try {
+                        ccm.register(
+                                as , 'myiface', 'fileface.a:1.1',
+                                'browser://server_frame', null,
+                                { targetOrigin: 'http://localhost:8000' } );
+
+                    } catch ( e ){
+                        console.dir( e.stack );
+                        console.log( as.state.error_info );
+                        throw e;
+                    }
+                },
+                function( as, err )
+                {
+                    as.state.done( new Error( err + ": " + as.state.error_info ) );
+                }
+            );
+            as.copyFrom( call_remotes_model_as );
+            as.state.done = done;
+            as.execute();
+        });
+    }
         
         it( 'should call WS remotes through interceptors', function( done ){
             as.add(

@@ -50,12 +50,19 @@ It has the following advantages:
     channel-based instead of message-based security, etc.)
 * Inversion of Control / Dependency Injection - implementations are referenced by 
     static names like "mymodule.some.service" in code. The rest is hidden in CCM configuration.
+* Security enforcement
 
 The primary communication channel is WebSockets. Large raw data upload and download
 is also supported through automatic fallback to HTTP(S).
 
 SimpleCCM - a light version without heavy processing of iface definition (ideal for browser)
 AdvancedCCM - full featured CCM (extends SimpleCCM)
+
+Communication methods:
+
+* HTTP/HTTPS - remote calls
+* WS/WSS - WebSockets remote calls with bi-directional sockets
+* HTML5 Web Messaging - same- and cross-origin local calls **inside Browser through window.postMessage() API**
 
 *Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
 is already available in JS and PHP. Hopefully, others are upcoming*
@@ -84,6 +91,9 @@ with [pure-sjc](https://github.com/RReverser/pure-cjs). It depends on
 * AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
 * futoin.Invoker - global reference to futoin-invoker module
 
+# Examples
+
+*TODO*
     
 # API documentation
 
