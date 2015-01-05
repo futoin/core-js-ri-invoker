@@ -367,9 +367,8 @@
                         if (event.source && event.source !== target) {
                             return;
                         }
-                        if (target_origin && event.origin === target_origin) {
-                        } else if (iframe && iframe.src.indexOf(event.origin) === 0) {
-                        } else {
+                        if (!target_origin) {
+                        } else if (event.origin !== target_origin) {
                             console.log('Error: peer origin mismatch ');
                             console.log('Error >origin: ' + event.origin);
                             console.log('Error >required: ' + target_origin);
