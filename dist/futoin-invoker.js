@@ -425,7 +425,8 @@
                 OPT_X509_VERIFY: 'X509_VERIFY',
                 OPT_PROD_MODE: 'PROD_MODE',
                 OPT_COMM_CONFIG_CB: 'COMM_CONFIG_CB',
-                OPT_SPEC_DIRS: 'SPEC_DIRS'
+                OPT_SPEC_DIRS: 'SPEC_DIRS',
+                SAFE_PAYLOAD_LIMIT: 65536
             };
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
         },
@@ -717,8 +718,10 @@
                             ccmimpl.perfomHTTP(as, ctx, req);
                         } else if (scheme === 'ws' || scheme === 'wss') {
                             var finfo;
-                            if (ctx.upload_data || ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult) {
+                            var rawresult = ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult;
+                            if (ctx.upload_data || rawresult) {
                                 ctx.endpoint = ctx.endpoint.replace('ws', 'http');
+                                ctx.rawresult = rawresult;
                                 ccmimpl.perfomHTTP(as, ctx, req);
                             } else {
                                 ccmimpl.perfomWebSocket(as, ctx, req);

@@ -1,6 +1,6 @@
 var http = require('http');
 var url = require( 'url' );
-var WebSocketServer = require('ws').Server;
+var WebSocket = require('faye-websocket');
 var processServerRequest = require( './server_func' )
 var httpsrv;
 var wssrv;
@@ -97,14 +97,33 @@ function createTestHttpServer( cb )
         });
     });
     httpsrv.listen( 23456, '127.0.0.1', 10, cb );
-    
-    wssrv = new WebSocketServer( { 
-        server : httpsrv,
-        path : '/ftn'
-    } );
-    
-    wssrv.on('connection', function( ws ){
-        ws.on('message', function( msg ){
+
+    httpsrv.on( 'upgrade', function( req, sock, body )
+    {
+        if ( !req.url.match( /^\/ftn/ ) )
+        {
+            return;
+        }
+        
+        var ws = new WebSocket( req, sock, body );
+        
+        var req_close = function()
+        {
+            ws.close();
+        }
+        
+        httpsrv.once( 'close', req_close );
+        httpsrv.once( 'preclose', req_close );
+        ws.on('close', function(){
+            if ( httpsrv )
+            {
+                httpsrv.removeEventListener( 'close', req_close );
+                httpsrv.removeEventListener( 'preclose', req_close );
+            }
+        });
+
+        ws.on('message', function( event ){
+            var msg = event.data;
             var frsp = processTestServerRequest( null, msg );
             
             if ( typeof frsp !== "object" )
@@ -128,11 +147,20 @@ function createTestHttpServer( cb )
 
 function closeTestHttpServer( done )
 {
-    if ( httpsrv )
+     if ( httpsrv )
     {
-        wssrv.close();
-        httpsrv.close( function(){ done(); } );
-        httpsrv = null;
+        try
+        {
+            httpsrv.emit( 'preclose' );
+            httpsrv.close( function(){ done(); } );
+            httpsrv = null;
+        }
+        catch ( e )
+        {
+            httpsrv = null;
+            console.dir( e );
+            done( e );
+        }
     }
     else
     {

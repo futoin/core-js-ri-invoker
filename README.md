@@ -147,6 +147,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [SimpleCCM.OPT_X509_VERIFY](#SimpleCCM.OPT_X509_VERIFY)
   * [SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
   * [SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
+  * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
 * [AdvancedCCM](#AdvancedCCM)
   * [AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
 * [Invoker](#Invoker)
