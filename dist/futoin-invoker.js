@@ -473,7 +473,8 @@
                 };
             _.extend(SimpleCCMProto, SimpleCCMPublic);
             SimpleCCMProto.register = function (as, name, ifacever, endpoint, credentials, options) {
-                if (name in this._iface_info) {
+                var is_channel_reg = name === null;
+                if (!is_channel_reg && name in this._iface_info) {
                     as.error(futoin_error.InvokerError, 'Already registered');
                 }
                 var m = ifacever.match(common._ifacever_pattern);
@@ -487,7 +488,11 @@
                 var secure_channel = false;
                 var impl = null;
                 var endpoint_scheme;
-                if (typeof endpoint === 'string') {
+                if (is_channel_reg) {
+                    endpoint_scheme = 'channel';
+                    endpoint = impl;
+                    impl = null;
+                } else if (typeof endpoint === 'string') {
                     if (this._secure_replace.test(endpoint)) {
                         secure_channel = true;
                         endpoint = endpoint.replace(this._secure_replace, '');
@@ -534,10 +539,19 @@
                         funcs: null,
                         constraints: null,
                         options: options,
-                        _invoker_use: true
+                        _invoker_use: true,
+                        _user_info: null
                     };
-                this._iface_info[name] = info;
+                if (name) {
+                    this._iface_info[name] = info;
+                }
                 this._impl.onRegister(as, info);
+                if (is_channel_reg) {
+                    var _this = this;
+                    as.add(function (as) {
+                        as.success(info, _this._native_iface_builder(_this._impl, info));
+                    });
+                }
             };
             SimpleCCMProto.iface = function (name) {
                 var info = this._iface_info[name];
@@ -734,6 +748,8 @@
                             ccmimpl.perfomBrowser(as, ctx, req);
                         } else if (scheme === 'unix') {
                             ccmimpl.perfomUNIX(as, ctx, req);
+                        } else if (scheme === 'channel') {
+                            ctx.endpoint(as, ctx, req);
                         } else {
                             as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
                         }
