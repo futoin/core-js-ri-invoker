@@ -62,6 +62,12 @@ function createTestHttpServer( cb )
             if ( request.method !== 'OPTIONS' )
             {
                 frsp = processTestServerRequest( request, freq );
+
+                if ( frsp === null )
+                {
+                    request.socket.destroy();
+                    return;
+                }
             }
             else
             {
@@ -117,14 +123,20 @@ function createTestHttpServer( cb )
         ws.on('close', function(){
             if ( httpsrv )
             {
-                httpsrv.removeEventListener( 'close', req_close );
-                httpsrv.removeEventListener( 'preclose', req_close );
+                httpsrv.removeListener( 'close', req_close );
+                httpsrv.removeListener( 'preclose', req_close );
             }
         });
 
         ws.on('message', function( event ){
             var msg = event.data;
             var frsp = processTestServerRequest( null, msg );
+            
+            if ( frsp === null )
+            {
+                sock.destroy();
+                return;
+            }
             
             if ( typeof frsp !== "object" )
             {

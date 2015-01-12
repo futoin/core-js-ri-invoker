@@ -1,4 +1,6 @@
 
+var fail_next = false;
+
 function processServerRequest( freq, data )
 {
     var func = freq.f.split(':');
@@ -18,6 +20,14 @@ function processServerRequest( freq, data )
     
     switch ( func[2] )
     {
+        case 'testFuncRetry' :
+            fail_next = !fail_next;
+
+            if ( fail_next )
+            {
+                return null;
+            }
+            
         case 'testFunc' :
             freq.p.a.should.equal( '1' );
             freq.p.n.should.equal( 2.8 );

@@ -375,6 +375,27 @@ call_remotes_model_as.add(
         }).add(function(as, res){
             res.res.should.equal('MY_RESULT');
             
+            if ( is_browser )
+            {
+                as.success( res );
+                return;
+            }
+
+            as.state.step = "testFuncRetry";
+
+            iface.call(
+                as,
+                'testFuncRetry',
+                {
+                    a : "1",
+                    n : 2.8,
+                    o : { m : 3 },
+                    i : 4
+                }
+            );;
+        }).add(function(as, res){
+            res.res.should.equal('MY_RESULT');
+            
             as.state.step = "noResult";
             
             iface.call(

@@ -28,6 +28,31 @@
                 }
             }
         },
+        "testFuncRetry" : {
+            "params" : {
+                "a" : {
+                    "type" : "string"
+                },
+                "n" : {
+                    "type" : "number"
+                },
+                "o" : {
+                    "type" : "map"
+                },
+                "i" : {
+                    "type" : "integer"
+                },
+                "d" : {
+                    "type" : "string",
+                    "default" : "DefAult"
+                }
+            },
+            "result" : {
+                "res" : {
+                    "type" : "string"
+                }
+            }
+        },
         "rawUploadFuncParams" : {
             "params" : {
                 "a" : {

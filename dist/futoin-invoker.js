@@ -138,6 +138,7 @@
                         as.error(FutoInError.InternalError, 'Raw result is not expected');
                     }
                 },
+                performCommon: simpleccm_impl.SimpleCCMImpl.prototype.performCommon,
                 perfomHTTP: simpleccm_impl.SimpleCCMImpl.prototype.perfomHTTP,
                 perfomWebSocket: simpleccm_impl.SimpleCCMImpl.prototype.perfomWebSocket,
                 perfomUNIX: simpleccm_impl.SimpleCCMImpl.prototype.perfomUNIX,
@@ -427,13 +428,14 @@
             exports.AsyncSteps = async_steps;
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
-                OPT_CALL_TIMEOUT_MS: 'CALL_TIMEOUT_MS',
+                OPT_CALL_TIMEOUT_MS: 'callTimeoutMS',
                 OPT_X509_VERIFY: 'X509_VERIFY',
                 OPT_PROD_MODE: 'PROD_MODE',
                 OPT_COMM_CONFIG_CB: 'COMM_CONFIG_CB',
                 OPT_SPEC_DIRS: 'specDirs',
                 OPT_EXECUTOR: 'executor',
                 OPT_TARGET_ORIGIN: 'targetOrigin',
+                OPT_RETRY_COUNT: 'retryCount',
                 SAFE_PAYLOAD_LIMIT: 65536
             };
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
@@ -856,6 +858,7 @@
                 defopts[optname.OPT_X509_VERIFY] = true;
                 defopts[optname.OPT_PROD_MODE] = false;
                 defopts[optname.OPT_COMM_CONFIG_CB] = null;
+                defopts[optname.OPT_RETRY_COUNT] = 1;
                 _.defaults(options, defopts);
                 this.options = options;
             }
@@ -887,19 +890,39 @@
                 onDataResponse: function (as, ctx, rsp) {
                     as.success(rsp);
                 },
+                performCommon: function (as, ctx, req, comm) {
+                    var msg;
+                    var content_type;
+                    as.repeat(ctx.options.retryCount + 1, function (as) {
+                        as.add(function (as) {
+                            comm.perform(as, ctx, req);
+                            as.add(function (as, m, c) {
+                                msg = m;
+                                content_type = c;
+                                as.break();
+                            });
+                        }, function (as, err) {
+                            if (err === FutoInError.CommError) {
+                                as.continue();
+                            }
+                        });
+                    }).add(function (as) {
+                        as.success(msg, content_type);
+                    });
+                },
                 perfomHTTP: function (as, ctx, req) {
                     var native_iface = ctx.native_iface;
                     if (!('_httpcomms' in native_iface)) {
                         native_iface._httpcomms = new comms.HTTPComms();
                     }
-                    native_iface._httpcomms.perform(as, ctx, req);
+                    this.performCommon(as, ctx, req, native_iface._httpcomms);
                 },
                 perfomWebSocket: function (as, ctx, req) {
                     var native_iface = ctx.native_iface;
                     if (!('_wscomms' in native_iface)) {
                         native_iface._wscomms = new comms.WSComms();
                     }
-                    native_iface._wscomms.perform(as, ctx, req);
+                    this.performCommon(as, ctx, req, native_iface._wscomms);
                 },
                 perfomUNIX: function (as, ctx, req) {
                     void ctx;
