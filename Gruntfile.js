@@ -106,6 +106,9 @@ module.exports = function (grunt) {
             all: {
                 options: {
                     sync: ['name', 'version','description','license','keywords','homepage','repository'],
+                    overrides: {
+                        main: "dist/futoin-invoker.js"
+                    },
                     from: 'package.json',
                     to: 'bower.json'
                 }

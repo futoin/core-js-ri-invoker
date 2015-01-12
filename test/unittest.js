@@ -65,17 +65,19 @@ describe( 'SimpleCCM', function()
     it('should register interface',
         function( done ){
             as
-                .add( function( as ){
-                    try {
-                        ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-                    } catch ( e ) {
-                        console.log( as.state.error_info );
-                        done( e );
+                .add(
+                    function( as ){
+                        try {
+                            ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+                        } catch ( e ) {
+                            done( e );
+                        }
+                    },
+                     function( as, err ){
+                        done( new Error( err + ": " + as.state.error_info ) );
                     }
-                }, function( as, err ){
-                    done( new Error( err + ": " + as.state.error_info ) );
-                } )
-                .add(function(as){ done(); as.success(); })
+                )
+                .add( function(as){ done(); })
                 .execute();
         }
     );
@@ -310,17 +312,18 @@ describe( 'AdvancedCCM', function()
     
     it('should register interface',
         function( done ){
-            try
-            {
-                ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
-            }
-            catch ( e )
-            {
-                console.log( as.state.error_info );
-                throw e;
-            }
-            as.add(function(as){ done(); as.success(); });
-            as.execute();
+            as.add(
+                function( as )
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
+                },
+                function( as, err )
+                {
+                    done( as.state.last_exception );
+                }
+            ).add( function( as ){
+                done();
+            } ).execute();
         }
     );
     
@@ -847,19 +850,23 @@ describe( 'NativeIface', function()
         
         it( 'should return ifaceInfo without details', function(){
             ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
-            var info = ccm.iface( 'myiface' ).ifaceInfo();
-            ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
             
-            info.name().should.equal( 'fileface.a' );
-            info.version().should.equal( '1.1' );
-            info.inherits().length.should.equal( 0 );
-            _.isEmpty( info.funcs() ).should.be.true;
-            _.isEmpty( info.constraints() ).should.be.true;
-            
-            var iface = ccm.iface( 'myiface' );
-            
-            iface.should.not.have.property( 'testFunc' );
-            iface.should.not.have.property( 'rawUploadFunc' );
+            as.add( function( as )
+            {
+                var info = ccm.iface( 'myiface' ).ifaceInfo();
+                ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+                
+                info.name().should.equal( 'fileface.a' );
+                info.version().should.equal( '1.1' );
+                info.inherits().length.should.equal( 0 );
+                _.isEmpty( info.funcs() ).should.be.true;
+                _.isEmpty( info.constraints() ).should.be.true;
+                
+                var iface = ccm.iface( 'myiface' );
+                
+                iface.should.not.have.property( 'testFunc' );
+                iface.should.not.have.property( 'rawUploadFunc' );
+            } );
         });
         
         it( 'should call HTTP remotes', function( done ){
@@ -978,9 +985,24 @@ describe( 'NativeIface', function()
         
         it( 'should return ifaceInfo with details', function( done ){
             as.add(
+                function( as )
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
+                },
+                function( as, err )
+                {
+                    if ( ( err === 'SecurityError' ) &&
+                         ( as.state.error_info === "SecureChannel is required" )  )
+                    {
+                        as.success();
+                        return;
+                    }
+                    done( as.state.last_exception );
+                }
+            ).add(
                 function(as){
                     try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
+                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
                         as.successStep();
                     } catch ( e ){
                         console.dir( e.stack );
@@ -1157,7 +1179,7 @@ describe( 'NativeIface', function()
                     try
                     {
                         err.should.equal( 'SecurityError' );
-                        as.state.error_info.should.equal( "Requires secure channel" );
+                        as.state.error_info.should.equal( "SecureChannel is required"  );
                         done();
                     }
                     catch ( ex )

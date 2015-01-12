@@ -46,8 +46,8 @@
             }
             AdvancedCCMImpl.prototype = {
                 onRegister: function (as, info) {
-                    spectools.loadIface(as, info, this.options[optname.OPT_SPEC_DIRS]);
-                    if (!this.options[optname.OPT_PROD_MODE]) {
+                    spectools.loadIface(as, info, info.options[optname.OPT_SPEC_DIRS]);
+                    if (!info.options[optname.OPT_PROD_MODE]) {
                         spectools.checkConsistency(as, info);
                     }
                 },
@@ -84,7 +84,7 @@
                     }
                 },
                 createMessage: function (as, ctx, params) {
-                    if (!this.options[optname.OPT_PROD_MODE]) {
+                    if (!ctx.info.options[optname.OPT_PROD_MODE]) {
                         this.checkParams(as, ctx, params);
                     }
                     var info = ctx.info;
@@ -245,11 +245,12 @@
                     this.ws = ws;
                     this._waiting_open = true;
                     var reqas = this.reqas;
-                    var executor = opts.futoin_executor || null;
+                    var executor = opts.executor || null;
                     var info = ctx.info;
                     var _this = this;
                     var send_executor_rsp = function (rsp) {
-                        ws.send(JSON.stringify(rsp));
+                        var rawrsp = executor.packPayloadJSON(rsp);
+                        ws.send(rawrsp);
                     };
                     var cleanup = function (event) {
                         ws.close();
@@ -357,11 +358,11 @@
                     }
                     this.target = target;
                     var reqas = this.reqas;
-                    var executor = opts.futoin_executor || null;
+                    var executor = opts.executor || null;
                     var info = ctx.info;
                     var target_origin = opts.targetOrigin;
                     var send_executor_rsp = function (rsp) {
-                        target.postMessage(JSON.stringify(rsp), target_origin);
+                        target.postMessage(rsp, target_origin || '*');
                     };
                     var on_message = function (event) {
                         if (event.source && event.source !== target) {
@@ -425,7 +426,9 @@
                 OPT_X509_VERIFY: 'X509_VERIFY',
                 OPT_PROD_MODE: 'PROD_MODE',
                 OPT_COMM_CONFIG_CB: 'COMM_CONFIG_CB',
-                OPT_SPEC_DIRS: 'SPEC_DIRS',
+                OPT_SPEC_DIRS: 'specDirs',
+                OPT_EXECUTOR: 'executor',
+                OPT_TARGET_ORIGIN: 'targetOrigin',
                 SAFE_PAYLOAD_LIMIT: 65536
             };
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
@@ -488,10 +491,10 @@
                 var secure_channel = false;
                 var impl = null;
                 var endpoint_scheme;
+                var is_bidirect = false;
                 if (is_channel_reg) {
-                    endpoint_scheme = 'channel';
-                    endpoint = impl;
-                    impl = null;
+                    endpoint_scheme = 'callback';
+                    is_bidirect = true;
                 } else if (typeof endpoint === 'string') {
                     if (this._secure_replace.test(endpoint)) {
                         secure_channel = true;
@@ -504,14 +507,17 @@
                     switch (endpoint_scheme) {
                     case 'http':
                     case 'https':
+                        break;
                     case 'ws':
                     case 'wss':
                     case 'unix':
+                        is_bidirect = true;
                         break;
                     case 'browser':
                         if (options && options.targetOrigin) {
                             secure_channel = true;
                         }
+                        is_bidirect = true;
                         break;
                     default:
                         as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
@@ -521,6 +527,7 @@
                     impl = endpoint;
                     endpoint = null;
                     endpoint_scheme = null;
+                    is_bidirect = true;
                 }
                 options = options || {};
                 _.defaults(options, this._impl.options);
@@ -545,13 +552,27 @@
                 if (name) {
                     this._iface_info[name] = info;
                 }
-                this._impl.onRegister(as, info);
-                if (is_channel_reg) {
-                    var _this = this;
+                var _this = this;
+                as.add(function (as) {
+                    _this._impl.onRegister(as, info);
                     as.add(function (as) {
-                        as.success(info, _this._native_iface_builder(_this._impl, info));
+                        if ('SecureChannel' in info.constraints && !secure_channel) {
+                            as.error(futoin_error.SecurityError, 'SecureChannel is required');
+                        }
+                        if ('BiDirectChannel' in info.constraints && !is_bidirect) {
+                            as.error(futoin_error.InvokerError, 'BiDirectChannel is required');
+                        }
+                        if (is_channel_reg) {
+                            as.success(info, _this._native_iface_builder(_this._impl, info));
+                        }
                     });
-                }
+                }, function (as, err) {
+                    void as;
+                    void err;
+                    if (name) {
+                        delete _this._iface_info[name];
+                    }
+                });
             };
             SimpleCCMProto.iface = function (name) {
                 var info = this._iface_info[name];
@@ -748,7 +769,7 @@
                             ccmimpl.perfomBrowser(as, ctx, req);
                         } else if (scheme === 'unix') {
                             ccmimpl.perfomUNIX(as, ctx, req);
-                        } else if (scheme === 'channel') {
+                        } else if (scheme === 'callback') {
                             ctx.endpoint(as, ctx, req);
                         } else {
                             as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
