@@ -170,6 +170,7 @@
             var EventEmitter = _require(11);
             var common = _require(3);
             var FutoInError = common.FutoInError;
+            var optname = common.Options;
             var MyWebSocket = WebSocket;
             exports.HTTPComms = function () {
             };
@@ -181,6 +182,7 @@
                     });
                 },
                 _perform: function (as, ctx, req) {
+                    var sniffer = ctx.options[optname.OPT_MSG_SNIFFER];
                     var httpreq = new XMLHttpRequest();
                     var url = ctx.endpoint;
                     var rawreq = ctx.upload_data;
@@ -202,6 +204,7 @@
                     } else {
                         content_type = 'application/futoin+json';
                         rawreq = JSON.stringify(req);
+                        sniffer(ctx.info, rawreq, false);
                     }
                     if (ctx.expect_response) {
                         if (ctx.download_stream) {
@@ -213,6 +216,7 @@
                             }
                             var response = ctx.download_stream ? this.response : this.responseText;
                             if (response) {
+                                sniffer(ctx.info, response, true);
                                 as.success(response, this.getResponseHeader('content-type'));
                             } else {
                                 try {
@@ -249,11 +253,14 @@
                     var executor = opts.executor || null;
                     var info = ctx.info;
                     var _this = this;
+                    var sniffer = opts[optname.OPT_MSG_SNIFFER];
+                    this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
                         var rawrsp = executor.packPayloadJSON(rsp);
                         ws.send(rawrsp);
                     };
                     var cleanup = function (event) {
+                        opts[optname.OPT_DISCONNECT_SNIFFER](info);
                         ws.close();
                         delete _this.ws;
                         for (var k in reqas) {
@@ -274,6 +281,7 @@
                         _this.evt.emit('open');
                     };
                     ws.onmessage = function (event) {
+                        sniffer(info, event.data, true);
                         var rsp;
                         try {
                             rsp = JSON.parse(event.data);
@@ -324,7 +332,9 @@
                         });
                     }
                     req.rid = rid;
-                    this.ws.send(JSON.stringify(req));
+                    var rawreq = JSON.stringify(req);
+                    this.sniffer(ctx.info, rawreq, false);
+                    this.ws.send(rawreq);
                 }
             };
             if (!MyWebSocket) {
@@ -362,10 +372,13 @@
                     var executor = opts.executor || null;
                     var info = ctx.info;
                     var target_origin = opts.targetOrigin;
+                    var sniffer = opts[optname.OPT_MSG_SNIFFER];
+                    this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
                         target.postMessage(rsp, target_origin || '*');
                     };
                     var on_message = function (event) {
+                        sniffer(info, event.data, true);
                         if (event.source && event.source !== target) {
                             return;
                         }
@@ -417,6 +430,7 @@
                             });
                         }
                         req.rid = rid;
+                        _this.sniffer(ctx.info, req, false);
                         _this.target.postMessage(req, _this.opts.targetOrigin || '*');
                     });
                 }
@@ -432,6 +446,8 @@
                 OPT_X509_VERIFY: 'X509_VERIFY',
                 OPT_PROD_MODE: 'PROD_MODE',
                 OPT_COMM_CONFIG_CB: 'COMM_CONFIG_CB',
+                OPT_MSG_SNIFFER: 'MSG_SNIFFER',
+                OPT_DISCONNECT_SNIFFER: 'DISCONNECT_SNIFFER',
                 OPT_SPEC_DIRS: 'specDirs',
                 OPT_EXECUTOR: 'executor',
                 OPT_TARGET_ORIGIN: 'targetOrigin',
@@ -859,6 +875,10 @@
                 defopts[optname.OPT_PROD_MODE] = false;
                 defopts[optname.OPT_COMM_CONFIG_CB] = null;
                 defopts[optname.OPT_RETRY_COUNT] = 1;
+                defopts[optname.OPT_MSG_SNIFFER] = function () {
+                };
+                defopts[optname.OPT_DISCONNECT_SNIFFER] = function () {
+                };
                 _.defaults(options, defopts);
                 this.options = options;
             }

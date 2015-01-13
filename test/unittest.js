@@ -773,6 +773,7 @@ call_remotes_model_as.add(
     },
     function( as, err )
     {
+        console.log( as.state.last_exception.stack );
         as.state.done( new Error( err + ": " + as.state.error_info + " at "+as.state.step ) );
     }
 ).add( function( as ){
@@ -836,6 +837,8 @@ call_interceptors_model_as.add(
             }
         ).add(function(as, res){
             res.should.equal("YES");
+            as.state.outgoing_msg_count.should.equal( 4 );
+            as.state.incomming_msg_count.should.equal( 4 );
             as.success();
         });
     },
@@ -859,6 +862,19 @@ describe( 'NativeIface', function()
                 if ( proto === 'http' )
                 {
                     agent_opts.maxSockets = 3;
+                }
+            };
+            opts[ invoker.AdvancedCCM.OPT_MSG_SNIFFER ] = function( info, msg, is_incomming )
+            {
+                if ( is_incomming )
+                {
+                    as.state.incomming_msg_count = as.state.incomming_msg_count || 0;
+                    as.state.incomming_msg_count += 1;
+                }
+                else
+                {
+                    as.state.outgoing_msg_count = as.state.outgoing_msg_count || 0;
+                    as.state.outgoing_msg_count += 1;
                 }
             };
             
@@ -891,6 +907,7 @@ describe( 'NativeIface', function()
         });
         
         it( 'should call HTTP remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -917,6 +934,7 @@ describe( 'NativeIface', function()
         });
         
         it( 'should call WS remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -945,6 +963,7 @@ describe( 'NativeIface', function()
     if ( typeof window !== 'undefined' )
     {
         it( 'should call browser:// remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -997,6 +1016,19 @@ describe( 'NativeIface', function()
             as = async_steps();
             var opts = {};
             opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+            opts[ invoker.AdvancedCCM.OPT_MSG_SNIFFER ] = function( info, msg, is_incomming )
+            {
+                if ( is_incomming )
+                {
+                    as.state.incomming_msg_count = as.state.incomming_msg_count || 0;
+                    as.state.incomming_msg_count += 1;
+                }
+                else
+                {
+                    as.state.outgoing_msg_count = as.state.outgoing_msg_count || 0;
+                    as.state.outgoing_msg_count += 1;
+                }
+            };
             ccm = new invoker.AdvancedCCM( opts );
         });
         
@@ -1077,6 +1109,7 @@ describe( 'NativeIface', function()
         });
         
         it( 'should call HTTP remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -1103,6 +1136,7 @@ describe( 'NativeIface', function()
         });
         
         it( 'should call WS remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -1131,6 +1165,7 @@ describe( 'NativeIface', function()
     if ( typeof window !== 'undefined' )
     {
         it( 'should call browser:// remotes', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
@@ -1157,6 +1192,7 @@ describe( 'NativeIface', function()
     }
         
         it( 'should call WS remotes through interceptors', function( done ){
+            this.timeout( 5000 );
             as.add(
                 function(as){
                     try {
