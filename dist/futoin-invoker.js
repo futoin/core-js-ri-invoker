@@ -471,9 +471,7 @@
                     SVC_DEFENSE: '#defense',
                     SVC_ACL: '#acl',
                     SVC_LOG: '#log',
-                    SVC_CACHE_L1: '#cachel1',
-                    SVC_CACHE_L2: '#cachel2',
-                    SVC_CACHE_L3: '#cachel3'
+                    SVC_CACHE_: '#cache.'
                 };
             _.extend(SimpleCCMPublic, common.Options);
             function SimpleCCM(options) {
@@ -483,14 +481,6 @@
             }
             _.extend(SimpleCCM, SimpleCCMPublic);
             var SimpleCCMProto = {
-                    SVC_RESOLVER: '#resolver',
-                    SVC_AUTH: '#auth',
-                    SVC_DEFENSE: '#defense',
-                    SVC_ACL: '#acl',
-                    SVC_LOG: '#log',
-                    SVC_CACHE_L1: '#cachel1',
-                    SVC_CACHE_L2: '#cachel2',
-                    SVC_CACHE_L3: '#cachel3',
                     _secure_replace: /^secure\+/,
                     _secure_test: /^(https|wss|unix):\/\//,
                     _native_iface_builder: function (ccmimpl, info) {
@@ -636,17 +626,8 @@
             SimpleCCMProto.log = function () {
                 return this.iface(this.SVC_LOG);
             };
-            SimpleCCMProto.burst = function () {
-                throw new Error(futoin_error.NotImplemented);
-            };
-            SimpleCCMProto.cache_l1 = function () {
-                return this.iface(this.SVC_CACHE_L1);
-            };
-            SimpleCCMProto.cache_l2 = function () {
-                return this.iface(this.SVC_CACHE_L2);
-            };
-            SimpleCCMProto.cache_l3 = function () {
-                return this.iface(this.SVC_CACHE_L3);
+            SimpleCCMProto.cache = function (bucket) {
+                return this.iface(this.SVC_CACHE_ + (bucket || 'default'));
             };
             SimpleCCMProto.assertIface = function (name, ifacever) {
                 var info = this._iface_info[name];

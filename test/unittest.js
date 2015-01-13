@@ -206,24 +206,24 @@ describe( 'SimpleCCM', function()
             logf = new invoker.NativeIface( ccmimpl, rawinfo );
             return logf;
         });
-        ccm.register( as, ccm.SVC_CACHE_L1, 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        ccm.register( as, ccm.SVC_CACHE_ + 'default', 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
             cl1f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl1f;
         });
-        ccm.register( as, ccm.SVC_CACHE_L2, 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        ccm.register( as, ccm.SVC_CACHE_ + "L2", 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
             cl2f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl2f;
         });
-        ccm.register( as, ccm.SVC_CACHE_L3, 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        ccm.register( as, ccm.SVC_CACHE_ + "L3", 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
             cl3f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl3f;
         });
         
         ccm.defense().should.equal( deff );
         ccm.log().should.equal( logf );
-        ccm.cache_l1().should.equal( cl1f );
-        ccm.cache_l2().should.equal( cl2f );
-        ccm.cache_l3().should.equal( cl3f );
+        ccm.cache().should.equal( cl1f );
+        ccm.cache( "L2" ).should.equal( cl2f );
+        ccm.cache( "L3" ).should.equal( cl3f );
     });
     
     it('should marked endpoints as secure', function(){
@@ -292,12 +292,6 @@ describe( 'SimpleCCM', function()
         assert.throws( function(){
             ccm.iface( 'aiface2' )
         }, 'InvokerError' );
-    });
-    
-    it('should fail on not implemented Burst API', function(){
-        assert.throws( function(){
-            ccm.burst();
-        }, 'NotImplemented' );
     });
 } );
 
@@ -1083,10 +1077,6 @@ describe( 'NativeIface', function()
                         
                         iface.should.have.property( 'testFunc' );
                         iface.should.not.have.property( 'rawUploadFunc' );
-                        
-                        assert.throws( function(){
-                            iface.burst();
-                        }, 'InvokerError' );
                         
                         assert.throws( function(){
                             iface.bindDerivedKey();
