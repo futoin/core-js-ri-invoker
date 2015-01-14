@@ -30,24 +30,24 @@
             var spectools = _require(7);
             var common = _require(3);
             var FutoInError = common.FutoInError;
-            var optname = common.Options;
             var simpleccm_impl = _require(6);
             exports = module.exports = function (options) {
                 return new module.exports.AdvancedCCMImpl(options);
             };
             function AdvancedCCMImpl(options) {
                 options = options || {};
-                var spec_dirs = options[optname.OPT_SPEC_DIRS] || [];
+                var spec_dirs = options.specDirs || [];
                 if (!(spec_dirs instanceof Array)) {
                     spec_dirs = [spec_dirs];
                 }
-                options[optname.OPT_SPEC_DIRS] = spec_dirs;
+                options.specDirs = spec_dirs;
                 simpleccm_impl.SimpleCCMImpl.call(this, options);
             }
+            var SimpleCCMImplProt = simpleccm_impl.SimpleCCMImpl.prototype;
             AdvancedCCMImpl.prototype = {
                 onRegister: function (as, info) {
-                    spectools.loadIface(as, info, info.options[optname.OPT_SPEC_DIRS]);
-                    if (!info.options[optname.OPT_PROD_MODE]) {
+                    spectools.loadIface(as, info, info.options.specDirs);
+                    if (!info.options.prodMode) {
                         spectools.checkConsistency(as, info);
                     }
                 },
@@ -84,7 +84,7 @@
                     }
                 },
                 createMessage: function (as, ctx, params) {
-                    if (!ctx.info.options[optname.OPT_PROD_MODE]) {
+                    if (!ctx.info.options.prodMode) {
                         this.checkParams(as, ctx, params);
                     }
                     var info = ctx.info;
@@ -138,11 +138,12 @@
                         as.error(FutoInError.InternalError, 'Raw result is not expected');
                     }
                 },
-                performCommon: simpleccm_impl.SimpleCCMImpl.prototype.performCommon,
-                perfomHTTP: simpleccm_impl.SimpleCCMImpl.prototype.perfomHTTP,
-                perfomWebSocket: simpleccm_impl.SimpleCCMImpl.prototype.perfomWebSocket,
-                perfomUNIX: simpleccm_impl.SimpleCCMImpl.prototype.perfomUNIX,
-                perfomBrowser: simpleccm_impl.SimpleCCMImpl.prototype.perfomBrowser
+                getComms: SimpleCCMImplProt.getComms,
+                performCommon: SimpleCCMImplProt.performCommon,
+                perfomHTTP: SimpleCCMImplProt.perfomHTTP,
+                perfomWebSocket: SimpleCCMImplProt.perfomWebSocket,
+                perfomUNIX: SimpleCCMImplProt.perfomUNIX,
+                perfomBrowser: SimpleCCMImplProt.perfomBrowser
             };
             exports.AdvancedCCMImpl = AdvancedCCMImpl;
         },
@@ -170,7 +171,6 @@
             var EventEmitter = _require(11);
             var common = _require(3);
             var FutoInError = common.FutoInError;
-            var optname = common.Options;
             var MyWebSocket = WebSocket;
             exports.HTTPComms = function () {
             };
@@ -182,7 +182,7 @@
                     });
                 },
                 _perform: function (as, ctx, req) {
-                    var sniffer = ctx.options[optname.OPT_MSG_SNIFFER];
+                    var sniffer = ctx.options.messageSniffer;
                     var httpreq = new XMLHttpRequest();
                     var url = ctx.endpoint;
                     var rawreq = ctx.upload_data;
@@ -259,7 +259,7 @@
                     var executor = opts.executor || null;
                     var info = ctx.info;
                     var _this = this;
-                    var sniffer = opts[optname.OPT_MSG_SNIFFER];
+                    var sniffer = opts.messageSniffer;
                     this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
                         var rawrsp = executor.packPayloadJSON(rsp);
@@ -267,7 +267,7 @@
                         ws.send(rawrsp);
                     };
                     var cleanup = function (event) {
-                        opts[optname.OPT_DISCONNECT_SNIFFER](info);
+                        opts.disconnectSniffer(info);
                         ws.close();
                         delete _this.ws;
                         for (var k in reqas) {
@@ -379,7 +379,7 @@
                     var executor = opts.executor || null;
                     var info = ctx.info;
                     var target_origin = opts.targetOrigin;
-                    var sniffer = opts[optname.OPT_MSG_SNIFFER];
+                    var sniffer = opts.messageSniffer;
                     this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
                         sniffer(target_origin, rsp, false);
@@ -451,11 +451,10 @@
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
                 OPT_CALL_TIMEOUT_MS: 'callTimeoutMS',
-                OPT_X509_VERIFY: 'X509_VERIFY',
-                OPT_PROD_MODE: 'PROD_MODE',
-                OPT_COMM_CONFIG_CB: 'COMM_CONFIG_CB',
-                OPT_MSG_SNIFFER: 'MSG_SNIFFER',
-                OPT_DISCONNECT_SNIFFER: 'DISCONNECT_SNIFFER',
+                OPT_PROD_MODE: 'prodMode',
+                OPT_COMM_CONFIG_CB: 'commConfigCallback',
+                OPT_MSG_SNIFFER: 'messageSniffer',
+                OPT_DISCONNECT_SNIFFER: 'disconnectSniffer',
                 OPT_SPEC_DIRS: 'specDirs',
                 OPT_EXECUTOR: 'executor',
                 OPT_TARGET_ORIGIN: 'targetOrigin',
@@ -722,6 +721,7 @@
                 this._ccmimpl = ccmimpl;
                 this._raw_info = info;
                 this._iface_info = null;
+                this._comms = {};
                 for (var fn in this._raw_info.funcs) {
                     var finfo = this._raw_info.funcs[fn];
                     if (finfo.rawupload) {
@@ -755,7 +755,7 @@
                     });
                     as.add(function (as, req) {
                         if (typeof timeout !== 'number') {
-                            timeout = ctx.info.options[invoker.SimpleCCM.OPT_CALL_TIMEOUT_MS];
+                            timeout = ctx.info.options.callTimeoutMS;
                         }
                         if (timeout > 0) {
                             as.setTimeout(timeout);
@@ -843,33 +843,33 @@
             'use strict';
             var common = _require(3);
             var FutoInError = common.FutoInError;
-            var optname = common.Options;
             var isNode = _require(8);
             var _ = _require(10);
-            var comms;
+            var comms_impl;
             if (isNode) {
                 var hidereq = require;
-                comms = hidereq('./node_comms');
+                comms_impl = hidereq('./node_comms');
             } else {
-                comms = _require(2);
+                comms_impl = _require(2);
             }
             exports = module.exports = function (options) {
                 return new module.exports.SimpleCCMImpl(options);
             };
+            var defopts = {
+                    callTimeoutMS: 30000,
+                    prodMode: false,
+                    commConfigCallback: null,
+                    retryCount: 1,
+                    messageSniffer: function () {
+                    },
+                    disconnectSniffer: function () {
+                    }
+                };
             function SimpleCCMImpl(options) {
                 options = options || {};
-                var defopts = {};
-                defopts[optname.OPT_CALL_TIMEOUT] = 30000;
-                defopts[optname.OPT_X509_VERIFY] = true;
-                defopts[optname.OPT_PROD_MODE] = false;
-                defopts[optname.OPT_COMM_CONFIG_CB] = null;
-                defopts[optname.OPT_RETRY_COUNT] = 1;
-                defopts[optname.OPT_MSG_SNIFFER] = function () {
-                };
-                defopts[optname.OPT_DISCONNECT_SNIFFER] = function () {
-                };
                 _.defaults(options, defopts);
                 this.options = options;
+                this.comms = {};
             }
             SimpleCCMImpl.prototype = {
                 onRegister: function (as, info) {
@@ -899,6 +899,28 @@
                 onDataResponse: function (as, ctx, rsp) {
                     as.success(rsp);
                 },
+                getComms: function (as, ctx, CommImpl, extra_key) {
+                    var comms;
+                    var key;
+                    var ctxopts = ctx.options;
+                    var globalopts = this.options;
+                    if (ctxopts.executor !== globalopts.executor || ctxopts.messageSniffer !== globalopts.messageSniffer || ctxopts.disconnectSniffer !== globalopts.disconnectSniffer || ctxopts.commConfigCallback !== globalopts.commConfigCallback) {
+                        comms = ctx.native_iface._comms;
+                        key = ctx.info.endpoint_scheme;
+                    } else {
+                        comms = this.comms;
+                        key = ctx.endpoint + '##' + (ctx.credentials || '') + '##' + (extra_key || '');
+                    }
+                    var c = comms[key];
+                    if (!c) {
+                        if (!CommImpl) {
+                            as.error(FutoInError.InvokerError, 'Not implemented ' + ctx.info.endpoint_scheme + ' scheme');
+                        }
+                        c = new CommImpl();
+                        comms[key] = c;
+                    }
+                    return c;
+                },
                 performCommon: function (as, ctx, req, comm) {
                     var msg;
                     var content_type;
@@ -920,18 +942,12 @@
                     });
                 },
                 perfomHTTP: function (as, ctx, req) {
-                    var native_iface = ctx.native_iface;
-                    if (!('_httpcomms' in native_iface)) {
-                        native_iface._httpcomms = new comms.HTTPComms();
-                    }
-                    this.performCommon(as, ctx, req, native_iface._httpcomms);
+                    var comms = this.getComms(as, ctx, comms_impl.HTTPComms);
+                    this.performCommon(as, ctx, req, comms);
                 },
                 perfomWebSocket: function (as, ctx, req) {
-                    var native_iface = ctx.native_iface;
-                    if (!('_wscomms' in native_iface)) {
-                        native_iface._wscomms = new comms.WSComms();
-                    }
-                    this.performCommon(as, ctx, req, native_iface._wscomms);
+                    var comms = this.getComms(as, ctx, comms_impl.WSComms);
+                    this.performCommon(as, ctx, req, comms);
                 },
                 perfomUNIX: function (as, ctx, req) {
                     void ctx;
@@ -939,14 +955,8 @@
                     as.error(FutoInError.InvokerError, 'Not implemented unix:// scheme');
                 },
                 perfomBrowser: function (as, ctx, req) {
-                    var native_iface = ctx.native_iface;
-                    if (!('_browser_comms' in native_iface)) {
-                        if (!('BrowserComms' in comms)) {
-                            as.error(FutoInError.InvokerError, 'Not implemented browser:// scheme');
-                        }
-                        native_iface._browser_comms = new comms.BrowserComms();
-                    }
-                    native_iface._browser_comms.perform(as, ctx, req);
+                    var comms = this.getComms(as, ctx, comms_impl.BrowserComms, ctx.options.targetOrigin);
+                    comms.perform(as, ctx, req);
                 }
             };
             exports.SimpleCCMImpl = SimpleCCMImpl;
