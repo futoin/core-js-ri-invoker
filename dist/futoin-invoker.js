@@ -201,6 +201,7 @@
                             params.push(encodeURIComponent(k) + '=' + encodeURIComponent(req.p[k]));
                         }
                         url += '?' + params.join('&');
+                        sniffer(ctx.info, req, false);
                     } else {
                         content_type = 'application/futoin+json';
                         rawreq = JSON.stringify(req);
@@ -216,8 +217,13 @@
                             }
                             var response = ctx.download_stream ? this.response : this.responseText;
                             if (response) {
-                                sniffer(ctx.info, response, true);
-                                as.success(response, this.getResponseHeader('content-type'));
+                                var content_type = this.getResponseHeader('content-type');
+                                if (content_type === 'application/futoin+json') {
+                                    sniffer(ctx.info, response, true);
+                                } else {
+                                    sniffer(ctx.info, '%DATA%', true);
+                                }
+                                as.success(response, content_type);
                             } else {
                                 try {
                                     as.error(FutoInError.CommError, 'Low error');
@@ -257,6 +263,7 @@
                     this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
                         var rawrsp = executor.packPayloadJSON(rsp);
+                        sniffer(info, rawrsp, false);
                         ws.send(rawrsp);
                     };
                     var cleanup = function (event) {
@@ -375,6 +382,7 @@
                     var sniffer = opts[optname.OPT_MSG_SNIFFER];
                     this.sniffer = sniffer;
                     var send_executor_rsp = function (rsp) {
+                        sniffer(target_origin, rsp, false);
                         target.postMessage(rsp, target_origin || '*');
                     };
                     var on_message = function (event) {

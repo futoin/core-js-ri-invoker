@@ -831,8 +831,8 @@ call_interceptors_model_as.add(
             }
         ).add(function(as, res){
             res.should.equal("YES");
-            as.state.outgoing_msg_count.should.equal( 4 );
-            as.state.incomming_msg_count.should.equal( 4 );
+            as.state.incomming_msg.length.should.equal( 4 );
+            as.state.outgoing_msg.length.should.equal( 4 );
             as.success();
         });
     },
@@ -851,6 +851,9 @@ describe( 'NativeIface', function()
         beforeEach(function(){
             as = async_steps();
             
+            as.state.incomming_msg = [];
+            as.state.outgoing_msg = [];
+            
             var opts = {};
             opts[invoker.SimpleCCM.OPT_COMM_CONFIG_CB] = function( proto, agent_opts ) {
                 if ( proto === 'http' )
@@ -862,13 +865,11 @@ describe( 'NativeIface', function()
             {
                 if ( is_incomming )
                 {
-                    as.state.incomming_msg_count = as.state.incomming_msg_count || 0;
-                    as.state.incomming_msg_count += 1;
+                    as.state.incomming_msg.push( msg );
                 }
                 else
                 {
-                    as.state.outgoing_msg_count = as.state.outgoing_msg_count || 0;
-                    as.state.outgoing_msg_count += 1;
+                    as.state.outgoing_msg.push( msg );
                 }
             };
             
@@ -1008,19 +1009,21 @@ describe( 'NativeIface', function()
     describe('#ifaceInfo() - AdvancedCCM', function(){
         beforeEach(function(){
             as = async_steps();
+            
+            as.state.incomming_msg = [];
+            as.state.outgoing_msg = [];
+            
             var opts = {};
             opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
             opts[ invoker.AdvancedCCM.OPT_MSG_SNIFFER ] = function( info, msg, is_incomming )
             {
                 if ( is_incomming )
                 {
-                    as.state.incomming_msg_count = as.state.incomming_msg_count || 0;
-                    as.state.incomming_msg_count += 1;
+                    as.state.incomming_msg.push( msg );
                 }
                 else
                 {
-                    as.state.outgoing_msg_count = as.state.outgoing_msg_count || 0;
-                    as.state.outgoing_msg_count += 1;
+                    as.state.outgoing_msg.push( msg );
                 }
             };
             ccm = new invoker.AdvancedCCM( opts );
