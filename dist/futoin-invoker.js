@@ -168,7 +168,7 @@
         },
         function (module, exports) {
             'use strict';
-            var EventEmitter = _require(11);
+            var ee = _require(9);
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var MyWebSocket = WebSocket;
@@ -246,7 +246,7 @@
             exports.WSComms = function () {
                 this.rid = 1;
                 this.reqas = {};
-                this.evt = new EventEmitter();
+                this.evt = ee();
             };
             exports.WSComms.prototype = {
                 _waiting_open: false,
@@ -321,7 +321,7 @@
                             };
                             _this.evt.once('open', on_open);
                             as.setCancel(function () {
-                                _this.evt.removeListener('open', on_open);
+                                _this.evt.off('open', on_open);
                             });
                         });
                     }
@@ -446,7 +446,7 @@
         },
         function (module, exports) {
             'use strict';
-            var async_steps = _require(9);
+            var async_steps = _require(24);
             exports.AsyncSteps = async_steps;
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
@@ -468,7 +468,7 @@
             var common = _require(3);
             var futoin_error = common.FutoInError;
             var native_iface = _require(5);
-            var _ = _require(10);
+            var _ = _require(25);
             var simple_ccm = _require(6);
             var advanced_ccm = _require(0);
             var spectools = _require(7);
@@ -692,7 +692,7 @@
         function (module, exports) {
             'use strict';
             var invoker = _require(4);
-            var _ = _require(10);
+            var _ = _require(25);
             exports = module.exports = function (ccmimpl, info) {
                 return new module.exports.NativeIface(ccmimpl, info);
             };
@@ -844,7 +844,7 @@
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var isNode = _require(8);
-            var _ = _require(10);
+            var _ = _require(25);
             var comms_impl;
             if (isNode) {
                 var hidereq = require;
@@ -968,7 +968,7 @@
             var fs;
             var request;
             var isNode = _require(8);
-            var _ = _require(10);
+            var _ = _require(25);
             if (isNode) {
                 var hidereq = require;
                 fs = hidereq('fs');
@@ -1413,217 +1413,313 @@
             }
         },
         function (module, exports) {
+            'use strict';
+            var d = _require(10), callable = _require(19), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
+                    configurable: true,
+                    enumerable: false,
+                    writable: true
+                }, on, once, off, emit, methods, descriptors, base;
+            on = function (type, listener) {
+                var data;
+                callable(listener);
+                if (!hasOwnProperty.call(this, '__ee__')) {
+                    data = descriptor.value = create(null);
+                    defineProperty(this, '__ee__', descriptor);
+                    descriptor.value = null;
+                } else {
+                    data = this.__ee__;
+                }
+                if (!data[type])
+                    data[type] = listener;
+                else if (typeof data[type] === 'object')
+                    data[type].push(listener);
+                else
+                    data[type] = [
+                        data[type],
+                        listener
+                    ];
+                return this;
+            };
+            once = function (type, listener) {
+                var once, self;
+                callable(listener);
+                self = this;
+                on.call(this, type, once = function () {
+                    off.call(self, type, once);
+                    apply.call(listener, this, arguments);
+                });
+                once.__eeOnceListener__ = listener;
+                return this;
+            };
+            off = function (type, listener) {
+                var data, listeners, candidate, i;
+                callable(listener);
+                if (!hasOwnProperty.call(this, '__ee__'))
+                    return this;
+                data = this.__ee__;
+                if (!data[type])
+                    return this;
+                listeners = data[type];
+                if (typeof listeners === 'object') {
+                    for (i = 0; candidate = listeners[i]; ++i) {
+                        if (candidate === listener || candidate.__eeOnceListener__ === listener) {
+                            if (listeners.length === 2)
+                                data[type] = listeners[i ? 0 : 1];
+                            else
+                                listeners.splice(i, 1);
+                        }
+                    }
+                } else {
+                    if (listeners === listener || listeners.__eeOnceListener__ === listener) {
+                        delete data[type];
+                    }
+                }
+                return this;
+            };
+            emit = function (type) {
+                var i, l, listener, listeners, args;
+                if (!hasOwnProperty.call(this, '__ee__'))
+                    return;
+                listeners = this.__ee__[type];
+                if (!listeners)
+                    return;
+                if (typeof listeners === 'object') {
+                    l = arguments.length;
+                    args = new Array(l - 1);
+                    for (i = 1; i < l; ++i)
+                        args[i - 1] = arguments[i];
+                    listeners = listeners.slice();
+                    for (i = 0; listener = listeners[i]; ++i) {
+                        apply.call(listener, this, args);
+                    }
+                } else {
+                    switch (arguments.length) {
+                    case 1:
+                        call.call(listeners, this);
+                        break;
+                    case 2:
+                        call.call(listeners, this, arguments[1]);
+                        break;
+                    case 3:
+                        call.call(listeners, this, arguments[1], arguments[2]);
+                        break;
+                    default:
+                        l = arguments.length;
+                        args = new Array(l - 1);
+                        for (i = 1; i < l; ++i) {
+                            args[i - 1] = arguments[i];
+                        }
+                        apply.call(listeners, this, args);
+                    }
+                }
+            };
+            methods = {
+                on: on,
+                once: once,
+                off: off,
+                emit: emit
+            };
+            descriptors = {
+                on: d(on),
+                once: d(once),
+                off: d(off),
+                emit: d(emit)
+            };
+            base = defineProperties({}, descriptors);
+            module.exports = exports = function (o) {
+                return o == null ? create(base) : defineProperties(Object(o), descriptors);
+            };
+            exports.methods = methods;
+        },
+        function (module, exports) {
+            'use strict';
+            var assign = _require(11), normalizeOpts = _require(18), isCallable = _require(14), contains = _require(21), d;
+            d = module.exports = function (dscr, value) {
+                var c, e, w, options, desc;
+                if (arguments.length < 2 || typeof dscr !== 'string') {
+                    options = value;
+                    value = dscr;
+                    dscr = null;
+                } else {
+                    options = arguments[2];
+                }
+                if (dscr == null) {
+                    c = w = true;
+                    e = false;
+                } else {
+                    c = contains.call(dscr, 'c');
+                    e = contains.call(dscr, 'e');
+                    w = contains.call(dscr, 'w');
+                }
+                desc = {
+                    value: value,
+                    configurable: c,
+                    enumerable: e,
+                    writable: w
+                };
+                return !options ? desc : assign(normalizeOpts(options), desc);
+            };
+            d.gs = function (dscr, get, set) {
+                var c, e, options, desc;
+                if (typeof dscr !== 'string') {
+                    options = set;
+                    set = get;
+                    get = dscr;
+                    dscr = null;
+                } else {
+                    options = arguments[3];
+                }
+                if (get == null) {
+                    get = undefined;
+                } else if (!isCallable(get)) {
+                    options = get;
+                    get = set = undefined;
+                } else if (set == null) {
+                    set = undefined;
+                } else if (!isCallable(set)) {
+                    options = set;
+                    set = undefined;
+                }
+                if (dscr == null) {
+                    c = true;
+                    e = false;
+                } else {
+                    c = contains.call(dscr, 'c');
+                    e = contains.call(dscr, 'e');
+                }
+                desc = {
+                    get: get,
+                    set: set,
+                    configurable: c,
+                    enumerable: e
+                };
+                return !options ? desc : assign(normalizeOpts(options), desc);
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = _require(12)() ? Object.assign : _require(13);
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function () {
+                var assign = Object.assign, obj;
+                if (typeof assign !== 'function')
+                    return false;
+                obj = { foo: 'raz' };
+                assign(obj, { bar: 'dwa' }, { trzy: 'trzy' });
+                return obj.foo + obj.bar + obj.trzy === 'razdwatrzy';
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var keys = _require(15), value = _require(20), max = Math.max;
+            module.exports = function (dest, src) {
+                var error, i, l = max(arguments.length, 2), assign;
+                dest = Object(value(dest));
+                assign = function (key) {
+                    try {
+                        dest[key] = src[key];
+                    } catch (e) {
+                        if (!error)
+                            error = e;
+                    }
+                };
+                for (i = 1; i < l; ++i) {
+                    src = arguments[i];
+                    keys(src).forEach(assign);
+                }
+                if (error !== undefined)
+                    throw error;
+                return dest;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (obj) {
+                return typeof obj === 'function';
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = _require(16)() ? Object.keys : _require(17);
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function () {
+                try {
+                    Object.keys('primitive');
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var keys = Object.keys;
+            module.exports = function (object) {
+                return keys(object == null ? object : Object(object));
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var assign = _require(11), forEach = Array.prototype.forEach, create = Object.create, getPrototypeOf = Object.getPrototypeOf, process;
+            process = function (src, obj) {
+                var proto = getPrototypeOf(src);
+                return assign(proto ? process(proto, obj) : obj, src);
+            };
+            module.exports = function (options) {
+                var result = create(null);
+                forEach.call(arguments, function (options) {
+                    if (options == null)
+                        return;
+                    process(Object(options), result);
+                });
+                return result;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (fn) {
+                if (typeof fn !== 'function')
+                    throw new TypeError(fn + ' is not a function');
+                return fn;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (value) {
+                if (value == null)
+                    throw new TypeError('Cannot use null or undefined');
+                return value;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = _require(22)() ? String.prototype.contains : _require(23);
+        },
+        function (module, exports) {
+            'use strict';
+            var str = 'razdwatrzy';
+            module.exports = function () {
+                if (typeof str.contains !== 'function')
+                    return false;
+                return str.contains('dwa') === true && str.contains('foo') === false;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var indexOf = String.prototype.indexOf;
+            module.exports = function (searchString) {
+                return indexOf.call(this, searchString, arguments[1]) > -1;
+            };
+        },
+        function (module, exports) {
             module.exports = __external_$as;
         },
         function (module, exports) {
             module.exports = __external__;
-        },
-        function (module, exports) {
-            ;
-            (function () {
-                'use strict';
-                function EventEmitter() {
-                }
-                var proto = EventEmitter.prototype;
-                var exports = this;
-                var originalGlobalValue = exports.EventEmitter;
-                function indexOfListener(listeners, listener) {
-                    var i = listeners.length;
-                    while (i--) {
-                        if (listeners[i].listener === listener) {
-                            return i;
-                        }
-                    }
-                    return -1;
-                }
-                function alias(name) {
-                    return function aliasClosure() {
-                        return this[name].apply(this, arguments);
-                    };
-                }
-                proto.getListeners = function getListeners(evt) {
-                    var events = this._getEvents();
-                    var response;
-                    var key;
-                    if (evt instanceof RegExp) {
-                        response = {};
-                        for (key in events) {
-                            if (events.hasOwnProperty(key) && evt.test(key)) {
-                                response[key] = events[key];
-                            }
-                        }
-                    } else {
-                        response = events[evt] || (events[evt] = []);
-                    }
-                    return response;
-                };
-                proto.flattenListeners = function flattenListeners(listeners) {
-                    var flatListeners = [];
-                    var i;
-                    for (i = 0; i < listeners.length; i += 1) {
-                        flatListeners.push(listeners[i].listener);
-                    }
-                    return flatListeners;
-                };
-                proto.getListenersAsObject = function getListenersAsObject(evt) {
-                    var listeners = this.getListeners(evt);
-                    var response;
-                    if (listeners instanceof Array) {
-                        response = {};
-                        response[evt] = listeners;
-                    }
-                    return response || listeners;
-                };
-                proto.addListener = function addListener(evt, listener) {
-                    var listeners = this.getListenersAsObject(evt);
-                    var listenerIsWrapped = typeof listener === 'object';
-                    var key;
-                    for (key in listeners) {
-                        if (listeners.hasOwnProperty(key) && indexOfListener(listeners[key], listener) === -1) {
-                            listeners[key].push(listenerIsWrapped ? listener : {
-                                listener: listener,
-                                once: false
-                            });
-                        }
-                    }
-                    return this;
-                };
-                proto.on = alias('addListener');
-                proto.addOnceListener = function addOnceListener(evt, listener) {
-                    return this.addListener(evt, {
-                        listener: listener,
-                        once: true
-                    });
-                };
-                proto.once = alias('addOnceListener');
-                proto.defineEvent = function defineEvent(evt) {
-                    this.getListeners(evt);
-                    return this;
-                };
-                proto.defineEvents = function defineEvents(evts) {
-                    for (var i = 0; i < evts.length; i += 1) {
-                        this.defineEvent(evts[i]);
-                    }
-                    return this;
-                };
-                proto.removeListener = function removeListener(evt, listener) {
-                    var listeners = this.getListenersAsObject(evt);
-                    var index;
-                    var key;
-                    for (key in listeners) {
-                        if (listeners.hasOwnProperty(key)) {
-                            index = indexOfListener(listeners[key], listener);
-                            if (index !== -1) {
-                                listeners[key].splice(index, 1);
-                            }
-                        }
-                    }
-                    return this;
-                };
-                proto.off = alias('removeListener');
-                proto.addListeners = function addListeners(evt, listeners) {
-                    return this.manipulateListeners(false, evt, listeners);
-                };
-                proto.removeListeners = function removeListeners(evt, listeners) {
-                    return this.manipulateListeners(true, evt, listeners);
-                };
-                proto.manipulateListeners = function manipulateListeners(remove, evt, listeners) {
-                    var i;
-                    var value;
-                    var single = remove ? this.removeListener : this.addListener;
-                    var multiple = remove ? this.removeListeners : this.addListeners;
-                    if (typeof evt === 'object' && !(evt instanceof RegExp)) {
-                        for (i in evt) {
-                            if (evt.hasOwnProperty(i) && (value = evt[i])) {
-                                if (typeof value === 'function') {
-                                    single.call(this, i, value);
-                                } else {
-                                    multiple.call(this, i, value);
-                                }
-                            }
-                        }
-                    } else {
-                        i = listeners.length;
-                        while (i--) {
-                            single.call(this, evt, listeners[i]);
-                        }
-                    }
-                    return this;
-                };
-                proto.removeEvent = function removeEvent(evt) {
-                    var type = typeof evt;
-                    var events = this._getEvents();
-                    var key;
-                    if (type === 'string') {
-                        delete events[evt];
-                    } else if (evt instanceof RegExp) {
-                        for (key in events) {
-                            if (events.hasOwnProperty(key) && evt.test(key)) {
-                                delete events[key];
-                            }
-                        }
-                    } else {
-                        delete this._events;
-                    }
-                    return this;
-                };
-                proto.removeAllListeners = alias('removeEvent');
-                proto.emitEvent = function emitEvent(evt, args) {
-                    var listeners = this.getListenersAsObject(evt);
-                    var listener;
-                    var i;
-                    var key;
-                    var response;
-                    for (key in listeners) {
-                        if (listeners.hasOwnProperty(key)) {
-                            i = listeners[key].length;
-                            while (i--) {
-                                listener = listeners[key][i];
-                                if (listener.once === true) {
-                                    this.removeListener(evt, listener.listener);
-                                }
-                                response = listener.listener.apply(this, args || []);
-                                if (response === this._getOnceReturnValue()) {
-                                    this.removeListener(evt, listener.listener);
-                                }
-                            }
-                        }
-                    }
-                    return this;
-                };
-                proto.trigger = alias('emitEvent');
-                proto.emit = function emit(evt) {
-                    var args = Array.prototype.slice.call(arguments, 1);
-                    return this.emitEvent(evt, args);
-                };
-                proto.setOnceReturnValue = function setOnceReturnValue(value) {
-                    this._onceReturnValue = value;
-                    return this;
-                };
-                proto._getOnceReturnValue = function _getOnceReturnValue() {
-                    if (this.hasOwnProperty('_onceReturnValue')) {
-                        return this._onceReturnValue;
-                    } else {
-                        return true;
-                    }
-                };
-                proto._getEvents = function _getEvents() {
-                    return this._events || (this._events = {});
-                };
-                EventEmitter.noConflict = function noConflict() {
-                    exports.EventEmitter = originalGlobalValue;
-                    return EventEmitter;
-                };
-                if (typeof define === 'function' && define.amd) {
-                    define(function () {
-                        return EventEmitter;
-                    });
-                } else if (typeof module === 'object' && module.exports) {
-                    module.exports = EventEmitter;
-                } else {
-                    exports.EventEmitter = EventEmitter;
-                }
-            }.call(this));
         }
     ];
     return _require(1);
