@@ -68,6 +68,10 @@ describe( 'SimpleCCM', function()
                 .add(
                     function( as ){
                         try {
+                            as.state.reg_fired = false;
+                            ccm.once( 'register', function(){
+                                as.state.reg_fired = true;
+                            });
                             ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
                         } catch ( e ) {
                             done( e );
@@ -77,7 +81,10 @@ describe( 'SimpleCCM', function()
                         done( new Error( err + ": " + as.state.error_info ) );
                     }
                 )
-                .add( function(as){ done(); })
+                .add( function(as){
+                    as.state.reg_fired.should.be.true;
+                    done();
+                })
                 .execute();
         }
     );
@@ -91,15 +98,17 @@ describe( 'SimpleCCM', function()
                 ccm.assertIface( 'myiface', 'iface.a:1.1' );
                 ccm.assertIface( 'otherface', 'iface.b:1.2' );
                 
+                as.state.reg_fired = false;
+                ccm.once('unregister', function()
+                {
+                    as.state.reg_fired = true;
+                });
                 ccm.unRegister( 'myiface' );
                 ccm.assertIface( 'otherface', 'iface.b:1.2' );
                 
                 assert.throws( function(){
                     ccm.assertIface( 'myiface', 'iface.a:1.1' );
                 }, 'InvokerError' );
-                
-                as.success();
-                done();
             } catch ( e ){
                 console.dir( e.stack );
                 console.log( as.state.error_info );
@@ -109,8 +118,13 @@ describe( 'SimpleCCM', function()
             {
                 console.log( err + ": " + as.state.error_info );
             }
-        );
-        as.execute();
+        )
+        .add( function( as )
+        {
+            as.state.reg_fired.should.be.true;
+            done();
+        } )
+        .execute();
     });
     
     it('should create interface alias', function( done ){
@@ -762,6 +776,28 @@ call_remotes_model_as.add(
         ).add(
             function( as, res ){
                 res.pong.should.equal( "Мои данные на русском un latviešu valodā" );
+            }
+        ).add(
+            function( as )
+            {
+                as.state.close_called = false;
+                as.state.iface_close_called = false;
+
+                ccm.once( 'close', function(){
+                    as.state.close_called = true;
+                });
+                
+                iface.once( 'close', function(){
+                    as.state.iface_close_called = true;
+                });
+                
+                ccm.close();
+            }
+        ).add(
+            function( as )
+            {
+                as.state.close_called.should.be.true;
+                as.state.iface_close_called.should.be.true;
             }
         );
     },

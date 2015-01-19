@@ -175,6 +175,8 @@
             exports.HTTPComms = function () {
             };
             exports.HTTPComms.prototype = {
+                close: function () {
+                },
                 perform: function (as, ctx, req) {
                     var _this = this;
                     as.add(function (as) {
@@ -279,6 +281,7 @@
                         delete _this.reqas;
                         _this.reqas = {};
                         _this._waiting_open = false;
+                        ctx.native_iface.emit('disconnect');
                     };
                     ws.onclose = cleanup;
                     ws.onerror = cleanup;
@@ -286,6 +289,7 @@
                         void event;
                         _this._waiting_open = false;
                         _this.evt.emit('open');
+                        ctx.native_iface.emit('connect');
                     };
                     ws.onmessage = function (event) {
                         sniffer(info, event.data, true);
@@ -305,6 +309,11 @@
                             }
                         }
                     };
+                },
+                close: function () {
+                    if (this.ws) {
+                        this.ws.close();
+                    }
                 },
                 perform: function (as, ctx, req) {
                     var _this = this;
@@ -418,12 +427,18 @@
                         }
                     };
                     browser_window.addEventListener('message', on_message, false);
+                    ctx.native_iface.emit('connect');
+                },
+                close: function () {
+                    if (this.target) {
+                        this.target = null;
+                    }
                 },
                 perform: function (as, ctx, req) {
                     if (ctx.upload_data || ctx.download_stream) {
                         as.error(FutoInError.CommError, 'Raw Data is not supported by Web Messaging yet');
                     }
-                    if (!('target' in this)) {
+                    if (!this.target) {
                         this.init(as, ctx);
                     }
                     var _this = this;
@@ -472,6 +487,7 @@
             var simple_ccm = _require(6);
             var advanced_ccm = _require(0);
             var spectools = _require(7);
+            var ee = _require(9);
             var SimpleCCMPublic = {
                     SVC_RESOLVER: '#resolver',
                     SVC_AUTH: '#auth',
@@ -482,9 +498,11 @@
                 };
             _.extend(SimpleCCMPublic, common.Options);
             function SimpleCCM(options) {
+                ee(this);
                 this._iface_info = {};
                 this._iface_impl = {};
                 this._impl = simple_ccm(options);
+                _.extend(this, SimpleCCMProto);
             }
             _.extend(SimpleCCM, SimpleCCMPublic);
             var SimpleCCMProto = {
@@ -585,6 +603,7 @@
                         if (is_channel_reg) {
                             as.success(info, _this._native_iface_builder(_this._impl, info));
                         }
+                        _this.emit('register', name, ifacever, info);
                     });
                 }, function (as, err) {
                     void as;
@@ -615,7 +634,11 @@
                 var regname = info.regname;
                 if (regname === name) {
                     delete this._iface_info[regname];
-                    delete this._iface_impl[regname];
+                    var impl = this._iface_impl[regname];
+                    if (impl) {
+                        impl._close();
+                        delete this._iface_impl[regname];
+                    }
                     if (info.aliases) {
                         var aliases = info.aliases;
                         for (var i = 0; i < aliases.length; ++i) {
@@ -626,6 +649,7 @@
                     delete this._iface_info[name];
                     info.aliases.splice(info.aliases.indexOf(name), 0);
                 }
+                this.emit('unregister', name, info);
             };
             SimpleCCMProto.defense = function () {
                 return this.iface(this.SVC_DEFENSE);
@@ -663,12 +687,25 @@
                 } else {
                     info.aliases.push(alias);
                 }
+                this.emit('register', alias, info.iface + ':' + info.version, info);
             };
-            SimpleCCM.prototype = SimpleCCMProto;
+            SimpleCCMProto.close = function () {
+                var impls = this._iface_impl;
+                for (var n in impls) {
+                    impls[n]._close();
+                }
+                var comms = this._impl.comms;
+                for (var k in comms) {
+                    comms[k].close();
+                }
+                this.emit('close');
+            };
             function AdvancedCCM(options) {
+                ee(this);
                 this._iface_info = {};
                 this._iface_impl = {};
                 this._impl = advanced_ccm(options);
+                _.extend(this, AdvancedCCMProto);
             }
             _.extend(AdvancedCCM, SimpleCCMPublic);
             var AdvancedCCMProto = {};
@@ -680,7 +717,6 @@
             AdvancedCCMProto.cacheInit = function (as) {
                 void as;
             };
-            AdvancedCCM.prototype = AdvancedCCMProto;
             exports.SimpleCCM = SimpleCCM;
             exports.AdvancedCCM = AdvancedCCM;
             exports.FutoInError = futoin_error;
@@ -693,6 +729,7 @@
             'use strict';
             var invoker = _require(4);
             var _ = _require(25);
+            var ee = _require(9);
             exports = module.exports = function (ccmimpl, info) {
                 return new module.exports.NativeIface(ccmimpl, info);
             };
@@ -722,6 +759,8 @@
                 this._raw_info = info;
                 this._iface_info = null;
                 this._comms = {};
+                _.extend(this, NativeIfaceProto);
+                ee(this);
                 for (var fn in this._raw_info.funcs) {
                     var finfo = this._raw_info.funcs[fn];
                     if (finfo.rawupload) {
@@ -733,110 +772,115 @@
                     this[fn] = this._member_call_generate(fn, finfo);
                 }
             }
-            NativeIface.prototype = {
-                call: function (as, name, params, upload_data, download_stream, timeout) {
-                    params = params || {};
-                    var raw_info = this._raw_info;
-                    var ctx = {
-                            ccmimpl: this._ccmimpl,
-                            name: name,
-                            info: raw_info,
-                            upload_data: upload_data,
-                            download_stream: download_stream,
-                            rsp_content_type: null,
-                            native_iface: this,
-                            options: raw_info.options,
-                            endpoint: raw_info.endpoint,
-                            expect_response: true
-                        };
-                    var ccmimpl = this._ccmimpl;
-                    as.add(function (as) {
-                        ccmimpl.createMessage(as, ctx, params);
-                    });
-                    as.add(function (as, req) {
-                        if (typeof timeout !== 'number') {
-                            timeout = ctx.info.options.callTimeoutMS;
-                        }
-                        if (timeout > 0) {
-                            as.setTimeout(timeout);
-                        }
-                        var scheme = raw_info.endpoint_scheme;
-                        if (scheme === 'http' || scheme === 'https') {
-                            ccmimpl.perfomHTTP(as, ctx, req);
-                        } else if (scheme === 'ws' || scheme === 'wss') {
-                            var finfo;
-                            var rawresult = ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult;
-                            if (ctx.upload_data || rawresult) {
-                                ctx.endpoint = ctx.endpoint.replace('ws', 'http');
-                                ctx.rawresult = rawresult;
-                                ccmimpl.perfomHTTP(as, ctx, req);
-                            } else {
-                                ccmimpl.perfomWebSocket(as, ctx, req);
-                            }
-                        } else if (ctx.upload_data) {
-                            as.error(invoker.FutoInError.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
-                        } else if (ctx.download_stream) {
-                            as.error(invoker.FutoInError.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
-                        } else if (scheme === 'browser') {
-                            ccmimpl.perfomBrowser(as, ctx, req);
-                        } else if (scheme === 'unix') {
-                            ccmimpl.perfomUNIX(as, ctx, req);
-                        } else if (scheme === 'callback') {
-                            ctx.endpoint(as, ctx, req);
-                        } else {
-                            as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
-                        }
-                        as.add(function (as, rsp, content_type) {
-                            if (!ctx.expect_response) {
-                                as.success();
-                            } else if (ctx.download_stream) {
-                                as.success(true);
-                            } else if (content_type === 'application/futoin+json') {
-                                if (typeof rsp === 'string') {
-                                    try {
-                                        rsp = JSON.parse(rsp);
-                                    } catch (e) {
-                                        as.error(invoker.FutoInError.CommError, 'JSON:' + e.message);
-                                    }
-                                }
-                                ccmimpl.onMessageResponse(as, ctx, rsp);
-                            } else {
-                                ccmimpl.onDataResponse(as, ctx, rsp);
-                            }
+            var NativeIfaceProto = {
+                    call: function (as, name, params, upload_data, download_stream, timeout) {
+                        params = params || {};
+                        var raw_info = this._raw_info;
+                        var ctx = {
+                                ccmimpl: this._ccmimpl,
+                                name: name,
+                                info: raw_info,
+                                upload_data: upload_data,
+                                download_stream: download_stream,
+                                rsp_content_type: null,
+                                native_iface: this,
+                                options: raw_info.options,
+                                endpoint: raw_info.endpoint,
+                                expect_response: true
+                            };
+                        var ccmimpl = this._ccmimpl;
+                        as.add(function (as) {
+                            ccmimpl.createMessage(as, ctx, params);
                         });
-                    });
-                },
-                _member_call_intercept: function (as, name, finfo, args) {
-                    var arginfo = finfo.params;
-                    var keys = Object.keys(arginfo);
-                    if (args.length > keys.length) {
-                        as.error(invoker.FutoInError.InvokerError, 'Unknown parameters');
-                    } else if (args.length < finfo.min_args) {
-                        as.error(invoker.FutoInError.InvokerError, 'Missing parameters');
-                    } else if (args.length < keys.length) {
-                        keys = keys.splice(0, args.length);
+                        as.add(function (as, req) {
+                            if (typeof timeout !== 'number') {
+                                timeout = ctx.info.options.callTimeoutMS;
+                            }
+                            if (timeout > 0) {
+                                as.setTimeout(timeout);
+                            }
+                            var scheme = raw_info.endpoint_scheme;
+                            if (scheme === 'http' || scheme === 'https') {
+                                ccmimpl.perfomHTTP(as, ctx, req);
+                            } else if (scheme === 'ws' || scheme === 'wss') {
+                                var finfo;
+                                var rawresult = ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult;
+                                if (ctx.upload_data || rawresult) {
+                                    ctx.endpoint = ctx.endpoint.replace('ws', 'http');
+                                    ctx.rawresult = rawresult;
+                                    ccmimpl.perfomHTTP(as, ctx, req);
+                                } else {
+                                    ccmimpl.perfomWebSocket(as, ctx, req);
+                                }
+                            } else if (ctx.upload_data) {
+                                as.error(invoker.FutoInError.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
+                            } else if (ctx.download_stream) {
+                                as.error(invoker.FutoInError.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
+                            } else if (scheme === 'browser') {
+                                ccmimpl.perfomBrowser(as, ctx, req);
+                            } else if (scheme === 'unix') {
+                                ccmimpl.perfomUNIX(as, ctx, req);
+                            } else if (scheme === 'callback') {
+                                ctx.endpoint(as, ctx, req);
+                            } else {
+                                as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
+                            }
+                            as.add(function (as, rsp, content_type) {
+                                if (!ctx.expect_response) {
+                                    as.success();
+                                } else if (ctx.download_stream) {
+                                    as.success(true);
+                                } else if (content_type === 'application/futoin+json') {
+                                    if (typeof rsp === 'string') {
+                                        try {
+                                            rsp = JSON.parse(rsp);
+                                        } catch (e) {
+                                            as.error(invoker.FutoInError.CommError, 'JSON:' + e.message);
+                                        }
+                                    }
+                                    ccmimpl.onMessageResponse(as, ctx, rsp);
+                                } else {
+                                    ccmimpl.onDataResponse(as, ctx, rsp);
+                                }
+                            });
+                        });
+                    },
+                    _member_call_intercept: function (as, name, finfo, args) {
+                        var arginfo = finfo.params;
+                        var keys = Object.keys(arginfo);
+                        if (args.length > keys.length) {
+                            as.error(invoker.FutoInError.InvokerError, 'Unknown parameters');
+                        } else if (args.length < finfo.min_args) {
+                            as.error(invoker.FutoInError.InvokerError, 'Missing parameters');
+                        } else if (args.length < keys.length) {
+                            keys = keys.splice(0, args.length);
+                        }
+                        var params = _.object(keys, args);
+                        this.call(as, name, params);
+                    },
+                    _member_call_generate: function (name, finfo) {
+                        return function (as) {
+                            this._member_call_intercept(as, name, finfo, Array.prototype.slice.call(arguments, 1));
+                        };
+                    },
+                    ifaceInfo: function () {
+                        if (!this._iface_info) {
+                            this._iface_info = new InterfaceInfo(this._raw_info);
+                        }
+                        return this._iface_info;
+                    },
+                    bindDerivedKey: function (as) {
+                        void as;
+                        throw new Error(invoker.FutoInError.InvokerError, 'Not Implemented');
+                    },
+                    _close: function () {
+                        var comms = this._comms;
+                        for (var k in comms) {
+                            comms[k].close();
+                        }
+                        this.emit('close');
                     }
-                    var params = _.object(keys, args);
-                    this.call(as, name, params);
-                },
-                _member_call_generate: function (name, finfo) {
-                    return function (as) {
-                        this._member_call_intercept(as, name, finfo, Array.prototype.slice.call(arguments, 1));
-                    };
-                },
-                ifaceInfo: function () {
-                    if (!this._iface_info) {
-                        this._iface_info = new InterfaceInfo(this._raw_info);
-                    }
-                    return this._iface_info;
-                },
-                burst: function () {
-                    throw new Error(invoker.FutoInError.InvokerError, 'Not Implemented');
-                },
-                bindDerivedKey: function () {
-                    throw new Error(invoker.FutoInError.InvokerError, 'Not Implemented');
-                }
-            };
+                };
             exports.NativeIface = NativeIface;
         },
         function (module, exports) {

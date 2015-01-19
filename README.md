@@ -127,8 +127,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 * [class: NativeIface](#NativeIface)
   * [new NativeIface()](#new_NativeIface)
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
-  * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
-  * [nativeIface.burst()](#NativeIface#burst)
+  * [nativeIface.call()](#NativeIface#call)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
 * [class: spectools](#spectools)
   * [new spectools()](#new_spectools)
@@ -278,8 +277,7 @@ Get list of interface constraints, may be null
 * [class: NativeIface](#NativeIface)
   * [new NativeIface()](#new_NativeIface)
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
-  * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
-  * [nativeIface.burst()](#NativeIface#burst)
+  * [nativeIface.call()](#NativeIface#call)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
 
 <a name="new_NativeIface"></a>
@@ -300,14 +298,9 @@ Result is passed through AsyncSteps.success() as a map.
 - \[download_stream\] `stream.Writable` - output stream for raw download data  
 - \[timeout\] `int` - if provided, overrides the default. <=0 - disables timeout  
 
-<a name="NativeIface#ifaceInfo"></a>
-##nativeIface.ifaceInfo()
+<a name="NativeIface#call"></a>
+##nativeIface.call()
 Get interface info
-
-**Returns**: `object`  
-<a name="NativeIface#burst"></a>
-##nativeIface.burst()
-Returns extended API interface as defined in [FTN10 Burst Calls][]
 
 **Returns**: `object`  
 <a name="NativeIface#bindDerivedKey"></a>
