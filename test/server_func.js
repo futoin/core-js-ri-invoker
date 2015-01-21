@@ -1,5 +1,7 @@
 
 var fail_next = false;
+var log_count = 0;
+var cached_value;
 
 function processServerRequest( freq, data )
 {
@@ -7,7 +9,7 @@ function processServerRequest( freq, data )
 
     if ( func.length !== 3 )
     {
-        return { e : 'InvalidReuquest' };
+        return { e : 'InvalidRequest' };
     }
     else if ( func[0] === 'futoin.log' &&
               func[1] === '1.0' )
@@ -29,10 +31,35 @@ function processServerRequest( freq, data )
             return null;
         }
 
-        this.log_count = this.log_count || 0;
-        this.log_count++;
+        ++log_count;
 
         return '';
+    }
+    else if ( func[0] === 'futoin.cache' &&
+              func[1] === '1.0' )
+    {
+        if ( freq.p.key !== 'mykey1_2' ||
+             ( func[2] === 'set' && freq.p.ttl !== 10 ) )
+        {
+            return { e : 'InvalidRequest', edesc: JSON.stringify( freq ) };
+        }
+
+        switch ( func[2] )
+        {
+            case 'set':
+                cached_value = freq.p.value;
+                return { value: cached_value };
+                
+            case 'get':
+                if ( cached_value )
+                {
+                    return { value: cached_value };
+                }
+                else
+                {
+                    return { e: 'CacheMiss' };
+                }
+        }
     }
     else if ( func[0] !== 'fileface.a' )
     {
@@ -105,7 +132,7 @@ function processServerRequest( freq, data )
             return { pong : freq.p.ping };
             
         case "getLogCount":
-            return { count: this.log_count };
+            return { count: log_count };
     }
     
     return { e : 'InvalidFunction' };

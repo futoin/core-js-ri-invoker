@@ -20,10 +20,17 @@ Reference implementation of:
     
     FTN3: FutoIn Interface Definition
     Version: 1.1
-
     
-Spec FTN7: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
-Spec FTN3: [FTN3: FutoIn Interface Definition v1.x](http://specs.futoin.org/final/preview/ftn3_iface_definition.html)
+    FTN9: FutoIn Interface - AuditLog
+    Version: 1.0 (client)
+
+    FTN14: FutoIn Cache
+    Version: 1.0 (client)
+    
+* Spec FTN7: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
+* Spec FTN3: [FTN3: FutoIn Interface Definition v1.x](http://specs.futoin.org/final/preview/ftn3_iface_definition.html)
+* Spec FTN9: [FTN9: FutoIn Interface - AuditLog v1.x](http://specs.futoin.org/final/preview/ftn9_if_auditlog.html)
+* Spec FTN14: [FTN14: FutoIn Cache v1.x](http://specs.futoin.org/final/preview/ftn14_cache.html)
 
 [Web Site](http://futoin.org/)
 
@@ -117,6 +124,11 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 
 **Classes**
 
+* [class: CacheFace](#CacheFace)
+  * [new CacheFace()](#new_CacheFace)
+  * [CacheFace.ifacespec](#CacheFace.ifacespec)
+  * [CacheFace.register()](#CacheFace.register)
+  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl)](#CacheFace#getOrSet)
 * [class: LogFace](#LogFace)
   * [new LogFace()](#new_LogFace)
   * [LogFace.ifacespec](#LogFace.ifacespec)
@@ -250,6 +262,46 @@ Useful base for custom implementation of NativeIface
 <a name="new_module_futoin-invoker.InterfaceInfo"></a>
 ###new futoin-invoker.InterfaceInfo()
 NativeInterface.ifaceInfo() class for custom implementations of NativeIface
+
+<a name="CacheFace"></a>
+#class: CacheFace
+**Members**
+
+* [class: CacheFace](#CacheFace)
+  * [new CacheFace()](#new_CacheFace)
+  * [CacheFace.ifacespec](#CacheFace.ifacespec)
+  * [CacheFace.register()](#CacheFace.register)
+  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl)](#CacheFace#getOrSet)
+
+<a name="new_CacheFace"></a>
+##new CacheFace()
+Cache Native interface
+
+Register with CacheFace.register()
+
+<a name="CacheFace.ifacespec"></a>
+##CacheFace.ifacespec
+Embedded spec for FutoIn CacheFace
+
+<a name="CacheFace.register"></a>
+##CacheFace.register()
+AuditLog Native interface registration helper
+
+<a name="CacheFace#getOrSet"></a>
+##cacheFace.getOrSet(as, key_prefix, callable, params, ttl)
+Get or Set cached value
+
+NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
+  of *params* values
+
+**Params**
+
+- as `AsyncSteps`  
+- key_prefix `string` - unique key prefix  
+- callable `function` - func( as, params.. ) - a callable
+     which is called to generated value on cache miss  
+- params `Array` - parameters to be passed to *callable*  
+- ttl `integer` - time to live to use, if value is set on cache miss  
 
 <a name="LogFace"></a>
 #class: LogFace

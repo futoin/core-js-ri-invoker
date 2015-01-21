@@ -2,6 +2,7 @@ var _ = require( 'lodash' );
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var logface = require( '../lib/logface' );
+var cacheface = require( '../lib/cacheface' );
 var invoker;
 var as;
 var ccm;
@@ -1385,6 +1386,75 @@ describe( 'LogFace', function()
                 {
                     res.count.should.equal( 7 );
                 } );
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .add( function( as, res )
+        {
+            done();
+        } )
+        .execute();
+    });
+} );
+
+//============================================================================
+describe( 'CacheFace', function()
+{
+    before(function( done ){
+        as = async_steps();
+        
+        var opts = {};
+        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+        ccm = new invoker.AdvancedCCM( opts );
+        
+        as
+        .add(
+            function( as ) {
+                cacheface.register( as, ccm, 'my', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                as.add( function( as ){
+                    createTestHttpServer( function(){ done(); } );
+                } );
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .execute();
+    });
+    
+    after(function( done ){
+        closeTestHttpServer( done );
+    });
+
+    it( 'should call futoin.cache through native interface', function( done )
+    {
+        as
+        .add(
+            function( as ){
+                var cface = ccm.cache( 'my' );
+                var call_count = 0;
+                var cb = function( as, a, b )
+                {
+                    call_count += 1;
+                    as.add( function( as ){
+                        as.success( a + b );
+                    });
+                };
+                
+                cface.getOrSet( as, 'mykey', cb, [1,2], 10 );
+                
+                as.add( function( as, value ){
+                    value.should.equal( 3 );
+                    call_count.should.equal( 1 );
+                });
             },
             function( as, err )
             {
