@@ -87,6 +87,13 @@
             "throws" : [
                 "MY_ERROR"
             ]
+        },
+        "getLogCount" : {
+            "result" : {
+                "count" : {
+                    "type" : "integer"
+                }
+            }
         }
     },
     "requires" : [

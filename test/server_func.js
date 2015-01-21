@@ -9,6 +9,31 @@ function processServerRequest( freq, data )
     {
         return { e : 'InvalidReuquest' };
     }
+    else if ( func[0] === 'futoin.log' &&
+              func[1] === '1.0' )
+    {
+        if ( freq.p.txt === 'sync' )
+        {
+            if ( freq.p.lvl !== 'debug' )
+            {
+                return null;
+            }
+        }
+        else if ( freq.p.txt.toLowerCase() !== freq.p.lvl + 'msg' )
+        {
+            return null;
+        }
+        else if ( func[2] === 'hexdump' &&
+                freq.p.data !== new Buffer( 'HEXDATA' ).toString( 'base64' ) )
+        {
+            return null;
+        }
+
+        this.log_count = this.log_count || 0;
+        this.log_count++;
+
+        return '';
+    }
     else if ( func[0] !== 'fileface.a' )
     {
         return { e : 'UnknownInterface' };
@@ -78,6 +103,9 @@ function processServerRequest( freq, data )
             
         case "pingPong":
             return { pong : freq.p.ping };
+            
+        case "getLogCount":
+            return { count: this.log_count };
     }
     
     return { e : 'InvalidFunction' };

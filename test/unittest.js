@@ -1,6 +1,7 @@
 var _ = require( 'lodash' );
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
+var logface = require( '../lib/logface' );
 var invoker;
 var as;
 var ccm;
@@ -639,7 +640,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.wrongException )
                 {
                     err.should.equal( "InvokerError" );
-                    as.state.error_info.should.equal( "Unknown interface function" );
+                    as.state.error_info.should.equal( "Unknown interface function: unknownFunc" );
                 }
                 else
                 {
@@ -724,7 +725,7 @@ call_remotes_model_as.add(
             function( as, err )
             {
                 err.should.equal( "InvokerError" );
-                as.state.error_info.should.equal( "Unknown parameter b" );
+                as.state.error_info.should.equal( "Unknown parameter: b" );
 
                 as.success();
             }
@@ -874,7 +875,8 @@ call_interceptors_model_as.add(
     },
     function( as, err )
     {
-        as.state.done( new Error( err + ": " + as.state.error_info + "("+as.state.step+")" ) );
+        console.log( err + ": " + as.state.error_info + "("+as.state.step+")" );
+        as.state.done( as.state.last_exception );
     }
 ).add( function( as ){
     as.state.done();
@@ -1327,3 +1329,73 @@ describe( 'NativeIface', function()
         });
     });
 });
+
+//============================================================================
+describe( 'LogFace', function()
+{
+    before(function( done ){
+        as = async_steps();
+        
+        var opts = {};
+        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+        ccm = new invoker.AdvancedCCM( opts );
+        
+        as
+        .add(
+            function( as ) {
+                logface.register( as, ccm, 'secure+ws://localhost:23456/ftn' );
+                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                as.add( function( as ){
+                    createTestHttpServer( function(){ done(); } );
+                } );
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .execute();
+    });
+    
+    after(function( done ){
+        closeTestHttpServer( done );
+    });
+
+    it( 'should call futoin.log through native interface', function( done )
+    {
+        as
+        .add(
+            function( as ){
+                ccm.log().debug( 'DEBUGMSG' );
+                ccm.log().info( 'INFOMSG' );
+                ccm.log().warn( 'WARNMSG' );
+                ccm.log().error( 'ERRORMSG' );
+                ccm.log().security( 'SECURITYMSG' );
+                ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
+                ccm.log().call( as, 'msg', { txt: 'sync', lvl : 'debug', ts : '12345678901234.123' } );
+                
+                as.add( function( as )
+                {
+                    ccm.iface( 'myiface' ).getLogCount( as );
+                } );
+                
+                as.add( function( as, res )
+                {
+                    res.count.should.equal( 7 );
+                } );
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .add( function( as, res )
+        {
+            done();
+        } )
+        .execute();
+    });
+} );

@@ -62,7 +62,7 @@
                         as.error(FutoInError.SecurityError, 'Requires authenticated user');
                     }
                     if (!(name in info.funcs)) {
-                        as.error(FutoInError.InvokerError, 'Unknown interface function');
+                        as.error(FutoInError.InvokerError, 'Unknown interface function: ' + name);
                     }
                     var finfo = info.funcs[name];
                     if (ctx.upload_data && !finfo.rawupload) {
@@ -73,7 +73,7 @@
                     }
                     for (k in params) {
                         if (!finfo.params.hasOwnProperty(k)) {
-                            as.error(FutoInError.InvokerError, 'Unknown parameter ' + k);
+                            as.error(FutoInError.InvokerError, 'Unknown parameter: ' + k);
                         }
                         spectools.checkParameterType(as, info, name, k, params[k]);
                     }
@@ -339,6 +339,9 @@
                     });
                 },
                 _perform: function (as, ctx, req) {
+                    if (!('ws' in this)) {
+                        as.error(FutoInError.CommError, 'Disconnect while in progress');
+                    }
                     var reqas = this.reqas;
                     var rid = 'C' + this.rid++;
                     if (ctx.expect_response) {
@@ -474,7 +477,13 @@
                 OPT_EXECUTOR: 'executor',
                 OPT_TARGET_ORIGIN: 'targetOrigin',
                 OPT_RETRY_COUNT: 'retryCount',
-                SAFE_PAYLOAD_LIMIT: 65536
+                SAFE_PAYLOAD_LIMIT: 65536,
+                SVC_RESOLVER: '#resolver',
+                SVC_AUTH: '#auth',
+                SVC_DEFENSE: '#defense',
+                SVC_ACL: '#acl',
+                SVC_LOG: '#log',
+                SVC_CACHE_: '#cache.'
             };
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
         },
@@ -488,15 +497,7 @@
             var advanced_ccm = _require(0);
             var spectools = _require(7);
             var ee = _require(9);
-            var SimpleCCMPublic = {
-                    SVC_RESOLVER: '#resolver',
-                    SVC_AUTH: '#auth',
-                    SVC_DEFENSE: '#defense',
-                    SVC_ACL: '#acl',
-                    SVC_LOG: '#log',
-                    SVC_CACHE_: '#cache.'
-                };
-            _.extend(SimpleCCMPublic, common.Options);
+            var SimpleCCMPublic = common.Options;
             function SimpleCCM(options) {
                 ee(this);
                 this._iface_info = {};
@@ -621,7 +622,12 @@
                 var regname = info.regname;
                 var impl = this._iface_impl[regname];
                 if (!impl) {
-                    impl = info.impl(this._impl, info);
+                    var NativeImpl = info.options.nativeImpl;
+                    if (NativeImpl) {
+                        impl = new NativeImpl(this._impl, info);
+                    } else {
+                        impl = info.impl(this._impl, info);
+                    }
                     this._iface_impl[regname] = impl;
                 }
                 return impl;
@@ -727,9 +733,11 @@
         },
         function (module, exports) {
             'use strict';
-            var invoker = _require(4);
+            var common = _require(3);
+            var futoin_error = common.FutoInError;
             var _ = _require(25);
             var ee = _require(9);
+            var async_steps = _require(24);
             exports = module.exports = function (ccmimpl, info) {
                 return new module.exports.NativeIface(ccmimpl, info);
             };
@@ -792,12 +800,18 @@
                         as.add(function (as) {
                             ccmimpl.createMessage(as, ctx, params);
                         });
-                        as.add(function (as, req) {
-                            if (typeof timeout !== 'number') {
-                                timeout = ctx.info.options.callTimeoutMS;
-                            }
-                            if (timeout > 0) {
-                                as.setTimeout(timeout);
+                        as.add(function (orig_as, req) {
+                            var as;
+                            if (ctx.expect_response) {
+                                as = orig_as;
+                                if (typeof timeout !== 'number') {
+                                    timeout = ctx.info.options.callTimeoutMS;
+                                }
+                                if (timeout > 0) {
+                                    as.setTimeout(timeout);
+                                }
+                            } else {
+                                as = async_steps();
                             }
                             var scheme = raw_info.endpoint_scheme;
                             if (scheme === 'http' || scheme === 'https') {
@@ -813,9 +827,9 @@
                                     ccmimpl.perfomWebSocket(as, ctx, req);
                                 }
                             } else if (ctx.upload_data) {
-                                as.error(invoker.FutoInError.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
+                                as.error(futoin_error.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
                             } else if (ctx.download_stream) {
-                                as.error(invoker.FutoInError.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
+                                as.error(futoin_error.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
                             } else if (scheme === 'browser') {
                                 ccmimpl.perfomBrowser(as, ctx, req);
                             } else if (scheme === 'unix') {
@@ -823,35 +837,38 @@
                             } else if (scheme === 'callback') {
                                 ctx.endpoint(as, ctx, req);
                             } else {
-                                as.error(invoker.FutoInError.InvokerError, 'Unknown endpoint scheme');
+                                as.error(futoin_error.InvokerError, 'Unknown endpoint scheme');
                             }
-                            as.add(function (as, rsp, content_type) {
-                                if (!ctx.expect_response) {
-                                    as.success();
-                                } else if (ctx.download_stream) {
-                                    as.success(true);
-                                } else if (content_type === 'application/futoin+json') {
-                                    if (typeof rsp === 'string') {
-                                        try {
-                                            rsp = JSON.parse(rsp);
-                                        } catch (e) {
-                                            as.error(invoker.FutoInError.CommError, 'JSON:' + e.message);
+                            if (as !== orig_as) {
+                                as.execute();
+                                orig_as.success();
+                            } else {
+                                as.add(function (as, rsp, content_type) {
+                                    if (ctx.download_stream) {
+                                        as.success(true);
+                                    } else if (content_type === 'application/futoin+json') {
+                                        if (typeof rsp === 'string') {
+                                            try {
+                                                rsp = JSON.parse(rsp);
+                                            } catch (e) {
+                                                as.error(futoin_error.CommError, 'JSON:' + e.message);
+                                            }
                                         }
+                                        ccmimpl.onMessageResponse(as, ctx, rsp);
+                                    } else {
+                                        ccmimpl.onDataResponse(as, ctx, rsp);
                                     }
-                                    ccmimpl.onMessageResponse(as, ctx, rsp);
-                                } else {
-                                    ccmimpl.onDataResponse(as, ctx, rsp);
-                                }
-                            });
+                                });
+                            }
                         });
                     },
                     _member_call_intercept: function (as, name, finfo, args) {
                         var arginfo = finfo.params;
                         var keys = Object.keys(arginfo);
                         if (args.length > keys.length) {
-                            as.error(invoker.FutoInError.InvokerError, 'Unknown parameters');
+                            as.error(futoin_error.InvokerError, 'Unknown parameters');
                         } else if (args.length < finfo.min_args) {
-                            as.error(invoker.FutoInError.InvokerError, 'Missing parameters');
+                            as.error(futoin_error.InvokerError, 'Missing parameters');
                         } else if (args.length < keys.length) {
                             keys = keys.splice(0, args.length);
                         }
@@ -871,7 +888,7 @@
                     },
                     bindDerivedKey: function (as) {
                         void as;
-                        throw new Error(invoker.FutoInError.InvokerError, 'Not Implemented');
+                        throw new Error(futoin_error.InvokerError, 'Not Implemented');
                     },
                     _close: function () {
                         var comms = this._comms;
@@ -978,6 +995,7 @@
                             });
                         }, function (as, err) {
                             if (err === FutoInError.CommError) {
+                                ctx.native_iface.emit('commError', as.state.error_info, req);
                                 as.continue();
                             }
                         });

@@ -117,6 +117,22 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 
 **Classes**
 
+* [class: LogFace](#LogFace)
+  * [new LogFace()](#new_LogFace)
+  * [LogFace.ifacespec](#LogFace.ifacespec)
+  * [LogFace.register()](#LogFace.register)
+  * [logFace.msg(lvl, txt)](#LogFace#msg)
+  * [logFace.msg(lvl, txt, data)](#LogFace#msg)
+  * [logFace.debug(txt)](#LogFace#debug)
+  * [logFace.info(txt)](#LogFace#info)
+  * [logFace.warn(txt)](#LogFace#warn)
+  * [logFace.error(txt)](#LogFace#error)
+  * [logFace.security(txt)](#LogFace#security)
+  * [const: LogFace.LVL_DEBUG](#LogFace.LVL_DEBUG)
+  * [const: LogFace.LVL_INFO](#LogFace.LVL_INFO)
+  * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
+  * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
+  * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
 * [class: InterfaceInfo](#InterfaceInfo)
   * [new InterfaceInfo()](#new_InterfaceInfo)
   * [interfaceInfo.name()](#InterfaceInfo#name)
@@ -149,6 +165,12 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
   * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
+  * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
+  * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
+  * [const: SimpleCCM.SVC_DEFENSE](#SimpleCCM.SVC_DEFENSE)
+  * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
+  * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
+  * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
 * [AdvancedCCM](#AdvancedCCM)
   * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
 * [Invoker](#Invoker)
@@ -228,6 +250,120 @@ Useful base for custom implementation of NativeIface
 <a name="new_module_futoin-invoker.InterfaceInfo"></a>
 ###new futoin-invoker.InterfaceInfo()
 NativeInterface.ifaceInfo() class for custom implementations of NativeIface
+
+<a name="LogFace"></a>
+#class: LogFace
+**Members**
+
+* [class: LogFace](#LogFace)
+  * [new LogFace()](#new_LogFace)
+  * [LogFace.ifacespec](#LogFace.ifacespec)
+  * [LogFace.register()](#LogFace.register)
+  * [logFace.msg(lvl, txt)](#LogFace#msg)
+  * [logFace.msg(lvl, txt, data)](#LogFace#msg)
+  * [logFace.debug(txt)](#LogFace#debug)
+  * [logFace.info(txt)](#LogFace#info)
+  * [logFace.warn(txt)](#LogFace#warn)
+  * [logFace.error(txt)](#LogFace#error)
+  * [logFace.security(txt)](#LogFace#security)
+  * [const: LogFace.LVL_DEBUG](#LogFace.LVL_DEBUG)
+  * [const: LogFace.LVL_INFO](#LogFace.LVL_INFO)
+  * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
+  * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
+  * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
+
+<a name="new_LogFace"></a>
+##new LogFace()
+AuditLog Native interface
+
+Register with LogFace.register()
+
+<a name="LogFace.ifacespec"></a>
+##LogFace.ifacespec
+Embedded spec for FutoIn LogFace
+
+<a name="LogFace.register"></a>
+##LogFace.register()
+AuditLog Native interface registration helper
+
+<a name="LogFace#msg"></a>
+##logFace.msg(lvl, txt)
+Log message
+
+**Params**
+
+- lvl `string` - debug|info|warn|error|security  
+- txt `string` - message to log  
+
+<a name="LogFace#msg"></a>
+##logFace.msg(lvl, txt, data)
+Log message
+
+**Params**
+
+- lvl `string` - debug|info|warn|error|security  
+- txt `string` - message to log  
+- data `string` - raw data  
+
+<a name="LogFace#debug"></a>
+##logFace.debug(txt)
+Log message in debug level
+
+**Params**
+
+- txt `string` - message to log  
+
+<a name="LogFace#info"></a>
+##logFace.info(txt)
+Log message in info level
+
+**Params**
+
+- txt `string` - message to log  
+
+<a name="LogFace#warn"></a>
+##logFace.warn(txt)
+Log message in warn level
+
+**Params**
+
+- txt `string` - message to log  
+
+<a name="LogFace#error"></a>
+##logFace.error(txt)
+Log message in error level
+
+**Params**
+
+- txt `string` - message to log  
+
+<a name="LogFace#security"></a>
+##logFace.security(txt)
+Log message in security level
+
+**Params**
+
+- txt `string` - message to log  
+
+<a name="LogFace.LVL_DEBUG"></a>
+##const: LogFace.LVL_DEBUG
+Debug log level
+
+<a name="LogFace.LVL_INFO"></a>
+##const: LogFace.LVL_INFO
+Info log level
+
+<a name="LogFace.LVL_WARN"></a>
+##const: LogFace.LVL_WARN
+Warn log level
+
+<a name="LogFace.LVL_ERROR"></a>
+##const: LogFace.LVL_ERROR
+Error log level
+
+<a name="LogFace.LVL_SECURITY"></a>
+##const: LogFace.LVL_SECURITY
+Security log level
 
 <a name="InterfaceInfo"></a>
 #class: InterfaceInfo
