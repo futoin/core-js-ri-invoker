@@ -1328,6 +1328,48 @@ describe( 'NativeIface', function()
             );
             as.execute();
         });
+        
+        it( 'should call internal effectively', function( done ){
+            as.add(
+                function(as)
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', {
+                        onInternalRequest : function( as, info, ftnreq )
+                        {
+                            as.add( function( as ){
+                                as.success(
+                                    {
+                                        r: {
+                                            res : 'MY_RESULT'
+                                        }
+                                    },
+                                    true
+                                );
+                            } );
+                        }
+                    } );
+                },
+                function( as, err )
+                {
+                    done( as.state.last_exception );
+                }
+            ).add(
+                function( as )
+                {
+                    var iface = ccm.iface( 'myiface' );
+                    iface.call( as, 'testFunc', { a : '1', n : 2.8, i : 4, o : { m : 3 } } );
+                    as.add( function( as, res ){
+                        res.res.should.equal( 'MY_RESULT' );
+                        done();
+                    } );
+                },
+                function( as, err )
+                {
+                    done( as.state.last_exception );
+                }
+            );
+            as.execute();
+        });
     });
 });
 

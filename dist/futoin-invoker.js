@@ -172,6 +172,7 @@
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var MyWebSocket = WebSocket;
+            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
             exports.HTTPComms = function () {
             };
             exports.HTTPComms.prototype = {
@@ -205,7 +206,7 @@
                         url += '?' + params.join('&');
                         sniffer(ctx.info, req, false);
                     } else {
-                        content_type = 'application/futoin+json';
+                        content_type = FUTOIN_CONTENT_TYPE;
                         rawreq = JSON.stringify(req);
                         sniffer(ctx.info, rawreq, false);
                     }
@@ -220,7 +221,7 @@
                             var response = ctx.download_stream ? this.response : this.responseText;
                             if (response) {
                                 var content_type = this.getResponseHeader('content-type');
-                                if (content_type === 'application/futoin+json') {
+                                if (content_type === FUTOIN_CONTENT_TYPE) {
                                     sniffer(ctx.info, response, true);
                                 } else {
                                     sniffer(ctx.info, '%DATA%', true);
@@ -302,7 +303,7 @@
                         if ('rid' in rsp) {
                             var rid = rsp.rid;
                             if (rid in reqas) {
-                                reqas[rid].success(rsp, 'application/futoin+json');
+                                reqas[rid].success(rsp, true);
                                 delete reqas[rid];
                             } else if (rid.charAt(0) === 'S' && executor) {
                                 executor.onEndpointRequest(info, rsp, send_executor_rsp);
@@ -417,7 +418,7 @@
                         if ('rid' in rsp) {
                             var rid = rsp.rid;
                             if (!('f' in rsp) && rid in reqas) {
-                                reqas[rid].success(rsp, 'application/futoin+json');
+                                reqas[rid].success(rsp, true);
                                 delete reqas[rid];
                             } else if ('f' in rsp && rid.charAt(0) === 'S' && executor) {
                                 executor.onEndpointRequest(info, rsp, send_executor_rsp);
@@ -483,7 +484,8 @@
                 SVC_DEFENSE: '#defense',
                 SVC_ACL: '#acl',
                 SVC_LOG: '#log',
-                SVC_CACHE_: '#cache.'
+                SVC_CACHE_: '#cache.',
+                FUTOIN_CONTENT_TYPE: 'application/futoin+json'
             };
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
         },
@@ -561,6 +563,11 @@
                     default:
                         as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
                     }
+                } else if ('onInternalRequest' in endpoint) {
+                    secure_channel = true;
+                    impl = this._native_iface_builder;
+                    endpoint_scheme = '#internal#';
+                    is_bidirect = true;
                 } else {
                     secure_channel = true;
                     impl = endpoint;
@@ -738,6 +745,7 @@
             var _ = _require(25);
             var ee = _require(9);
             var async_steps = _require(24);
+            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
             exports = module.exports = function (ccmimpl, info) {
                 return new module.exports.NativeIface(ccmimpl, info);
             };
@@ -814,7 +822,9 @@
                                 as = async_steps();
                             }
                             var scheme = raw_info.endpoint_scheme;
-                            if (scheme === 'http' || scheme === 'https') {
+                            if (scheme === '#internal#') {
+                                ctx.endpoint.onInternalRequest(as, raw_info, req);
+                            } else if (scheme === 'http' || scheme === 'https') {
                                 ccmimpl.perfomHTTP(as, ctx, req);
                             } else if (scheme === 'ws' || scheme === 'wss') {
                                 var finfo;
@@ -846,7 +856,7 @@
                                 as.add(function (as, rsp, content_type) {
                                     if (ctx.download_stream) {
                                         as.success(true);
-                                    } else if (content_type === 'application/futoin+json') {
+                                    } else if (content_type === FUTOIN_CONTENT_TYPE || content_type === true) {
                                         if (typeof rsp === 'string') {
                                             try {
                                                 rsp = JSON.parse(rsp);
