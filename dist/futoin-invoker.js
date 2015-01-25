@@ -823,7 +823,7 @@
                             }
                             var scheme = raw_info.endpoint_scheme;
                             if (scheme === '#internal#') {
-                                ctx.endpoint.onInternalRequest(as, raw_info, req);
+                                ctx.endpoint.onInternalRequest(as, raw_info, req, upload_data, download_stream);
                             } else if (scheme === 'http' || scheme === 'https') {
                                 ccmimpl.perfomHTTP(as, ctx, req);
                             } else if (scheme === 'ws' || scheme === 'wss') {
