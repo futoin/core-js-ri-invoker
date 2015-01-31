@@ -1,15 +1,12 @@
 (function (factory) {
     if (typeof define === 'function' && define.amd) {
-        define([
-            'futoin-asyncsteps',
-            'lodash'
-        ], factory);
+        define(['futoin-asyncsteps'], factory);
     } else if (typeof exports === 'object') {
-        module.exports = factory(require('futoin-asyncsteps'), require('lodash'));
+        module.exports = factory(require('futoin-asyncsteps'));
     } else {
-        this.FutoInInvoker = factory($as, _);
+        this.FutoInInvoker = factory($as);
     }
-}(function (__external_$as, __external__) {
+}(function (__external_$as) {
     var global = this, define;
     function _require(id) {
         var module = _require.cache[id];
@@ -494,7 +491,8 @@
             var common = _require(3);
             var futoin_error = common.FutoInError;
             var native_iface = _require(5);
-            var _ = _require(25);
+            var _extend = _require(63);
+            var _defaults = _require(62);
             var simple_ccm = _require(6);
             var advanced_ccm = _require(0);
             var spectools = _require(7);
@@ -505,9 +503,9 @@
                 this._iface_info = {};
                 this._iface_impl = {};
                 this._impl = simple_ccm(options);
-                _.extend(this, SimpleCCMProto);
+                _extend(this, SimpleCCMProto);
             }
-            _.extend(SimpleCCM, SimpleCCMPublic);
+            _extend(SimpleCCM, SimpleCCMPublic);
             var SimpleCCMProto = {
                     _secure_replace: /^secure\+/,
                     _secure_test: /^(https|wss|unix):\/\//,
@@ -515,7 +513,7 @@
                         return native_iface(ccmimpl, info);
                     }
                 };
-            _.extend(SimpleCCMProto, SimpleCCMPublic);
+            _extend(SimpleCCMProto, SimpleCCMPublic);
             SimpleCCMProto.register = function (as, name, ifacever, endpoint, credentials, options) {
                 var is_channel_reg = name === null;
                 if (!is_channel_reg && name in this._iface_info) {
@@ -576,7 +574,7 @@
                     is_bidirect = true;
                 }
                 options = options || {};
-                _.defaults(options, this._impl.options);
+                _defaults(options, this._impl.options);
                 var info = {
                         iface: iface,
                         version: mjrmnr,
@@ -718,11 +716,11 @@
                 this._iface_info = {};
                 this._iface_impl = {};
                 this._impl = advanced_ccm(options);
-                _.extend(this, AdvancedCCMProto);
+                _extend(this, AdvancedCCMProto);
             }
-            _.extend(AdvancedCCM, SimpleCCMPublic);
+            _extend(AdvancedCCM, SimpleCCMPublic);
             var AdvancedCCMProto = {};
-            _.extend(AdvancedCCMProto, SimpleCCMProto);
+            _extend(AdvancedCCMProto, SimpleCCMProto);
             AdvancedCCMProto.initFromCache = function (as, cache_l1_endpoint) {
                 void cache_l1_endpoint;
                 as.error(futoin_error.NotImplemented, 'Caching is not supported yet');
@@ -742,7 +740,8 @@
             'use strict';
             var common = _require(3);
             var futoin_error = common.FutoInError;
-            var _ = _require(25);
+            var _extend = _require(63);
+            var _zipObject = _require(26);
             var ee = _require(9);
             var async_steps = _require(24);
             var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
@@ -775,7 +774,7 @@
                 this._raw_info = info;
                 this._iface_info = null;
                 this._comms = {};
-                _.extend(this, NativeIfaceProto);
+                _extend(this, NativeIfaceProto);
                 ee(this);
                 for (var fn in this._raw_info.funcs) {
                     var finfo = this._raw_info.funcs[fn];
@@ -882,7 +881,7 @@
                         } else if (args.length < keys.length) {
                             keys = keys.splice(0, args.length);
                         }
-                        var params = _.object(keys, args);
+                        var params = _zipObject(keys, args);
                         this.call(as, name, params);
                     },
                     _member_call_generate: function (name, finfo) {
@@ -915,7 +914,7 @@
             var common = _require(3);
             var FutoInError = common.FutoInError;
             var isNode = _require(8);
-            var _ = _require(25);
+            var _defaults = _require(62);
             var comms_impl;
             if (isNode) {
                 var hidereq = require;
@@ -938,7 +937,7 @@
                 };
             function SimpleCCMImpl(options) {
                 options = options || {};
-                _.defaults(options, defopts);
+                _defaults(options, defopts);
                 this.options = options;
                 this.comms = {};
             }
@@ -1040,7 +1039,9 @@
             var fs;
             var request;
             var isNode = _require(8);
-            var _ = _require(25);
+            var _cloneDeep = _require(56);
+            var _zipObject = _require(26);
+            var _difference = _require(25);
             if (isNode) {
                 var hidereq = require;
                 fs = hidereq('fs');
@@ -1146,8 +1147,8 @@
                             info.funcs = raw_spec.funcs || {};
                             info.types = raw_spec.types || {};
                         } else {
-                            info.funcs = _.cloneDeep(raw_spec.funcs || {});
-                            info.types = _.cloneDeep(raw_spec.types || {});
+                            info.funcs = _cloneDeep(raw_spec.funcs || {});
+                            info.types = _cloneDeep(raw_spec.types || {});
                         }
                         spectools._parseFuncs(as, info);
                         spectools._parseTypes(as, info);
@@ -1156,7 +1157,7 @@
                             if (!Array.isArray(requires)) {
                                 as.error(FutoInError.InternalError, '"requires" is not array');
                             }
-                            info.constraints = _.object(requires, requires);
+                            info.constraints = _zipObject(requires, requires);
                         } else {
                             info.constraints = {};
                         }
@@ -1282,7 +1283,7 @@
                                 if (!Array.isArray(throws)) {
                                     as.error(FutoInError.InternalError, '"throws" is not array');
                                 }
-                                finfo.throws = _.object(throws, throws);
+                                finfo.throws = _zipObject(throws, throws);
                             } else {
                                 finfo.throws = {};
                             }
@@ -1353,7 +1354,7 @@
                                 as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
                             }
                         }
-                        if (_.difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
+                        if (_difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
                             as.error(FutoInError.InternalError, 'Missing constraints from inherited');
                         }
                     },
@@ -1791,7 +1792,689 @@
             module.exports = __external_$as;
         },
         function (module, exports) {
-            module.exports = __external__;
+            var baseDifference = _require(34), baseFlatten = _require(35), isArguments = _require(57), isArray = _require(58);
+            function difference() {
+                var index = -1, length = arguments.length;
+                while (++index < length) {
+                    var value = arguments[index];
+                    if (isArray(value) || isArguments(value)) {
+                        break;
+                    }
+                }
+                return baseDifference(value, baseFlatten(arguments, false, true, ++index));
+            }
+            module.exports = difference;
+        },
+        function (module, exports) {
+            var isArray = _require(58);
+            function zipObject(props, values) {
+                var index = -1, length = props ? props.length : 0, result = {};
+                if (length && !values && !isArray(props[0])) {
+                    values = [];
+                }
+                while (++index < length) {
+                    var key = props[index];
+                    if (values) {
+                        result[key] = values[index];
+                    } else if (key) {
+                        result[key[0]] = key[1];
+                    }
+                }
+                return result;
+            }
+            module.exports = zipObject;
+        },
+        function (module, exports) {
+            var cachePush = _require(43), isNative = _require(59);
+            var Set = isNative(Set = global.Set) && Set;
+            var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+            function SetCache(values) {
+                var length = values ? values.length : 0;
+                this.data = {
+                    'hash': nativeCreate(null),
+                    'set': new Set()
+                };
+                while (length--) {
+                    this.push(values[length]);
+                }
+            }
+            SetCache.prototype.push = cachePush;
+            module.exports = SetCache;
+        },
+        function (module, exports) {
+            function arrayCopy(source, array) {
+                var index = -1, length = source.length;
+                array || (array = Array(length));
+                while (++index < length) {
+                    array[index] = source[index];
+                }
+                return array;
+            }
+            module.exports = arrayCopy;
+        },
+        function (module, exports) {
+            function arrayEach(array, iteratee) {
+                var index = -1, length = array.length;
+                while (++index < length) {
+                    if (iteratee(array[index], index, array) === false) {
+                        break;
+                    }
+                }
+                return array;
+            }
+            module.exports = arrayEach;
+        },
+        function (module, exports) {
+            function assignDefaults(objectValue, sourceValue) {
+                return typeof objectValue == 'undefined' ? sourceValue : objectValue;
+            }
+            module.exports = assignDefaults;
+        },
+        function (module, exports) {
+            var baseCopy = _require(33), keys = _require(64);
+            function baseAssign(object, source, customizer) {
+                var props = keys(source);
+                if (!customizer) {
+                    return baseCopy(source, object, props);
+                }
+                var index = -1, length = props.length;
+                while (++index < length) {
+                    var key = props[index], value = object[key], result = customizer(value, source[key], key, object, source);
+                    if ((result === result ? result !== value : value === value) || typeof value == 'undefined' && !(key in object)) {
+                        object[key] = result;
+                    }
+                }
+                return object;
+            }
+            module.exports = baseAssign;
+        },
+        function (module, exports) {
+            var arrayCopy = _require(28), arrayEach = _require(29), baseCopy = _require(33), baseForOwn = _require(37), initCloneArray = _require(47), initCloneByTag = _require(48), initCloneObject = _require(49), isArray = _require(58), isObject = _require(60), keys = _require(64);
+            var argsTag = '[object Arguments]', arrayTag = '[object Array]', boolTag = '[object Boolean]', dateTag = '[object Date]', errorTag = '[object Error]', funcTag = '[object Function]', mapTag = '[object Map]', numberTag = '[object Number]', objectTag = '[object Object]', regexpTag = '[object RegExp]', setTag = '[object Set]', stringTag = '[object String]', weakMapTag = '[object WeakMap]';
+            var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
+            var cloneableTags = {};
+            cloneableTags[argsTag] = cloneableTags[arrayTag] = cloneableTags[arrayBufferTag] = cloneableTags[boolTag] = cloneableTags[dateTag] = cloneableTags[float32Tag] = cloneableTags[float64Tag] = cloneableTags[int8Tag] = cloneableTags[int16Tag] = cloneableTags[int32Tag] = cloneableTags[numberTag] = cloneableTags[objectTag] = cloneableTags[regexpTag] = cloneableTags[stringTag] = cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] = cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
+            cloneableTags[errorTag] = cloneableTags[funcTag] = cloneableTags[mapTag] = cloneableTags[setTag] = cloneableTags[weakMapTag] = false;
+            var objectProto = Object.prototype;
+            var objToString = objectProto.toString;
+            function baseClone(value, isDeep, customizer, key, object, stackA, stackB) {
+                var result;
+                if (customizer) {
+                    result = object ? customizer(value, key, object) : customizer(value);
+                }
+                if (typeof result != 'undefined') {
+                    return result;
+                }
+                if (!isObject(value)) {
+                    return value;
+                }
+                var isArr = isArray(value);
+                if (isArr) {
+                    result = initCloneArray(value);
+                    if (!isDeep) {
+                        return arrayCopy(value, result);
+                    }
+                } else {
+                    var tag = objToString.call(value), isFunc = tag == funcTag;
+                    if (tag == objectTag || tag == argsTag || isFunc && !object) {
+                        result = initCloneObject(isFunc ? {} : value);
+                        if (!isDeep) {
+                            return baseCopy(value, result, keys(value));
+                        }
+                    } else {
+                        return cloneableTags[tag] ? initCloneByTag(value, tag, isDeep) : object ? value : {};
+                    }
+                }
+                stackA || (stackA = []);
+                stackB || (stackB = []);
+                var length = stackA.length;
+                while (length--) {
+                    if (stackA[length] == value) {
+                        return stackB[length];
+                    }
+                }
+                stackA.push(value);
+                stackB.push(result);
+                (isArr ? arrayEach : baseForOwn)(value, function (subValue, key) {
+                    result[key] = baseClone(subValue, isDeep, customizer, key, value, stackA, stackB);
+                });
+                return result;
+            }
+            module.exports = baseClone;
+        },
+        function (module, exports) {
+            function baseCopy(source, object, props) {
+                if (!props) {
+                    props = object;
+                    object = {};
+                }
+                var index = -1, length = props.length;
+                while (++index < length) {
+                    var key = props[index];
+                    object[key] = source[key];
+                }
+                return object;
+            }
+            module.exports = baseCopy;
+        },
+        function (module, exports) {
+            var baseIndexOf = _require(38), cacheIndexOf = _require(42), createCache = _require(45);
+            function baseDifference(array, values) {
+                var length = array ? array.length : 0, result = [];
+                if (!length) {
+                    return result;
+                }
+                var index = -1, indexOf = baseIndexOf, isCommon = true, cache = isCommon && values.length >= 200 && createCache(values), valuesLength = values.length;
+                if (cache) {
+                    indexOf = cacheIndexOf;
+                    isCommon = false;
+                    values = cache;
+                }
+                outer:
+                    while (++index < length) {
+                        var value = array[index];
+                        if (isCommon && value === value) {
+                            var valuesIndex = valuesLength;
+                            while (valuesIndex--) {
+                                if (values[valuesIndex] === value) {
+                                    continue outer;
+                                }
+                            }
+                            result.push(value);
+                        } else if (indexOf(values, value) < 0) {
+                            result.push(value);
+                        }
+                    }
+                return result;
+            }
+            module.exports = baseDifference;
+        },
+        function (module, exports) {
+            var isArguments = _require(57), isArray = _require(58), isLength = _require(52), isObjectLike = _require(53);
+            function baseFlatten(array, isDeep, isStrict, fromIndex) {
+                var index = (fromIndex || 0) - 1, length = array.length, resIndex = -1, result = [];
+                while (++index < length) {
+                    var value = array[index];
+                    if (isObjectLike(value) && isLength(value.length) && (isArray(value) || isArguments(value))) {
+                        if (isDeep) {
+                            value = baseFlatten(value, isDeep, isStrict);
+                        }
+                        var valIndex = -1, valLength = value.length;
+                        result.length += valLength;
+                        while (++valIndex < valLength) {
+                            result[++resIndex] = value[valIndex];
+                        }
+                    } else if (!isStrict) {
+                        result[++resIndex] = value;
+                    }
+                }
+                return result;
+            }
+            module.exports = baseFlatten;
+        },
+        function (module, exports) {
+            var toObject = _require(55);
+            function baseFor(object, iteratee, keysFunc) {
+                var index = -1, iterable = toObject(object), props = keysFunc(object), length = props.length;
+                while (++index < length) {
+                    var key = props[index];
+                    if (iteratee(iterable[key], key, iterable) === false) {
+                        break;
+                    }
+                }
+                return object;
+            }
+            module.exports = baseFor;
+        },
+        function (module, exports) {
+            var baseFor = _require(36), keys = _require(64);
+            function baseForOwn(object, iteratee) {
+                return baseFor(object, iteratee, keys);
+            }
+            module.exports = baseForOwn;
+        },
+        function (module, exports) {
+            var indexOfNaN = _require(46);
+            function baseIndexOf(array, value, fromIndex) {
+                if (value !== value) {
+                    return indexOfNaN(array, fromIndex);
+                }
+                var index = (fromIndex || 0) - 1, length = array.length;
+                while (++index < length) {
+                    if (array[index] === value) {
+                        return index;
+                    }
+                }
+                return -1;
+            }
+            module.exports = baseIndexOf;
+        },
+        function (module, exports) {
+            function baseToString(value) {
+                if (typeof value == 'string') {
+                    return value;
+                }
+                return value == null ? '' : value + '';
+            }
+            module.exports = baseToString;
+        },
+        function (module, exports) {
+            var identity = _require(69);
+            function bindCallback(func, thisArg, argCount) {
+                if (typeof func != 'function') {
+                    return identity;
+                }
+                if (typeof thisArg == 'undefined') {
+                    return func;
+                }
+                switch (argCount) {
+                case 1:
+                    return function (value) {
+                        return func.call(thisArg, value);
+                    };
+                case 3:
+                    return function (value, index, collection) {
+                        return func.call(thisArg, value, index, collection);
+                    };
+                case 4:
+                    return function (accumulator, value, index, collection) {
+                        return func.call(thisArg, accumulator, value, index, collection);
+                    };
+                case 5:
+                    return function (value, other, key, object, source) {
+                        return func.call(thisArg, value, other, key, object, source);
+                    };
+                }
+                return function () {
+                    return func.apply(thisArg, arguments);
+                };
+            }
+            module.exports = bindCallback;
+        },
+        function (module, exports) {
+            var constant = _require(68), isNative = _require(59);
+            var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer, bufferSlice = isNative(bufferSlice = ArrayBuffer && new ArrayBuffer(0).slice) && bufferSlice, floor = Math.floor, Uint8Array = isNative(Uint8Array = global.Uint8Array) && Uint8Array;
+            var Float64Array = function () {
+                    try {
+                        var func = isNative(func = global.Float64Array) && func, result = new func(new ArrayBuffer(10), 0, 1) && func;
+                    } catch (e) {
+                    }
+                    return result;
+                }();
+            var FLOAT64_BYTES_PER_ELEMENT = Float64Array ? Float64Array.BYTES_PER_ELEMENT : 0;
+            function bufferClone(buffer) {
+                return bufferSlice.call(buffer, 0);
+            }
+            if (!bufferSlice) {
+                bufferClone = !(ArrayBuffer && Uint8Array) ? constant(null) : function (buffer) {
+                    var byteLength = buffer.byteLength, floatLength = Float64Array ? floor(byteLength / FLOAT64_BYTES_PER_ELEMENT) : 0, offset = floatLength * FLOAT64_BYTES_PER_ELEMENT, result = new ArrayBuffer(byteLength);
+                    if (floatLength) {
+                        var view = new Float64Array(result, 0, floatLength);
+                        view.set(new Float64Array(buffer, 0, floatLength));
+                    }
+                    if (byteLength != offset) {
+                        view = new Uint8Array(result, offset);
+                        view.set(new Uint8Array(buffer, offset));
+                    }
+                    return result;
+                };
+            }
+            module.exports = bufferClone;
+        },
+        function (module, exports) {
+            var isObject = _require(60);
+            function cacheIndexOf(cache, value) {
+                var data = cache.data, result = typeof value == 'string' || isObject(value) ? data.set.has(value) : data.hash[value];
+                return result ? 0 : -1;
+            }
+            module.exports = cacheIndexOf;
+        },
+        function (module, exports) {
+            var isObject = _require(60);
+            function cachePush(value) {
+                var data = this.data;
+                if (typeof value == 'string' || isObject(value)) {
+                    data.set.add(value);
+                } else {
+                    data.hash[value] = true;
+                }
+            }
+            module.exports = cachePush;
+        },
+        function (module, exports) {
+            var bindCallback = _require(40), isIterateeCall = _require(51);
+            function createAssigner(assigner) {
+                return function () {
+                    var length = arguments.length, object = arguments[0];
+                    if (length < 2 || object == null) {
+                        return object;
+                    }
+                    if (length > 3 && isIterateeCall(arguments[1], arguments[2], arguments[3])) {
+                        length = 2;
+                    }
+                    if (length > 3 && typeof arguments[length - 2] == 'function') {
+                        var customizer = bindCallback(arguments[--length - 1], arguments[length--], 5);
+                    } else if (length > 2 && typeof arguments[length - 1] == 'function') {
+                        customizer = arguments[--length];
+                    }
+                    var index = 0;
+                    while (++index < length) {
+                        var source = arguments[index];
+                        if (source) {
+                            assigner(object, source, customizer);
+                        }
+                    }
+                    return object;
+                };
+            }
+            module.exports = createAssigner;
+        },
+        function (module, exports) {
+            var SetCache = _require(27), constant = _require(68), isNative = _require(59);
+            var Set = isNative(Set = global.Set) && Set;
+            var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
+            var createCache = !(nativeCreate && Set) ? constant(null) : function (values) {
+                    return new SetCache(values);
+                };
+            module.exports = createCache;
+        },
+        function (module, exports) {
+            function indexOfNaN(array, fromIndex, fromRight) {
+                var length = array.length, index = fromRight ? fromIndex || length : (fromIndex || 0) - 1;
+                while (fromRight ? index-- : ++index < length) {
+                    var other = array[index];
+                    if (other !== other) {
+                        return index;
+                    }
+                }
+                return -1;
+            }
+            module.exports = indexOfNaN;
+        },
+        function (module, exports) {
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            function initCloneArray(array) {
+                var length = array.length, result = new array.constructor(length);
+                if (length && typeof array[0] == 'string' && hasOwnProperty.call(array, 'index')) {
+                    result.index = array.index;
+                    result.input = array.input;
+                }
+                return result;
+            }
+            module.exports = initCloneArray;
+        },
+        function (module, exports) {
+            var bufferClone = _require(41);
+            var boolTag = '[object Boolean]', dateTag = '[object Date]', numberTag = '[object Number]', regexpTag = '[object RegExp]', stringTag = '[object String]';
+            var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
+            var reFlags = /\w*$/;
+            function initCloneByTag(object, tag, isDeep) {
+                var Ctor = object.constructor;
+                switch (tag) {
+                case arrayBufferTag:
+                    return bufferClone(object);
+                case boolTag:
+                case dateTag:
+                    return new Ctor(+object);
+                case float32Tag:
+                case float64Tag:
+                case int8Tag:
+                case int16Tag:
+                case int32Tag:
+                case uint8Tag:
+                case uint8ClampedTag:
+                case uint16Tag:
+                case uint32Tag:
+                    var buffer = object.buffer;
+                    return new Ctor(isDeep ? bufferClone(buffer) : buffer, object.byteOffset, object.length);
+                case numberTag:
+                case stringTag:
+                    return new Ctor(object);
+                case regexpTag:
+                    var result = new Ctor(object.source, reFlags.exec(object));
+                    result.lastIndex = object.lastIndex;
+                }
+                return result;
+            }
+            module.exports = initCloneByTag;
+        },
+        function (module, exports) {
+            function initCloneObject(object) {
+                var Ctor = object.constructor;
+                if (!(typeof Ctor == 'function' && Ctor instanceof Ctor)) {
+                    Ctor = Object;
+                }
+                return new Ctor();
+            }
+            module.exports = initCloneObject;
+        },
+        function (module, exports) {
+            var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+            function isIndex(value, length) {
+                value = +value;
+                length = length == null ? MAX_SAFE_INTEGER : length;
+                return value > -1 && value % 1 == 0 && value < length;
+            }
+            module.exports = isIndex;
+        },
+        function (module, exports) {
+            var isIndex = _require(50), isLength = _require(52), isObject = _require(60);
+            function isIterateeCall(value, index, object) {
+                if (!isObject(object)) {
+                    return false;
+                }
+                var type = typeof index;
+                if (type == 'number') {
+                    var length = object.length, prereq = isLength(length) && isIndex(index, length);
+                } else {
+                    prereq = type == 'string' && index in value;
+                }
+                return prereq && object[index] === value;
+            }
+            module.exports = isIterateeCall;
+        },
+        function (module, exports) {
+            var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+            function isLength(value) {
+                return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
+            }
+            module.exports = isLength;
+        },
+        function (module, exports) {
+            function isObjectLike(value) {
+                return value && typeof value == 'object' || false;
+            }
+            module.exports = isObjectLike;
+        },
+        function (module, exports) {
+            var isArguments = _require(57), isArray = _require(58), isIndex = _require(50), isLength = _require(52), keysIn = _require(65), support = _require(67);
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            function shimKeys(object) {
+                var props = keysIn(object), propsLength = props.length, length = propsLength && object.length;
+                var allowIndexes = length && isLength(length) && (isArray(object) || support.nonEnumArgs && isArguments(object));
+                var index = -1, result = [];
+                while (++index < propsLength) {
+                    var key = props[index];
+                    if (allowIndexes && isIndex(key, length) || hasOwnProperty.call(object, key)) {
+                        result.push(key);
+                    }
+                }
+                return result;
+            }
+            module.exports = shimKeys;
+        },
+        function (module, exports) {
+            var isObject = _require(60);
+            function toObject(value) {
+                return isObject(value) ? value : Object(value);
+            }
+            module.exports = toObject;
+        },
+        function (module, exports) {
+            var baseClone = _require(32), bindCallback = _require(40);
+            function cloneDeep(value, customizer, thisArg) {
+                customizer = typeof customizer == 'function' && bindCallback(customizer, thisArg, 1);
+                return baseClone(value, true, customizer);
+            }
+            module.exports = cloneDeep;
+        },
+        function (module, exports) {
+            var isLength = _require(52), isObjectLike = _require(53);
+            var argsTag = '[object Arguments]';
+            var objectProto = Object.prototype;
+            var objToString = objectProto.toString;
+            function isArguments(value) {
+                var length = isObjectLike(value) ? value.length : undefined;
+                return isLength(length) && objToString.call(value) == argsTag || false;
+            }
+            module.exports = isArguments;
+        },
+        function (module, exports) {
+            var isLength = _require(52), isNative = _require(59), isObjectLike = _require(53);
+            var arrayTag = '[object Array]';
+            var objectProto = Object.prototype;
+            var objToString = objectProto.toString;
+            var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
+            var isArray = nativeIsArray || function (value) {
+                    return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag || false;
+                };
+            module.exports = isArray;
+        },
+        function (module, exports) {
+            var escapeRegExp = _require(66), isObjectLike = _require(53);
+            var funcTag = '[object Function]';
+            var reHostCtor = /^\[object .+?Constructor\]$/;
+            var objectProto = Object.prototype;
+            var fnToString = Function.prototype.toString;
+            var objToString = objectProto.toString;
+            var reNative = RegExp('^' + escapeRegExp(objToString).replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
+            function isNative(value) {
+                if (value == null) {
+                    return false;
+                }
+                if (objToString.call(value) == funcTag) {
+                    return reNative.test(fnToString.call(value));
+                }
+                return isObjectLike(value) && reHostCtor.test(value) || false;
+            }
+            module.exports = isNative;
+        },
+        function (module, exports) {
+            function isObject(value) {
+                var type = typeof value;
+                return type == 'function' || value && type == 'object' || false;
+            }
+            module.exports = isObject;
+        },
+        function (module, exports) {
+            var baseAssign = _require(31), createAssigner = _require(44);
+            var assign = createAssigner(baseAssign);
+            module.exports = assign;
+        },
+        function (module, exports) {
+            var arrayCopy = _require(28), assign = _require(61), assignDefaults = _require(30);
+            function defaults(object) {
+                if (object == null) {
+                    return object;
+                }
+                var args = arrayCopy(arguments);
+                args.push(assignDefaults);
+                return assign.apply(undefined, args);
+            }
+            module.exports = defaults;
+        },
+        function (module, exports) {
+            module.exports = _require(61);
+        },
+        function (module, exports) {
+            var isLength = _require(52), isNative = _require(59), isObject = _require(60), shimKeys = _require(54);
+            var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
+            var keys = !nativeKeys ? shimKeys : function (object) {
+                    if (object) {
+                        var Ctor = object.constructor, length = object.length;
+                    }
+                    if (typeof Ctor == 'function' && Ctor.prototype === object || typeof object != 'function' && (length && isLength(length))) {
+                        return shimKeys(object);
+                    }
+                    return isObject(object) ? nativeKeys(object) : [];
+                };
+            module.exports = keys;
+        },
+        function (module, exports) {
+            var isArguments = _require(57), isArray = _require(58), isIndex = _require(50), isLength = _require(52), isObject = _require(60), support = _require(67);
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            function keysIn(object) {
+                if (object == null) {
+                    return [];
+                }
+                if (!isObject(object)) {
+                    object = Object(object);
+                }
+                var length = object.length;
+                length = length && isLength(length) && (isArray(object) || support.nonEnumArgs && isArguments(object)) && length || 0;
+                var Ctor = object.constructor, index = -1, isProto = typeof Ctor == 'function' && Ctor.prototype == object, result = Array(length), skipIndexes = length > 0;
+                while (++index < length) {
+                    result[index] = index + '';
+                }
+                for (var key in object) {
+                    if (!(skipIndexes && isIndex(key, length)) && !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+                        result.push(key);
+                    }
+                }
+                return result;
+            }
+            module.exports = keysIn;
+        },
+        function (module, exports) {
+            var baseToString = _require(39);
+            var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g, reHasRegExpChars = RegExp(reRegExpChars.source);
+            function escapeRegExp(string) {
+                string = baseToString(string);
+                return string && reHasRegExpChars.test(string) ? string.replace(reRegExpChars, '\\$&') : string;
+            }
+            module.exports = escapeRegExp;
+        },
+        function (module, exports) {
+            var isNative = _require(59);
+            var reThis = /\bthis\b/;
+            var objectProto = Object.prototype;
+            var document = (document = global.window) && document.document;
+            var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+            var support = {};
+            (function (x) {
+                support.funcDecomp = !isNative(global.WinRTError) && reThis.test(function () {
+                    return this;
+                });
+                support.funcNames = typeof Function.name == 'string';
+                try {
+                    support.dom = document.createDocumentFragment().nodeType === 11;
+                } catch (e) {
+                    support.dom = false;
+                }
+                try {
+                    support.nonEnumArgs = !propertyIsEnumerable.call(arguments, 1);
+                } catch (e) {
+                    support.nonEnumArgs = true;
+                }
+            }(0, 0));
+            module.exports = support;
+        },
+        function (module, exports) {
+            function constant(value) {
+                return function () {
+                    return value;
+                };
+            }
+            module.exports = constant;
+        },
+        function (module, exports) {
+            function identity(value) {
+                return value;
+            }
+            module.exports = identity;
         }
     ];
     return _require(1);

@@ -16,10 +16,6 @@ module.exports = function (grunt) {
                         'futoin-asyncsteps' : {
                             'global' : '$as',
                             'amd' : 'futoin-asyncsteps'
-                        },
-                        'lodash' : {
-                            'global' : '_',
-                            'amd' : 'lodash'
                         }
                     }
                 }
@@ -37,10 +33,6 @@ module.exports = function (grunt) {
                         'futoin-asyncsteps' : {
                             'global' : '$as',
                             'amd' : 'futoin-asyncsteps'
-                        },
-                        'lodash' : {
-                            'global' : '_',
-                            'amd' : 'lodash'
                         }
                     }
                 }
