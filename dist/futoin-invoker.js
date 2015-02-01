@@ -187,6 +187,7 @@
                     var url = ctx.endpoint;
                     var rawreq = ctx.upload_data;
                     var content_type;
+                    var auth_header;
                     if (rawreq || rawreq === '') {
                         content_type = 'application/octet-stream';
                         if (url.charAt(url.length - 1) !== '/') {
@@ -194,7 +195,11 @@
                         }
                         url += req.f.replace(/:/g, '/') + '/';
                         if ('sec' in req) {
-                            url += req.sec + '/';
+                            if (req.sec === ctx.options.credentials) {
+                                auth_header = 'Basic ' + window.btoa(req.sec);
+                            } else {
+                                url += req.sec + '/';
+                            }
                         }
                         var params = [];
                         for (var k in req.p) {
@@ -237,6 +242,9 @@
                     }
                     httpreq.open('POST', url, true);
                     httpreq.setRequestHeader('Content-Type', content_type);
+                    if (auth_header) {
+                        httpreq.setRequestHeader('Authorization', auth_header);
+                    }
                     httpreq.send(rawreq);
                     if (!ctx.expect_response) {
                         as.success();

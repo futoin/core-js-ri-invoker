@@ -65,7 +65,6 @@
     "jshint-full-path": "*",
     "mocha": "*",
     "mocha-phantomjs": "*",
-    "performance-now": "*",
-    "wolfy87-eventemitter": "*"
+    "performance-now": "*"
   }
 }
