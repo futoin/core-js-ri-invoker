@@ -1002,7 +1002,8 @@
                 performCommon: function (as, ctx, req, comm) {
                     var msg;
                     var content_type;
-                    as.repeat(ctx.options.retryCount + 1, function (as) {
+                    var retries = ctx.options.retryCount;
+                    as.repeat(retries + 1, function (as, attempt) {
                         as.add(function (as) {
                             comm.perform(as, ctx, req);
                             as.add(function (as, m, c) {
@@ -1013,7 +1014,9 @@
                         }, function (as, err) {
                             if (err === FutoInError.CommError) {
                                 ctx.native_iface.emit('commError', as.state.error_info, req);
-                                as.continue();
+                                if (attempt < retries) {
+                                    as.continue();
+                                }
                             }
                         });
                     }).add(function (as) {
@@ -1745,10 +1748,11 @@
         },
         function (module, exports) {
             'use strict';
-            var assign = _require(11), forEach = Array.prototype.forEach, create = Object.create, getPrototypeOf = Object.getPrototypeOf, process;
-            process = function (src, obj) {
-                var proto = getPrototypeOf(src);
-                return assign(proto ? process(proto, obj) : obj, src);
+            var forEach = Array.prototype.forEach, create = Object.create;
+            var process = function (src, obj) {
+                var key;
+                for (key in src)
+                    obj[key] = src[key];
             };
             module.exports = function (options) {
                 var result = create(null);
@@ -2276,7 +2280,7 @@
                 if (type == 'number') {
                     var length = object.length, prereq = isLength(length) && isIndex(index, length);
                 } else {
-                    prereq = type == 'string' && index in value;
+                    prereq = type == 'string' && index in object;
                 }
                 return prereq && object[index] === value;
             }
