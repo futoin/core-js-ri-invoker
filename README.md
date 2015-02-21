@@ -75,6 +75,7 @@ Communication methods:
 * HTTP/HTTPS - remote calls
 * WS/WSS - WebSockets remote calls with bi-directional sockets
 * HTML5 Web Messaging - same- and cross-origin local calls **inside Browser through window.postMessage() API**
+* Same Process - optimized for single instance deployment
 
 *Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
 is already available in JS and PHP. Hopefully, others are upcoming*
@@ -105,7 +106,121 @@ with [pure-sjc](https://github.com/RReverser/pure-cjs). It depends on
 
 # Examples
 
-*TODO*
+NOTE: more complex examples should be found in (futoin-executor)[https://github.com/futoin/core-js-ri-executor/]
+
+## Call remote function with SimpleCCM
+
+```javascript
+var async_steps = require( 'futoin-asyncsteps' );
+var invoker = require( 'futoin-invoker' );
+
+var ccm = new invoker.SimpleCCM();
+
+async_steps()
+.add(
+    function( as ){
+        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
+        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+
+        as.add( function( as ){
+            var localone = ccm.iface( 'localone' );
+            var localtwo = ccm.iface( 'localtwo' );
+            
+            localone.call( as, 'somefunc', {
+                arg1 : 1,
+                arg2 : 'abc',
+                arg3 : true,
+            } );
+            
+            as.add( function( as, res ){
+                console.log( res.result1, res.result2 );
+            } );
+        } );
+    },
+    function( as, err )
+    {
+        console.log( err + ': ' + as.state.error_info );
+        console.log( as.state.last_exception.stack );
+    }
+)
+.execute();
+```
+
+## Call remote function with AdvancedCCM
+
+```javascript
+var async_steps = require( 'futoin-asyncsteps' );
+var invoker = require( 'futoin-invoker' );
+
+var some_iface_v1_0 = {
+    "iface" : "some.iface",
+    "version" : "1.0",
+    "ftn3rev" : "1.1",
+    "funcs" : {
+        "get" : {
+            "params" : {
+                "arg1" : {
+                    "type" : "integer"
+                },
+                "arg2" : {
+                    "type" : "string"
+                },
+                "arg3" : {
+                    "type" : "boolean"
+                }
+            },
+            "result" : {
+                "result1" : {
+                    "type" : "number"
+                },
+                "result2" : {
+                    "type" : "any"
+                }
+            },
+            "throws" : [
+                "MyError"
+            ]
+        }
+    },
+    "requires" : [
+        "SecureChannel",
+        "AllowAnonymous"
+    ]
+};
+
+var ccm = new invoker.AdvancedCCM({
+    specDirs : [ __dirname + '/specs', some_iface_v1_0 ]
+});
+
+async_steps()
+.add(
+    function( as ){
+        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
+        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+
+        as.add( function( as ){
+            var localone = ccm.iface( 'localone' );
+            var localtwo = ccm.iface( 'localtwo' );
+            
+            localone.call( as, 'somefunc', {
+                arg1 : 1,
+                arg2 : 'abc',
+                arg3 : true,
+            } );
+            
+            as.add( function( as, res ){
+                console.log( res.result1, res.result2 );
+            } );
+        } );
+    },
+    function( as, err )
+    {
+        console.log( err + ': ' + as.state.error_info );
+        console.log( as.state.last_exception.stack );
+    }
+)
+.execute();
+```
     
 # API documentation
 
@@ -116,16 +231,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 **Modules**
 
 * [futoin-invoker](#module_futoin-invoker)
-  * [class: futoin-invoker.SimpleCCM](#module_futoin-invoker.SimpleCCM)
-    * [new futoin-invoker.SimpleCCM([options])](#new_module_futoin-invoker.SimpleCCM)
-  * [class: futoin-invoker.AdvancedCCM](#module_futoin-invoker.AdvancedCCM)
-    * [new futoin-invoker.AdvancedCCM()](#new_module_futoin-invoker.AdvancedCCM)
-  * [class: futoin-invoker.FutoInError](#module_futoin-invoker.FutoInError)
-    * [new futoin-invoker.FutoInError()](#new_module_futoin-invoker.FutoInError)
-  * [class: futoin-invoker.NativeIface](#module_futoin-invoker.NativeIface)
-    * [new futoin-invoker.NativeIface()](#new_module_futoin-invoker.NativeIface)
-  * [class: futoin-invoker.InterfaceInfo](#module_futoin-invoker.InterfaceInfo)
-    * [new futoin-invoker.InterfaceInfo()](#new_module_futoin-invoker.InterfaceInfo)
 
 **Classes**
 
@@ -134,6 +239,35 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
   * [CacheFace.register()](#CacheFace.register)
   * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl)](#CacheFace#getOrSet)
+* [class: SimpleCCM](#SimpleCCM)
+  * [new SimpleCCM([options])](#new_SimpleCCM)
+  * [SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
+  * [simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM#register)
+  * [simpleCCM.iface(name)](#SimpleCCM#iface)
+  * [simpleCCM.unRegister(name)](#SimpleCCM#unRegister)
+  * [simpleCCM.defense()](#SimpleCCM#defense)
+  * [simpleCCM.log()](#SimpleCCM#log)
+  * [simpleCCM.cache()](#SimpleCCM#cache)
+  * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
+  * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
+  * [simpleCCM.close()](#SimpleCCM#close)
+  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
+  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
+  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
+  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
+  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
+  * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
+  * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
+  * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
+  * [const: SimpleCCM.SVC_DEFENSE](#SimpleCCM.SVC_DEFENSE)
+  * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
+  * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
+  * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+* [class: AdvancedCCM](#AdvancedCCM)
+  * [new AdvancedCCM()](#new_AdvancedCCM)
+  * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
+* [class: FutoInError](#FutoInError)
+  * [new FutoInError()](#new_FutoInError)
 * [class: LogFace](#LogFace)
   * [new LogFace()](#new_LogFace)
   * [LogFace.ifacespec](#LogFace.ifacespec)
@@ -162,20 +296,29 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
   * [nativeIface.call()](#NativeIface#call)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
-* [class: spectools](#spectools)
-  * [new spectools()](#new_spectools)
-  * [spectools.loadIface(as, info, specdirs)](#spectools.loadIface)
-  * [spectools.parseIface(as, info, specdirs, raw_spec)](#spectools.parseIface)
-  * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
-  * [spectools.checkType(info, type, val)](#spectools.checkType)
-  * [spectools.checkParameterType(as, info, funcname, varname, value)](#spectools.checkParameterType)
-  * [spectools.checkResultType(as, info, funcname, varname, value)](#spectools.checkResultType)
-  * [const: spectools.standard_errors](#spectools.standard_errors)
+* [class: SpecTools](#SpecTools)
+  * [new SpecTools()](#new_SpecTools)
+  * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
+  * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
+  * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
+  * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
+  * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
+  * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
+  * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
 
 **Members**
 
 * [SimpleCCM](#SimpleCCM)
   * [SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
+  * [simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM#register)
+  * [simpleCCM.iface(name)](#SimpleCCM#iface)
+  * [simpleCCM.unRegister(name)](#SimpleCCM#unRegister)
+  * [simpleCCM.defense()](#SimpleCCM#defense)
+  * [simpleCCM.log()](#SimpleCCM#log)
+  * [simpleCCM.cache()](#SimpleCCM#cache)
+  * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
+  * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
+  * [simpleCCM.close()](#SimpleCCM#close)
   * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
   * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
   * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
@@ -195,79 +338,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
  
 <a name="module_futoin-invoker"></a>
 #futoin-invoker
-**Members**
-
-* [futoin-invoker](#module_futoin-invoker)
-  * [class: futoin-invoker.SimpleCCM](#module_futoin-invoker.SimpleCCM)
-    * [new futoin-invoker.SimpleCCM([options])](#new_module_futoin-invoker.SimpleCCM)
-  * [class: futoin-invoker.AdvancedCCM](#module_futoin-invoker.AdvancedCCM)
-    * [new futoin-invoker.AdvancedCCM()](#new_module_futoin-invoker.AdvancedCCM)
-  * [class: futoin-invoker.FutoInError](#module_futoin-invoker.FutoInError)
-    * [new futoin-invoker.FutoInError()](#new_module_futoin-invoker.FutoInError)
-  * [class: futoin-invoker.NativeIface](#module_futoin-invoker.NativeIface)
-    * [new futoin-invoker.NativeIface()](#new_module_futoin-invoker.NativeIface)
-  * [class: futoin-invoker.InterfaceInfo](#module_futoin-invoker.InterfaceInfo)
-    * [new futoin-invoker.InterfaceInfo()](#new_module_futoin-invoker.InterfaceInfo)
-
-<a name="module_futoin-invoker.SimpleCCM"></a>
-##class: futoin-invoker.SimpleCCM
-**Members**
-
-* [class: futoin-invoker.SimpleCCM](#module_futoin-invoker.SimpleCCM)
-  * [new futoin-invoker.SimpleCCM([options])](#new_module_futoin-invoker.SimpleCCM)
-
-<a name="new_module_futoin-invoker.SimpleCCM"></a>
-###new futoin-invoker.SimpleCCM([options])
-Simple CCM - Reference Implementation
-
-**Params**
-
-- \[options\] `object` - map of OPT_* named variables  
-
-<a name="module_futoin-invoker.AdvancedCCM"></a>
-##class: futoin-invoker.AdvancedCCM
-**Members**
-
-* [class: futoin-invoker.AdvancedCCM](#module_futoin-invoker.AdvancedCCM)
-  * [new futoin-invoker.AdvancedCCM()](#new_module_futoin-invoker.AdvancedCCM)
-
-<a name="new_module_futoin-invoker.AdvancedCCM"></a>
-###new futoin-invoker.AdvancedCCM()
-Advanced CCM - Reference Implementation
-
-<a name="module_futoin-invoker.FutoInError"></a>
-##class: futoin-invoker.FutoInError
-**Members**
-
-* [class: futoin-invoker.FutoInError](#module_futoin-invoker.FutoInError)
-  * [new futoin-invoker.FutoInError()](#new_module_futoin-invoker.FutoInError)
-
-<a name="new_module_futoin-invoker.FutoInError"></a>
-###new futoin-invoker.FutoInError()
-Easy access of futoin-asyncsteps.FutoInError errors, which may be extended in the future
-
-<a name="module_futoin-invoker.NativeIface"></a>
-##class: futoin-invoker.NativeIface
-**Members**
-
-* [class: futoin-invoker.NativeIface](#module_futoin-invoker.NativeIface)
-  * [new futoin-invoker.NativeIface()](#new_module_futoin-invoker.NativeIface)
-
-<a name="new_module_futoin-invoker.NativeIface"></a>
-###new futoin-invoker.NativeIface()
-Useful base for custom implementation of NativeIface
-
-<a name="module_futoin-invoker.InterfaceInfo"></a>
-##class: futoin-invoker.InterfaceInfo
-**Members**
-
-* [class: futoin-invoker.InterfaceInfo](#module_futoin-invoker.InterfaceInfo)
-  * [new futoin-invoker.InterfaceInfo()](#new_module_futoin-invoker.InterfaceInfo)
-
-<a name="new_module_futoin-invoker.InterfaceInfo"></a>
-###new futoin-invoker.InterfaceInfo()
-NativeInterface.ifaceInfo() class for custom implementations of NativeIface
-
 <a name="CacheFace"></a>
 #class: CacheFace
 **Members**
@@ -283,6 +353,7 @@ NativeInterface.ifaceInfo() class for custom implementations of NativeIface
 Cache Native interface
 
 Register with CacheFace.register()
+NOTE: it is not directly available Invoker module interface
 
 <a name="CacheFace.ifacespec"></a>
 ##CacheFace.ifacespec
@@ -307,6 +378,197 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
      which is called to generated value on cache miss  
 - params `Array` - parameters to be passed to *callable*  
 - ttl `integer` - time to live to use, if value is set on cache miss  
+
+<a name="SimpleCCM"></a>
+#class: SimpleCCM
+**Members**
+
+* [class: SimpleCCM](#SimpleCCM)
+  * [new SimpleCCM([options])](#new_SimpleCCM)
+  * [SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
+  * [simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM#register)
+  * [simpleCCM.iface(name)](#SimpleCCM#iface)
+  * [simpleCCM.unRegister(name)](#SimpleCCM#unRegister)
+  * [simpleCCM.defense()](#SimpleCCM#defense)
+  * [simpleCCM.log()](#SimpleCCM#log)
+  * [simpleCCM.cache()](#SimpleCCM#cache)
+  * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
+  * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
+  * [simpleCCM.close()](#SimpleCCM#close)
+  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
+  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
+  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
+  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
+  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
+  * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
+  * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
+  * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
+  * [const: SimpleCCM.SVC_DEFENSE](#SimpleCCM.SVC_DEFENSE)
+  * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
+  * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
+  * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+
+<a name="new_SimpleCCM"></a>
+##new SimpleCCM([options])
+Simple CCM - Reference Implementation
+
+Base Connection and Credentials Manager with limited error control
+
+**Params**
+
+- \[options\] `object` - map of options (see OPT_* consts)  
+
+<a name="SimpleCCM.OPT_COMM_CONFIG_CB"></a>
+##SimpleCCM.OPT_COMM_CONFIG_CB
+Communication configuration callback( type, specific-args )
+
+<a name="SimpleCCM#register"></a>
+##simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])
+Register standard MasterService end-point (adds steps to *as*)
+
+**Params**
+
+- as `AsyncSteps` - AsyncSteps instance as registration may be waiting for external resources  
+- name `string` - unique identifier in scope of CCM instance  
+- ifacever `string` - interface identifier and its version separated by colon  
+- endpoint `string` - URI
+     OR any other resource identifier of function( ccmimpl, info )
+         returning iface implementing peer, accepted by CCM implementation
+     OR instance of Executor  
+- \[credentials\] `string` - optional, authentication credentials:
+'master' - enable MasterService authentication logic (Advanced CCM only)
+'{user}:{clear-text-password}' - send as is in the 'sec' section
+NOTE: some more reserved words and/or patterns can appear in the future  
+- \[options\] `object` - NOT STANDARD feature, fine tune global CCM options per endpoint  
+
+<a name="SimpleCCM#iface"></a>
+##simpleCCM.iface(name)
+Get native interface wrapper for invocation of iface methods
+
+**Params**
+
+- name `string` - see register()  
+
+**Returns**: `NativeInterface` - - native interface  
+<a name="SimpleCCM#unRegister"></a>
+##simpleCCM.unRegister(name)
+Unregister previously registered interface (should not be used, unless really needed)
+
+**Params**
+
+- name `string` - see register()  
+
+<a name="SimpleCCM#defense"></a>
+##simpleCCM.defense()
+Shortcut to iface( "#defense" )
+
+<a name="SimpleCCM#log"></a>
+##simpleCCM.log()
+Returns extended API interface as defined in FTN9 IF AuditLogService
+
+**Returns**: `object`  
+<a name="SimpleCCM#cache"></a>
+##simpleCCM.cache()
+Returns extended API interface as defined in [FTN14 Cache][]
+
+**Returns**: `object`  
+<a name="SimpleCCM#assertIface"></a>
+##simpleCCM.assertIface(name, ifacever)
+Assert that interface registered by name matches major version and minor is not less than required.
+This function must generate fatal error and forbid any further execution
+
+**Params**
+
+- name `string` - unique identifier in scope of CCM instance  
+- ifacever `string` - interface identifier and its version separated by colon  
+
+<a name="SimpleCCM#alias"></a>
+##simpleCCM.alias(name, alias)
+Alias interface name with another name
+
+**Params**
+
+- name `string` - unique identifier in scope of CCM instance  
+- alias `string` - alternative name for registered interface  
+
+<a name="SimpleCCM#close"></a>
+##simpleCCM.close()
+Shutdown CCM (close all active comms)
+
+<a name="SimpleCCM.OPT_CALL_TIMEOUT_MS"></a>
+##const: SimpleCCM.OPT_CALL_TIMEOUT_MS
+Overall call timeout (int)
+
+<a name="SimpleCCM.OPT_PROD_MODE"></a>
+##const: SimpleCCM.OPT_PROD_MODE
+Production mode - disables some checks without compomising security
+
+<a name="SimpleCCM.OPT_SPEC_DIRS"></a>
+##const: SimpleCCM.OPT_SPEC_DIRS
+Client-side executor for bi-directional communication channels
+
+<a name="SimpleCCM.OPT_TARGET_ORIGIN"></a>
+##const: SimpleCCM.OPT_TARGET_ORIGIN
+browser-only. Origin of target for *window.postMessage()*
+
+<a name="SimpleCCM.OPT_RETRY_COUNT"></a>
+##const: SimpleCCM.OPT_RETRY_COUNT
+How many times to retry the call on CommError
+
+<a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
+##const: SimpleCCM.SAFE_PAYLOAD_LIMIT
+Maximum FutoIn message payload size (not related to raw data)
+
+<a name="SimpleCCM.SVC_RESOLVER"></a>
+##const: SimpleCCM.SVC_RESOLVER
+Runtime iface resolution v1.x
+
+<a name="SimpleCCM.SVC_AUTH"></a>
+##const: SimpleCCM.SVC_AUTH
+AuthService v1.x
+
+<a name="SimpleCCM.SVC_DEFENSE"></a>
+##const: SimpleCCM.SVC_DEFENSE
+Defense system v1.x
+
+<a name="SimpleCCM.SVC_ACL"></a>
+##const: SimpleCCM.SVC_ACL
+Access Control system v1.x
+
+<a name="SimpleCCM.SVC_LOG"></a>
+##const: SimpleCCM.SVC_LOG
+Audit Logging v1.x
+
+<a name="SimpleCCM.SVC_CACHE_"></a>
+##const: SimpleCCM.SVC_CACHE_
+cache v1.x iface name prefix
+
+<a name="AdvancedCCM"></a>
+#class: AdvancedCCM
+**Members**
+
+* [class: AdvancedCCM](#AdvancedCCM)
+  * [new AdvancedCCM()](#new_AdvancedCCM)
+  * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
+
+<a name="new_AdvancedCCM"></a>
+##new AdvancedCCM()
+Advanced CCM - Reference Implementation
+
+<a name="AdvancedCCM.OPT_SPEC_DIRS"></a>
+##const: AdvancedCCM.OPT_SPEC_DIRS
+Search dirs for spec definition or spec instance directly
+
+<a name="FutoInError"></a>
+#class: FutoInError
+**Members**
+
+* [class: FutoInError](#FutoInError)
+  * [new FutoInError()](#new_FutoInError)
+
+<a name="new_FutoInError"></a>
+##new FutoInError()
+Easy access of futoin-asyncsteps.FutoInError errors, which may be extended in the future
 
 <a name="LogFace"></a>
 #class: LogFace
@@ -334,6 +596,7 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 AuditLog Native interface
 
 Register with LogFace.register()
+NOTE: it is not directly available Invoker module interface
 
 <a name="LogFace.ifacespec"></a>
 ##LogFace.ifacespec
@@ -500,26 +763,26 @@ Get interface info
 ##nativeIface.bindDerivedKey()
 Results with DerivedKeyAccessor through as.success()
 
-<a name="spectools"></a>
-#class: spectools
+<a name="SpecTools"></a>
+#class: SpecTools
 **Members**
 
-* [class: spectools](#spectools)
-  * [new spectools()](#new_spectools)
-  * [spectools.loadIface(as, info, specdirs)](#spectools.loadIface)
-  * [spectools.parseIface(as, info, specdirs, raw_spec)](#spectools.parseIface)
-  * [spectools.checkConsistency(as, info)](#spectools.checkConsistency)
-  * [spectools.checkType(info, type, val)](#spectools.checkType)
-  * [spectools.checkParameterType(as, info, funcname, varname, value)](#spectools.checkParameterType)
-  * [spectools.checkResultType(as, info, funcname, varname, value)](#spectools.checkResultType)
-  * [const: spectools.standard_errors](#spectools.standard_errors)
+* [class: SpecTools](#SpecTools)
+  * [new SpecTools()](#new_SpecTools)
+  * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
+  * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
+  * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
+  * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
+  * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
+  * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
+  * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
 
-<a name="new_spectools"></a>
-##new spectools()
+<a name="new_SpecTools"></a>
+##new SpecTools()
 SpecTools
 
-<a name="spectools.loadIface"></a>
-##spectools.loadIface(as, info, specdirs)
+<a name="SpecTools.loadIface"></a>
+##SpecTools.loadIface(as, info, specdirs)
 Load FutoIn iface definition.
 
 NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
@@ -530,8 +793,8 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 - info `Object` - destination object with "iface" and "version" fields already set  
 - specdirs `Array` - each element - search path/url (string) or raw iface (object)  
 
-<a name="spectools.parseIface"></a>
-##spectools.parseIface(as, info, specdirs, raw_spec)
+<a name="SpecTools.parseIface"></a>
+##SpecTools.parseIface(as, info, specdirs, raw_spec)
 Parse raw futoin spec (preloaded)
 
 **Params**
@@ -541,8 +804,8 @@ Parse raw futoin spec (preloaded)
 - specdirs `Array` - each element - search path/url (string) or raw iface (object)  
 - raw_spec `Object` - iface definition object  
 
-<a name="spectools.checkConsistency"></a>
-##spectools.checkConsistency(as, info)
+<a name="SpecTools.checkConsistency"></a>
+##SpecTools.checkConsistency(as, info)
 Deeply check consistency of loaded interface.
 
 NOTE: not yet implemented
@@ -552,8 +815,8 @@ NOTE: not yet implemented
 - as `AsyncSteps`  
 - info `Object` - previously loaded iface  
 
-<a name="spectools.checkType"></a>
-##spectools.checkType(info, type, val)
+<a name="SpecTools.checkType"></a>
+##SpecTools.checkType(info, type, val)
 Check if value matches required type
 
 **Params**
@@ -563,8 +826,8 @@ Check if value matches required type
 - val `*` - value to check  
 
 **Returns**: `Boolean`  
-<a name="spectools.checkParameterType"></a>
-##spectools.checkParameterType(as, info, funcname, varname, value)
+<a name="SpecTools.checkParameterType"></a>
+##SpecTools.checkParameterType(as, info, funcname, varname, value)
 Check if parameter value matches required type
 
 **Params**
@@ -575,8 +838,8 @@ Check if parameter value matches required type
 - varname `string` - parameter name  
 - value `*` - value to check  
 
-<a name="spectools.checkResultType"></a>
-##spectools.checkResultType(as, info, funcname, varname, value)
+<a name="SpecTools.checkResultType"></a>
+##SpecTools.checkResultType(as, info, funcname, varname, value)
 Check if result value matches required type
 
 **Params**
@@ -587,8 +850,8 @@ Check if result value matches required type
 - varname `string` - result variable name  
 - value `*` - value to check  
 
-<a name="spectools.standard_errors"></a>
-##const: spectools.standard_errors
+<a name="SpecTools.standard_errors"></a>
+##const: SpecTools.standard_errors
 Enumeration of standard errors
 
 <a name="SimpleCCM"></a>

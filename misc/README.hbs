@@ -75,6 +75,7 @@ Communication methods:
 * HTTP/HTTPS - remote calls
 * WS/WSS - WebSockets remote calls with bi-directional sockets
 * HTML5 Web Messaging - same- and cross-origin local calls **inside Browser through window.postMessage() API**
+* Same Process - optimized for single instance deployment
 
 *Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
 is already available in JS and PHP. Hopefully, others are upcoming*
@@ -105,7 +106,121 @@ with [pure-sjc](https://github.com/RReverser/pure-cjs). It depends on
 
 # Examples
 
-*TODO*
+NOTE: more complex examples should be found in (futoin-executor)[https://github.com/futoin/core-js-ri-executor/]
+
+## Call remote function with SimpleCCM
+
+```javascript
+var async_steps = require( 'futoin-asyncsteps' );
+var invoker = require( 'futoin-invoker' );
+
+var ccm = new invoker.SimpleCCM();
+
+async_steps()
+.add(
+    function( as ){
+        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
+        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+
+        as.add( function( as ){
+            var localone = ccm.iface( 'localone' );
+            var localtwo = ccm.iface( 'localtwo' );
+            
+            localone.call( as, 'somefunc', {
+                arg1 : 1,
+                arg2 : 'abc',
+                arg3 : true,
+            } );
+            
+            as.add( function( as, res ){
+                console.log( res.result1, res.result2 );
+            } );
+        } );
+    },
+    function( as, err )
+    {
+        console.log( err + ': ' + as.state.error_info );
+        console.log( as.state.last_exception.stack );
+    }
+)
+.execute();
+```
+
+## Call remote function with AdvancedCCM
+
+```javascript
+var async_steps = require( 'futoin-asyncsteps' );
+var invoker = require( 'futoin-invoker' );
+
+var some_iface_v1_0 = {
+    "iface" : "some.iface",
+    "version" : "1.0",
+    "ftn3rev" : "1.1",
+    "funcs" : {
+        "get" : {
+            "params" : {
+                "arg1" : {
+                    "type" : "integer"
+                },
+                "arg2" : {
+                    "type" : "string"
+                },
+                "arg3" : {
+                    "type" : "boolean"
+                }
+            },
+            "result" : {
+                "result1" : {
+                    "type" : "number"
+                },
+                "result2" : {
+                    "type" : "any"
+                }
+            },
+            "throws" : [
+                "MyError"
+            ]
+        }
+    },
+    "requires" : [
+        "SecureChannel",
+        "AllowAnonymous"
+    ]
+};
+
+var ccm = new invoker.AdvancedCCM({
+    specDirs : [ __dirname + '/specs', some_iface_v1_0 ]
+});
+
+async_steps()
+.add(
+    function( as ){
+        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
+        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+
+        as.add( function( as ){
+            var localone = ccm.iface( 'localone' );
+            var localtwo = ccm.iface( 'localtwo' );
+            
+            localone.call( as, 'somefunc', {
+                arg1 : 1,
+                arg2 : 'abc',
+                arg3 : true,
+            } );
+            
+            as.add( function( as, res ){
+                console.log( res.result1, res.result2 );
+            } );
+        } );
+    },
+    function( as, err )
+    {
+        console.log( err + ': ' + as.state.error_info );
+        console.log( as.state.last_exception.stack );
+    }
+)
+.execute();
+```
     
 # API documentation
 

@@ -514,14 +514,14 @@
                 _extend(this, SimpleCCMProto);
             }
             _extend(SimpleCCM, SimpleCCMPublic);
-            var SimpleCCMProto = {
-                    _secure_replace: /^secure\+/,
-                    _secure_test: /^(https|wss|unix):\/\//,
-                    _native_iface_builder: function (ccmimpl, info) {
-                        return native_iface(ccmimpl, info);
-                    }
-                };
+            var SimpleCCMProto = {};
+            SimpleCCM.prototype = SimpleCCMProto;
             _extend(SimpleCCMProto, SimpleCCMPublic);
+            SimpleCCMProto._secure_replace = /^secure\+/;
+            SimpleCCMProto._secure_test = /^(https|wss|unix):\/\//;
+            SimpleCCMProto._native_iface_builder = function (ccmimpl, info) {
+                return native_iface(ccmimpl, info);
+            };
             SimpleCCMProto.register = function (as, name, ifacever, endpoint, credentials, options) {
                 var is_channel_reg = name === null;
                 if (!is_channel_reg && name in this._iface_info) {
@@ -728,6 +728,7 @@
             }
             _extend(AdvancedCCM, SimpleCCMPublic);
             var AdvancedCCMProto = {};
+            AdvancedCCM.prototype = AdvancedCCMProto;
             _extend(AdvancedCCMProto, SimpleCCMProto);
             AdvancedCCMProto.initFromCache = function (as, cache_l1_endpoint) {
                 void cache_l1_endpoint;
@@ -759,22 +760,22 @@
             function InterfaceInfo(raw_info) {
                 this._raw_info = raw_info;
             }
-            InterfaceInfo.prototype = {
-                name: function () {
-                    return this._raw_info.iface;
-                },
-                version: function () {
-                    return this._raw_info.version;
-                },
-                inherits: function () {
-                    return this._raw_info.inherits;
-                },
-                funcs: function () {
-                    return this._raw_info.funcs;
-                },
-                constraints: function () {
-                    return this._raw_info.constraints;
-                }
+            var InterfaceInfoProto = {};
+            InterfaceInfo.prototype = InterfaceInfoProto;
+            InterfaceInfoProto.name = function () {
+                return this._raw_info.iface;
+            };
+            InterfaceInfoProto.version = function () {
+                return this._raw_info.version;
+            };
+            InterfaceInfoProto.inherits = function () {
+                return this._raw_info.inherits;
+            };
+            InterfaceInfoProto.funcs = function () {
+                return this._raw_info.funcs;
+            };
+            InterfaceInfoProto.constraints = function () {
+                return this._raw_info.constraints;
             };
             exports.InterfaceInfo = InterfaceInfo;
             function NativeIface(ccmimpl, info) {
@@ -795,126 +796,126 @@
                     this[fn] = this._member_call_generate(fn, finfo);
                 }
             }
-            var NativeIfaceProto = {
-                    call: function (as, name, params, upload_data, download_stream, timeout) {
-                        params = params || {};
-                        var raw_info = this._raw_info;
-                        var ctx = {
-                                ccmimpl: this._ccmimpl,
-                                name: name,
-                                info: raw_info,
-                                upload_data: upload_data,
-                                download_stream: download_stream,
-                                rsp_content_type: null,
-                                native_iface: this,
-                                options: raw_info.options,
-                                endpoint: raw_info.endpoint,
-                                expect_response: true
-                            };
-                        var ccmimpl = this._ccmimpl;
-                        as.add(function (as) {
-                            ccmimpl.createMessage(as, ctx, params);
-                        });
-                        as.add(function (orig_as, req) {
-                            var as;
-                            if (ctx.expect_response) {
-                                as = orig_as;
-                                if (typeof timeout !== 'number') {
-                                    timeout = ctx.info.options.callTimeoutMS;
-                                }
-                                if (timeout > 0) {
-                                    as.setTimeout(timeout);
-                                }
-                            } else {
-                                as = async_steps();
-                            }
-                            var scheme = raw_info.endpoint_scheme;
-                            if (scheme === '#internal#') {
-                                ctx.endpoint.onInternalRequest(as, raw_info, req, upload_data, download_stream);
-                            } else if (scheme === 'http' || scheme === 'https') {
-                                ccmimpl.perfomHTTP(as, ctx, req);
-                            } else if (scheme === 'ws' || scheme === 'wss') {
-                                var finfo;
-                                var rawresult = ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult;
-                                if (ctx.upload_data || rawresult) {
-                                    ctx.endpoint = ctx.endpoint.replace('ws', 'http');
-                                    ctx.rawresult = rawresult;
-                                    ccmimpl.perfomHTTP(as, ctx, req);
-                                } else {
-                                    ccmimpl.perfomWebSocket(as, ctx, req);
-                                }
-                            } else if (ctx.upload_data) {
-                                as.error(futoin_error.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
-                            } else if (ctx.download_stream) {
-                                as.error(futoin_error.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
-                            } else if (scheme === 'browser') {
-                                ccmimpl.perfomBrowser(as, ctx, req);
-                            } else if (scheme === 'unix') {
-                                ccmimpl.perfomUNIX(as, ctx, req);
-                            } else if (scheme === 'callback') {
-                                ctx.endpoint(as, ctx, req);
-                            } else {
-                                as.error(futoin_error.InvokerError, 'Unknown endpoint scheme');
-                            }
-                            if (as !== orig_as) {
-                                as.execute();
-                                orig_as.success();
-                            } else {
-                                as.add(function (as, rsp, content_type) {
-                                    if (ctx.download_stream) {
-                                        as.success(true);
-                                    } else if (content_type === FUTOIN_CONTENT_TYPE || content_type === true) {
-                                        if (typeof rsp === 'string') {
-                                            try {
-                                                rsp = JSON.parse(rsp);
-                                            } catch (e) {
-                                                as.error(futoin_error.CommError, 'JSON:' + e.message);
-                                            }
-                                        }
-                                        ccmimpl.onMessageResponse(as, ctx, rsp);
-                                    } else {
-                                        ccmimpl.onDataResponse(as, ctx, rsp);
-                                    }
-                                });
-                            }
-                        });
-                    },
-                    _member_call_intercept: function (as, name, finfo, args) {
-                        var arginfo = finfo.params;
-                        var keys = Object.keys(arginfo);
-                        if (args.length > keys.length) {
-                            as.error(futoin_error.InvokerError, 'Unknown parameters');
-                        } else if (args.length < finfo.min_args) {
-                            as.error(futoin_error.InvokerError, 'Missing parameters');
-                        } else if (args.length < keys.length) {
-                            keys = keys.splice(0, args.length);
+            var NativeIfaceProto = {};
+            NativeIface.prototype = NativeIfaceProto;
+            NativeIfaceProto.call = function (as, name, params, upload_data, download_stream, timeout) {
+                params = params || {};
+                var raw_info = this._raw_info;
+                var ctx = {
+                        ccmimpl: this._ccmimpl,
+                        name: name,
+                        info: raw_info,
+                        upload_data: upload_data,
+                        download_stream: download_stream,
+                        rsp_content_type: null,
+                        native_iface: this,
+                        options: raw_info.options,
+                        endpoint: raw_info.endpoint,
+                        expect_response: true
+                    };
+                var ccmimpl = this._ccmimpl;
+                as.add(function (as) {
+                    ccmimpl.createMessage(as, ctx, params);
+                });
+                as.add(function (orig_as, req) {
+                    var as;
+                    if (ctx.expect_response) {
+                        as = orig_as;
+                        if (typeof timeout !== 'number') {
+                            timeout = ctx.info.options.callTimeoutMS;
                         }
-                        var params = _zipObject(keys, args);
-                        this.call(as, name, params);
-                    },
-                    _member_call_generate: function (name, finfo) {
-                        return function (as) {
-                            this._member_call_intercept(as, name, finfo, Array.prototype.slice.call(arguments, 1));
-                        };
-                    },
-                    ifaceInfo: function () {
-                        if (!this._iface_info) {
-                            this._iface_info = new InterfaceInfo(this._raw_info);
+                        if (timeout > 0) {
+                            as.setTimeout(timeout);
                         }
-                        return this._iface_info;
-                    },
-                    bindDerivedKey: function (as) {
-                        void as;
-                        throw new Error(futoin_error.InvokerError, 'Not Implemented');
-                    },
-                    _close: function () {
-                        var comms = this._comms;
-                        for (var k in comms) {
-                            comms[k].close();
-                        }
-                        this.emit('close');
+                    } else {
+                        as = async_steps();
                     }
+                    var scheme = raw_info.endpoint_scheme;
+                    if (scheme === '#internal#') {
+                        ctx.endpoint.onInternalRequest(as, raw_info, req, upload_data, download_stream);
+                    } else if (scheme === 'http' || scheme === 'https') {
+                        ccmimpl.perfomHTTP(as, ctx, req);
+                    } else if (scheme === 'ws' || scheme === 'wss') {
+                        var finfo;
+                        var rawresult = ctx.download_stream || ctx.info.funcs && (finfo = ctx.info.funcs[name]) && finfo.rawresult;
+                        if (ctx.upload_data || rawresult) {
+                            ctx.endpoint = ctx.endpoint.replace('ws', 'http');
+                            ctx.rawresult = rawresult;
+                            ccmimpl.perfomHTTP(as, ctx, req);
+                        } else {
+                            ccmimpl.perfomWebSocket(as, ctx, req);
+                        }
+                    } else if (ctx.upload_data) {
+                        as.error(futoin_error.InvokerError, 'Upload data is allowed only for HTTP/WS endpoints');
+                    } else if (ctx.download_stream) {
+                        as.error(futoin_error.InvokerError, 'Download stream is allowed only for HTTP/WS endpoints');
+                    } else if (scheme === 'browser') {
+                        ccmimpl.perfomBrowser(as, ctx, req);
+                    } else if (scheme === 'unix') {
+                        ccmimpl.perfomUNIX(as, ctx, req);
+                    } else if (scheme === 'callback') {
+                        ctx.endpoint(as, ctx, req);
+                    } else {
+                        as.error(futoin_error.InvokerError, 'Unknown endpoint scheme');
+                    }
+                    if (as !== orig_as) {
+                        as.execute();
+                        orig_as.success();
+                    } else {
+                        as.add(function (as, rsp, content_type) {
+                            if (ctx.download_stream) {
+                                as.success(true);
+                            } else if (content_type === FUTOIN_CONTENT_TYPE || content_type === true) {
+                                if (typeof rsp === 'string') {
+                                    try {
+                                        rsp = JSON.parse(rsp);
+                                    } catch (e) {
+                                        as.error(futoin_error.CommError, 'JSON:' + e.message);
+                                    }
+                                }
+                                ccmimpl.onMessageResponse(as, ctx, rsp);
+                            } else {
+                                ccmimpl.onDataResponse(as, ctx, rsp);
+                            }
+                        });
+                    }
+                });
+            };
+            NativeIfaceProto._member_call_intercept = function (as, name, finfo, args) {
+                var arginfo = finfo.params;
+                var keys = Object.keys(arginfo);
+                if (args.length > keys.length) {
+                    as.error(futoin_error.InvokerError, 'Unknown parameters');
+                } else if (args.length < finfo.min_args) {
+                    as.error(futoin_error.InvokerError, 'Missing parameters');
+                } else if (args.length < keys.length) {
+                    keys = keys.splice(0, args.length);
+                }
+                var params = _zipObject(keys, args);
+                this.call(as, name, params);
+            };
+            NativeIfaceProto._member_call_generate = function (name, finfo) {
+                return function (as) {
+                    this._member_call_intercept(as, name, finfo, Array.prototype.slice.call(arguments, 1));
                 };
+            };
+            NativeIfaceProto.ifaceInfo = function () {
+                if (!this._iface_info) {
+                    this._iface_info = new InterfaceInfo(this._raw_info);
+                }
+                return this._iface_info;
+            };
+            NativeIfaceProto.bindDerivedKey = function (as) {
+                void as;
+                throw new Error(futoin_error.InvokerError, 'Not Implemented');
+            };
+            NativeIfaceProto._close = function () {
+                var comms = this._comms;
+                for (var k in comms) {
+                    comms[k].close();
+                }
+                this.emit('close');
+            };
             exports.NativeIface = NativeIface;
         },
         function (module, exports) {
