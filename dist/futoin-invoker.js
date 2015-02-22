@@ -81,21 +81,30 @@
                     }
                 },
                 createMessage: function (as, ctx, params) {
-                    if (!ctx.info.options.prodMode) {
+                    var info = ctx.info;
+                    var options = info.options;
+                    if (!options.prodMode) {
                         this.checkParams(as, ctx, params);
                     }
-                    var info = ctx.info;
                     var req = {
                             f: info.iface + ':' + info.version + ':' + ctx.name,
                             p: params
                         };
+                    ctx.expect_response = info.funcs[ctx.name].expect_result;
                     if (info.creds !== null) {
-                        if (info.creds === 'master') {
+                        if (info.creds_master) {
+                            as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
+                            ctx.signMessage = function (req) {
+                                void req;
+                            };
+                        } else if (info.creds_hmac) {
+                            ctx.signMessage = function (req) {
+                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + spectools.genHMAC(as, info, req);
+                            };
                         } else {
                             req.sec = info.creds;
                         }
                     }
-                    ctx.expect_response = info.funcs[ctx.name].expect_result;
                     as.success(req);
                 },
                 onMessageResponse: function (as, ctx, rsp) {
@@ -112,6 +121,16 @@
                     }
                     if (func_info.rawresult) {
                         as.error(FutoInError.InternalError, 'Raw result is expected');
+                    }
+                    if (info.creds_master) {
+                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
+                    } else if (info.creds_hmac) {
+                        var rsp_sec = rsp.sec;
+                        delete rsp.sec;
+                        var required_sec = info.creds + ':' + info.options.hmacAlgo + ':' + spectools.genHMAC(as, info, rsp);
+                        if (rsp_sec !== required_sec) {
+                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
+                        }
                     }
                     if (info.creds === 'master') {
                     }
@@ -182,6 +201,7 @@
                     });
                 },
                 _perform: function (as, ctx, req) {
+                    ctx.signMessage(req);
                     var sniffer = ctx.options.messageSniffer;
                     var httpreq = new XMLHttpRequest();
                     var url = ctx.endpoint;
@@ -203,7 +223,11 @@
                         }
                         var params = [];
                         for (var k in req.p) {
-                            params.push(encodeURIComponent(k) + '=' + encodeURIComponent(req.p[k]));
+                            var v = req.p[k];
+                            if (typeof v !== 'string') {
+                                v = JSON.stringify(v);
+                            }
+                            params.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
                         }
                         url += '?' + params.join('&');
                         sniffer(ctx.info, req, false);
@@ -350,13 +374,14 @@
                     }
                     var reqas = this.reqas;
                     var rid = 'C' + this.rid++;
+                    req.rid = rid;
+                    ctx.signMessage(req);
                     if (ctx.expect_response) {
                         reqas[rid] = as;
                         as.setCancel(function () {
                             delete reqas[rid];
                         });
                     }
-                    req.rid = rid;
                     var rawreq = JSON.stringify(req);
                     this.sniffer(ctx.info, rawreq, false);
                     this.ws.send(rawreq);
@@ -454,6 +479,8 @@
                     as.add(function (as) {
                         var reqas = _this.reqas;
                         var rid = 'C' + _this.rid++;
+                        req.rid = rid;
+                        ctx.signMessage(req);
                         if (ctx.expect_response) {
                             reqas[rid] = as;
                             as.setCancel(function (as) {
@@ -461,7 +488,6 @@
                                 delete reqas[rid];
                             });
                         }
-                        req.rid = rid;
                         _this.sniffer(ctx.info, req, false);
                         _this.target.postMessage(req, _this.opts.targetOrigin || '*');
                     });
@@ -483,6 +509,8 @@
                 OPT_EXECUTOR: 'executor',
                 OPT_TARGET_ORIGIN: 'targetOrigin',
                 OPT_RETRY_COUNT: 'retryCount',
+                OPT_HMAC_KEY: 'hmacKey',
+                OPT_HMAC_ALGO: 'hmacAlgo',
                 SAFE_PAYLOAD_LIMIT: 65536,
                 SVC_RESOLVER: '#resolver',
                 SVC_AUTH: '#auth',
@@ -591,6 +619,8 @@
                         endpoint: endpoint,
                         endpoint_scheme: endpoint_scheme,
                         creds: credentials || null,
+                        creds_master: credentials === 'master',
+                        creds_hmac: credentials && credentials.substr(0, 6) === '-hmac:',
                         secure_channel: secure_channel,
                         impl: impl,
                         regname: name,
@@ -601,6 +631,9 @@
                         _invoker_use: true,
                         _user_info: null
                     };
+                if (info.creds_hmac && (!options.hmacKey || !options.hmacAlgo)) {
+                    as.error(futoin_error.InvokerError, 'Missing options.hmacKey or options.hmacAlgo');
+                }
                 if (name) {
                     this._iface_info[name] = info;
                 }
@@ -811,7 +844,8 @@
                         native_iface: this,
                         options: raw_info.options,
                         endpoint: raw_info.endpoint,
-                        expect_response: true
+                        expect_response: true,
+                        signMessage: this._signMessageDummy
                     };
                 var ccmimpl = this._ccmimpl;
                 as.add(function (as) {
@@ -915,6 +949,8 @@
                     comms[k].close();
                 }
                 this.emit('close');
+            };
+            NativeIfaceProto._signMessageDummy = function () {
             };
             exports.NativeIface = NativeIface;
         },
@@ -1486,8 +1522,17 @@
                         if (!spectools.checkType({}, type, value)) {
                             as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
                         }
+                    },
+                    genHMAC: function (as, info, ftnreq) {
+                        void as;
+                        void info;
+                        void ftnreq;
+                        as.error(FutoInError.InvalidRequest, 'HMAC generation is supported only for server environment');
                     }
                 };
+            if (isNode) {
+                hidereq('./spectools_node')(spectools);
+            }
             module.exports = spectools;
         },
         function (module, exports) {

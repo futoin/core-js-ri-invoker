@@ -57,6 +57,9 @@
             "params" : {
                 "a" : {
                     "type" : "string"
+                },
+                "o" : {
+                    "type" : "map"
                 }
             },
             "result" : {

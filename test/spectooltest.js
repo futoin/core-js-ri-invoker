@@ -1,6 +1,7 @@
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var _ = require( 'lodash' );
+var isNode = require( 'detect-node' );
 var invoker;
 var as;
 
@@ -27,6 +28,7 @@ else
     
     var hidereq = require;
     invoker = hidereq('../lib/invoker.js');
+    var crypto = hidereq( 'crypto' );
 }
 
 var SpecTools = invoker.SpecTools;
@@ -1066,4 +1068,61 @@ describe('SpecTools', function()
             }).execute();
         });
     });
+    
+if ( isNode )
+{
+    describe('#genHMAC', function(){
+        var req = {
+            rid : 'C1234',
+            f : 'some.iface:1.2',
+            p : {
+                b : false,
+                a : 'alpha',
+                n : 1.34,
+                o : {
+                    b : true,
+                    a : 'beta',
+                }
+            },
+            r : {
+                test : 'alpha'
+            }
+        };
+        
+        var hmacbase = 'f:some.iface:1.2;p:a:alpha;b:false;n:1.34;o:a:beta;b:true;;;r:test:alpha;;rid:C1234;';
+        var key = crypto.randomBytes( 200 ); // 1600-bit block size for SHA3
+        var keyb64 = key.toString( 'base64' );
+        
+        var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
+        
+        for ( var i = 0, c = algos.length; i < c; ++i )
+        {
+            (function( i ){
+                var algo = algos[i];
+                var algo_lo = algo.toLowerCase();
+
+                it ( 'should gen correct ' + algo + ' HMAC', function(){
+                    var info = {
+                        options : {
+                            hmacKey : keyb64,
+                            hmacAlgo : algo,
+                        }
+                    };
+
+                    var res1 = SpecTools.genHMAC( as, info, req );
+                    var res2 = SpecTools.genHMAC( as, info, req );
+                    
+                    //SpecTools.hmacbase.should.equal( hmacbase );
+                    res1.should.equal( res2 );
+                    
+                    var testres = crypto
+                            .createHmac( algo_lo, key )
+                            .update( hmacbase )
+                            .digest( 'base64' );
+                    testres.should.equal( res1 );
+                } );
+            })( i );
+        }
+    });
+}
 });

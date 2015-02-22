@@ -238,7 +238,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [new CacheFace()](#new_CacheFace)
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
   * [CacheFace.register()](#CacheFace.register)
-  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl)](#CacheFace#getOrSet)
+  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace#getOrSet)
 * [class: SimpleCCM](#SimpleCCM)
   * [new SimpleCCM([options])](#new_SimpleCCM)
   * [SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
@@ -256,6 +256,8 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
   * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
   * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
+  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
+  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -304,6 +306,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
   * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
   * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
+  * [SpecTools.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC)
   * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
 
 **Members**
@@ -324,6 +327,8 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
   * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
   * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
+  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
+  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -346,14 +351,16 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [new CacheFace()](#new_CacheFace)
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
   * [CacheFace.register()](#CacheFace.register)
-  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl)](#CacheFace#getOrSet)
+  * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace#getOrSet)
 
 <a name="new_CacheFace"></a>
 ##new CacheFace()
 Cache Native interface
 
 Register with CacheFace.register()
-NOTE: it is not directly available Invoker module interface
+
+NOTE: it is not directly available in Invoker module
+interface, include separately
 
 <a name="CacheFace.ifacespec"></a>
 ##CacheFace.ifacespec
@@ -364,7 +371,7 @@ Embedded spec for FutoIn CacheFace
 AuditLog Native interface registration helper
 
 <a name="CacheFace#getOrSet"></a>
-##cacheFace.getOrSet(as, key_prefix, callable, params, ttl)
+##cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)
 Get or Set cached value
 
 NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
@@ -377,7 +384,7 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 - callable `function` - func( as, params.. ) - a callable
      which is called to generated value on cache miss  
 - params `Array` - parameters to be passed to *callable*  
-- ttl `integer` - time to live to use, if value is set on cache miss  
+- ttl_ms `integer` - time to live in ms to use, if value is set on cache miss  
 
 <a name="SimpleCCM"></a>
 #class: SimpleCCM
@@ -400,6 +407,8 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
   * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
   * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
   * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
+  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
+  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -439,7 +448,7 @@ Register standard MasterService end-point (adds steps to *as*)
 'master' - enable MasterService authentication logic (Advanced CCM only)
 '{user}:{clear-text-password}' - send as is in the 'sec' section
 NOTE: some more reserved words and/or patterns can appear in the future  
-- \[options\] `object` - NOT STANDARD feature, fine tune global CCM options per endpoint  
+- \[options\] `object` - fine tune global CCM options per endpoint  
 
 <a name="SimpleCCM#iface"></a>
 ##simpleCCM.iface(name)
@@ -514,6 +523,15 @@ browser-only. Origin of target for *window.postMessage()*
 <a name="SimpleCCM.OPT_RETRY_COUNT"></a>
 ##const: SimpleCCM.OPT_RETRY_COUNT
 How many times to retry the call on CommError
+
+<a name="SimpleCCM.OPT_HMAC_KEY"></a>
+##const: SimpleCCM.OPT_HMAC_KEY
+Base64 encoded key for HMAC generation
+
+<a name="SimpleCCM.OPT_HMAC_ALGO"></a>
+##const: SimpleCCM.OPT_HMAC_ALGO
+Hash algorithm for HMAC generation:
+MD5, SHA224, SHA256, SHA384, SHA256
 
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 ##const: SimpleCCM.SAFE_PAYLOAD_LIMIT
@@ -595,8 +613,10 @@ Easy access of futoin-asyncsteps.FutoInError errors, which may be extended in th
 ##new LogFace()
 AuditLog Native interface
 
-Register with LogFace.register()
-NOTE: it is not directly available Invoker module interface
+Register with LogFace.register().
+
+NOTE: it is not directly available Invoker module
+interface, include separately
 
 <a name="LogFace.ifacespec"></a>
 ##LogFace.ifacespec
@@ -775,6 +795,7 @@ Results with DerivedKeyAccessor through as.success()
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
   * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
   * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
+  * [SpecTools.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC)
   * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
 
 <a name="new_SpecTools"></a>
@@ -850,6 +871,19 @@ Check if result value matches required type
 - varname `string` - result variable name  
 - value `*` - value to check  
 
+<a name="SpecTools.genHMAC"></a>
+##SpecTools.genHMAC(as, info, ftnreq)
+Generate HMAC
+
+NOTE: for simplicity, 'sec' field must not be present
+
+**Params**
+
+- as `AsyncSteps`  
+- info `object` - Interface raw info object  
+- ftnreq `object` - Request Object  
+
+**Returns**: `string` - Base64-encoded HMAC signature  
 <a name="SpecTools.standard_errors"></a>
 ##const: SpecTools.standard_errors
 Enumeration of standard errors
