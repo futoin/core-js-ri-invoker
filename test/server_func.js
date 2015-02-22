@@ -88,7 +88,7 @@ function processServerRequest( freq, data )
             return { res : 'MY_RESULT' };
         
         case 'noResult' :
-            freq.p.a.should.equal( '123' );
+            freq.p.a.should.equal( '123' ); 
             return {};
             
         case "call" :
@@ -102,6 +102,7 @@ function processServerRequest( freq, data )
 
         case "rawUploadFuncParams" :
             freq.p.a.should.equal( '123' );
+            JSON.parse( freq.p.o ).b.should.equal( false );
             data.should.equal( "MY_UPLOAD" );
             return { ok : "OK" };
             

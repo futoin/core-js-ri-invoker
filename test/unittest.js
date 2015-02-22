@@ -474,7 +474,10 @@ call_remotes_model_as.add(
                 as,
                 "rawUploadFuncParams",
                 {
-                    a : "123"
+                    a : "123",
+                    o : {
+                        b : false
+                    }
                 },
                 "MY_UPLOAD",
                 null,
