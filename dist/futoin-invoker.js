@@ -52,12 +52,6 @@
                     var info = ctx.info;
                     var name = ctx.name;
                     var k;
-                    if ('SecureChannel' in info.constraints && !info.secure_channel) {
-                        as.error(FutoInError.SecurityError, 'Requires secure channel');
-                    }
-                    if (!('AllowAnonymous' in info.constraints) && !info.creds) {
-                        as.error(FutoInError.SecurityError, 'Requires authenticated user');
-                    }
                     if (!(name in info.funcs)) {
                         as.error(FutoInError.InvokerError, 'Unknown interface function: ' + name);
                     }
@@ -641,11 +635,19 @@
                 as.add(function (as) {
                     _this._impl.onRegister(as, info);
                     as.add(function (as) {
-                        if ('SecureChannel' in info.constraints && !secure_channel) {
-                            as.error(futoin_error.SecurityError, 'SecureChannel is required');
-                        }
-                        if ('BiDirectChannel' in info.constraints && !is_bidirect) {
-                            as.error(futoin_error.InvokerError, 'BiDirectChannel is required');
+                        if (!info.simple_req) {
+                            if (!('AllowAnonymous' in info.constraints) && !info.creds) {
+                                as.error(futoin_error.SecurityError, 'Requires authenticated user');
+                            }
+                            if ('SecureChannel' in info.constraints && !secure_channel) {
+                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
+                            }
+                            if ('MessageSignature' in info.constraints && !info.creds_master && !info.creds_hmac) {
+                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
+                            }
+                            if ('BiDirectChannel' in info.constraints && !is_bidirect) {
+                                as.error(futoin_error.InvokerError, 'BiDirectChannel is required');
+                            }
                         }
                         if (is_channel_reg) {
                             as.success(info, _this._native_iface_builder(_this._impl, info));
@@ -991,6 +993,7 @@
                     info.funcs = {};
                     info.inherits = [];
                     info.constraints = {};
+                    info.simple_req = true;
                 },
                 createMessage: function (as, ctx, params) {
                     var info = ctx.info;
