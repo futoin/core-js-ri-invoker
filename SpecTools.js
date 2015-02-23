@@ -1,6 +1,6 @@
 "use strict";
 
-var common = require( './common' );
+var common = require( './lib/common' );
 var FutoInError = common.FutoInError;
 
 var fs;
@@ -42,6 +42,7 @@ var spectools =
     },
 
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
+    _ifacever_pattern : common._ifacever_pattern,
 
     /**
      * Load FutoIn iface definition.
@@ -863,7 +864,7 @@ var spectools =
 
 if ( isNode )
 {
-    hidereq( './spectools_node' )( spectools );
+    hidereq( './lib/node/spectools_hmac' )( spectools );
 }
 
 module.exports = spectools;

@@ -1,3 +1,5 @@
+/* jshint ignore:start */
+
 module.exports = function (grunt) {
 
     grunt.initConfig({

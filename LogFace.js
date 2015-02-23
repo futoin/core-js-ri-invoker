@@ -1,8 +1,8 @@
 'use strict';
 
 var _extend = require( 'lodash/object/extend' );
-var native_iface = require( './native_iface' );
-var common = require( './common' );
+var NativeIface = require( './NativeIface' );
+var common = require( './lib/common' );
 var async_steps = require( 'futoin-asyncsteps' );
 
 var btoa = ( typeof window !== 'undefined' ) ? window.btoa : // jshint ignore:line
@@ -24,7 +24,7 @@ function( str )
 function LogFace()
 {
     _extend( this, LogFaceProto );
-    native_iface.NativeIface.apply( this, arguments );
+    NativeIface.apply( this, arguments );
 }
 
 /**

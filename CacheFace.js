@@ -1,8 +1,8 @@
 'use strict';
 
 var _extend = require( 'lodash/object/extend' );
-var native_iface = require( './native_iface' );
-var common = require( './common' );
+var NativeIface = require( './NativeIface' );
+var common = require( './lib/common' );
 
 /**
  * Cache Native interface
@@ -17,7 +17,7 @@ var common = require( './common' );
 function CacheFace()
 {
     _extend( this, CacheFaceProto );
-    native_iface.NativeIface.apply( this, arguments );
+    NativeIface.apply( this, arguments );
 }
 
 /**

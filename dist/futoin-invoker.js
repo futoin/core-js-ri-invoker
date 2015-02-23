@@ -24,757 +24,23 @@
     _require.modules = [
         function (module, exports) {
             'use strict';
-            var spectools = _require(7);
-            var common = _require(3);
-            var FutoInError = common.FutoInError;
-            var simpleccm_impl = _require(6);
-            exports = module.exports = function (options) {
-                return new module.exports.AdvancedCCMImpl(options);
-            };
-            function AdvancedCCMImpl(options) {
-                options = options || {};
-                var spec_dirs = options.specDirs || [];
-                if (!(spec_dirs instanceof Array)) {
-                    spec_dirs = [spec_dirs];
-                }
-                options.specDirs = spec_dirs;
-                simpleccm_impl.SimpleCCMImpl.call(this, options);
-            }
-            var SimpleCCMImplProt = simpleccm_impl.SimpleCCMImpl.prototype;
-            AdvancedCCMImpl.prototype = {
-                onRegister: function (as, info) {
-                    spectools.loadIface(as, info, info.options.specDirs);
-                    if (!info.options.prodMode) {
-                        spectools.checkConsistency(as, info);
-                    }
-                },
-                checkParams: function (as, ctx, params) {
-                    var info = ctx.info;
-                    var name = ctx.name;
-                    var k;
-                    if (!(name in info.funcs)) {
-                        as.error(FutoInError.InvokerError, 'Unknown interface function: ' + name);
-                    }
-                    var finfo = info.funcs[name];
-                    if (ctx.upload_data && !finfo.rawupload) {
-                        as.error(FutoInError.InvokerError, 'Raw upload is not allowed');
-                    }
-                    if (!Object.keys(finfo.params).length && Object.keys(params).length) {
-                        as.error(FutoInError.InvokerError, 'No params are defined');
-                    }
-                    for (k in params) {
-                        if (!finfo.params.hasOwnProperty(k)) {
-                            as.error(FutoInError.InvokerError, 'Unknown parameter: ' + k);
-                        }
-                        if (!spectools.checkParameterType(info, name, k, params[k])) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + k);
-                        }
-                    }
-                    for (k in finfo.params) {
-                        if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
-                            as.error(FutoInError.InvokerError, 'Missing parameter ' + k);
-                        }
-                    }
-                },
-                createMessage: function (as, ctx, params) {
-                    var info = ctx.info;
-                    var options = info.options;
-                    if (!options.prodMode) {
-                        this.checkParams(as, ctx, params);
-                    }
-                    var req = {
-                            f: info.iface + ':' + info.version + ':' + ctx.name,
-                            p: params
-                        };
-                    ctx.expect_response = info.funcs[ctx.name].expect_result;
-                    if (info.creds !== null) {
-                        if (info.creds_master) {
-                            as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
-                            ctx.signMessage = function (req) {
-                                void req;
-                            };
-                        } else if (info.creds_hmac) {
-                            ctx.signMessage = function (req) {
-                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + spectools.genHMAC(as, info.options, req).toString('base64');
-                            };
-                        } else {
-                            req.sec = info.creds;
-                        }
-                    }
-                    as.success(req);
-                },
-                onMessageResponse: function (as, ctx, rsp) {
-                    var info = ctx.info;
-                    var name = ctx.name;
-                    var func_info = info.funcs[name];
-                    if (info.creds_master) {
-                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
-                    } else if (info.creds_hmac) {
-                        var rsp_sec;
-                        try {
-                            rsp_sec = new Buffer(rsp.sec, 'base64');
-                        } catch (e) {
-                            as.error(FutoInError.SecurityError, 'Missing response HMAC');
-                        }
-                        delete rsp.sec;
-                        var required_sec = spectools.genHMAC(as, info.options, rsp);
-                        if (!spectools.checkHMAC(rsp_sec, required_sec)) {
-                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
-                        }
-                    }
-                    if ('e' in rsp) {
-                        var e = rsp.e;
-                        if (e in func_info.throws || e in spectools.standard_errors) {
-                            as.error(e, rsp.edesc);
-                        } else {
-                            as.error(FutoInError.InternalError, 'Not expected exception from Executor');
-                        }
-                    }
-                    if (func_info.rawresult) {
-                        as.error(FutoInError.InternalError, 'Raw result is expected');
-                    }
-                    if (info.creds === 'master') {
-                    }
-                    var resvars = func_info.result;
-                    var rescount = Object.keys(resvars).length;
-                    for (var k in rsp.r) {
-                        if (resvars.hasOwnProperty(k)) {
-                            spectools.checkResultType(as, info, name, k, rsp.r[k]);
-                            --rescount;
-                        }
-                    }
-                    if (rescount > 0) {
-                        as.error(FutoInError.InternalError, 'Missing result variables');
-                    }
-                    as.success(rsp.r);
-                },
-                onDataResponse: function (as, ctx, rsp) {
-                    if (ctx.info.funcs[ctx.name].rawresult) {
-                        as.success(rsp);
-                    } else {
-                        as.error(FutoInError.InternalError, 'Raw result is not expected');
-                    }
-                },
-                getComms: SimpleCCMImplProt.getComms,
-                performCommon: SimpleCCMImplProt.performCommon,
-                perfomHTTP: SimpleCCMImplProt.perfomHTTP,
-                perfomWebSocket: SimpleCCMImplProt.perfomWebSocket,
-                perfomUNIX: SimpleCCMImplProt.perfomUNIX,
-                perfomBrowser: SimpleCCMImplProt.perfomBrowser
-            };
-            exports.AdvancedCCMImpl = AdvancedCCMImpl;
-        },
-        function (module, exports) {
-            (function (window) {
-                'use strict';
-                var futoin = window.FutoIn || {};
-                if (typeof futoin.Invoker === 'undefined') {
-                    var FutoInInvoker = _require(4);
-                    var SimpleCCM = FutoInInvoker.SimpleCCM;
-                    window.SimpleCCM = SimpleCCM;
-                    var AdvancedCCM = FutoInInvoker.AdvancedCCM;
-                    window.AdvancedCCM = AdvancedCCM;
-                    futoin.Invoker = FutoInInvoker;
-                    window.FutoInInvoker = FutoInInvoker;
-                    window.FutoIn = futoin;
-                    if (module) {
-                        module.exports = FutoInInvoker;
-                    }
-                }
-            }(window));
-        },
-        function (module, exports) {
-            'use strict';
-            var ee = _require(9);
-            var common = _require(3);
-            var FutoInError = common.FutoInError;
-            var MyWebSocket = WebSocket;
-            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
-            exports.HTTPComms = function () {
-            };
-            exports.HTTPComms.prototype = {
-                close: function () {
-                },
-                perform: function (as, ctx, req) {
-                    var _this = this;
-                    as.add(function (as) {
-                        _this._perform(as, ctx, req);
-                    });
-                },
-                _perform: function (as, ctx, req) {
-                    ctx.signMessage(req);
-                    var sniffer = ctx.options.messageSniffer;
-                    var httpreq = new XMLHttpRequest();
-                    var url = ctx.endpoint;
-                    var rawreq = ctx.upload_data;
-                    var content_type;
-                    var auth_header;
-                    if (rawreq || rawreq === '') {
-                        content_type = 'application/octet-stream';
-                        if (url.charAt(url.length - 1) !== '/') {
-                            url += '/';
-                        }
-                        url += req.f.replace(/:/g, '/') + '/';
-                        if ('sec' in req) {
-                            if (req.sec === ctx.options.credentials) {
-                                auth_header = 'Basic ' + window.btoa(req.sec);
-                            } else {
-                                url += req.sec + '/';
-                            }
-                        }
-                        var params = [];
-                        for (var k in req.p) {
-                            var v = req.p[k];
-                            if (typeof v !== 'string') {
-                                v = JSON.stringify(v);
-                            }
-                            params.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
-                        }
-                        url += '?' + params.join('&');
-                        sniffer(ctx.info, req, false);
-                    } else {
-                        content_type = FUTOIN_CONTENT_TYPE;
-                        rawreq = JSON.stringify(req);
-                        sniffer(ctx.info, rawreq, false);
-                    }
-                    if (ctx.expect_response) {
-                        if (ctx.download_stream) {
-                            httpreq.responseType = ctx.download_stream;
-                        }
-                        httpreq.onreadystatechange = function () {
-                            if (this.readyState !== this.DONE) {
-                                return;
-                            }
-                            var response = ctx.download_stream ? this.response : this.responseText;
-                            if (response) {
-                                var content_type = this.getResponseHeader('content-type');
-                                if (content_type === FUTOIN_CONTENT_TYPE) {
-                                    sniffer(ctx.info, response, true);
-                                } else {
-                                    sniffer(ctx.info, '%DATA%', true);
-                                }
-                                as.success(response, content_type);
-                            } else {
-                                try {
-                                    as.error(FutoInError.CommError, 'Low error');
-                                } catch (ex) {
-                                }
-                            }
-                        };
-                        as.setCancel(function () {
-                            httpreq.abort();
-                        });
-                    }
-                    httpreq.open('POST', url, true);
-                    httpreq.setRequestHeader('Content-Type', content_type);
-                    if (auth_header) {
-                        httpreq.setRequestHeader('Authorization', auth_header);
-                    }
-                    httpreq.send(rawreq);
-                    if (!ctx.expect_response) {
-                        as.success();
-                    }
-                }
-            };
-            exports.WSComms = function () {
-                this.rid = 1;
-                this.reqas = {};
-                this.evt = ee();
-            };
-            exports.WSComms.prototype = {
-                _waiting_open: false,
-                init: function (as, ctx) {
-                    var opts = ctx.options;
-                    var ws = new MyWebSocket(ctx.endpoint);
-                    this.ws = ws;
-                    this._waiting_open = true;
-                    var reqas = this.reqas;
-                    var executor = opts.executor || null;
-                    var info = ctx.info;
-                    var _this = this;
-                    var sniffer = opts.messageSniffer;
-                    this.sniffer = sniffer;
-                    var send_executor_rsp = function (rsp) {
-                        var rawrsp = executor.packPayloadJSON(rsp);
-                        sniffer(info, rawrsp, false);
-                        ws.send(rawrsp);
-                    };
-                    var cleanup = function (event) {
-                        opts.disconnectSniffer(info);
-                        ws.close();
-                        delete _this.ws;
-                        for (var k in reqas) {
-                            try {
-                                reqas[k].error(FutoInError.CommError, event.wasClean ? 'Cleanup' : 'Error');
-                            } catch (ex) {
-                            }
-                        }
-                        delete _this.reqas;
-                        _this.reqas = {};
-                        _this._waiting_open = false;
-                        ctx.native_iface.emit('disconnect');
-                    };
-                    ws.onclose = cleanup;
-                    ws.onerror = cleanup;
-                    ws.onopen = function (event) {
-                        void event;
-                        _this._waiting_open = false;
-                        _this.evt.emit('open');
-                        ctx.native_iface.emit('connect');
-                    };
-                    ws.onmessage = function (event) {
-                        sniffer(info, event.data, true);
-                        var rsp;
-                        try {
-                            rsp = JSON.parse(event.data);
-                        } catch (e) {
-                            return;
-                        }
-                        if ('rid' in rsp) {
-                            var rid = rsp.rid;
-                            if (rid in reqas) {
-                                reqas[rid].success(rsp, true);
-                                delete reqas[rid];
-                            } else if (rid.charAt(0) === 'S' && executor) {
-                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
-                            }
-                        }
-                    };
-                },
-                close: function () {
-                    if (this.ws) {
-                        this.ws.close();
-                    }
-                },
-                perform: function (as, ctx, req) {
-                    var _this = this;
-                    if (!('ws' in this)) {
-                        _this.init(as, ctx);
-                    }
-                    if (this._waiting_open) {
-                        as.add(function (as) {
-                            if (!_this._waiting_open) {
-                                return;
-                            }
-                            var on_open = function () {
-                                as.success();
-                            };
-                            _this.evt.once('open', on_open);
-                            as.setCancel(function () {
-                                _this.evt.off('open', on_open);
-                            });
-                        });
-                    }
-                    as.add(function (as) {
-                        _this._perform(as, ctx, req);
-                    });
-                },
-                _perform: function (as, ctx, req) {
-                    if (!('ws' in this)) {
-                        as.error(FutoInError.CommError, 'Disconnect while in progress');
-                    }
-                    var reqas = this.reqas;
-                    var rid = 'C' + this.rid++;
-                    req.rid = rid;
-                    ctx.signMessage(req);
-                    if (ctx.expect_response) {
-                        reqas[rid] = as;
-                        as.setCancel(function () {
-                            delete reqas[rid];
-                        });
-                    }
-                    var rawreq = JSON.stringify(req);
-                    this.sniffer(ctx.info, rawreq, false);
-                    this.ws.send(rawreq);
-                }
-            };
-            if (!MyWebSocket) {
-                exports.WSComms = exports.HTTPComms;
-            }
-            exports.BrowserComms = function () {
-                this.rid = 1;
-                this.reqas = {};
-            };
-            exports.BrowserComms.prototype = {
-                init: function (as, ctx) {
-                    var opts = ctx.options;
-                    this.opts = opts;
-                    var target = ctx.endpoint.split('://', 2)[1];
-                    var browser_window = window;
-                    var iframe;
-                    if (target === 'parent') {
-                        target = browser_window.parent;
-                    } else if (target in browser_window && 'postMessage' in browser_window[target]) {
-                        target = browser_window[target];
-                    } else {
-                        var browser_document = document;
-                        iframe = browser_document.getElementById(target);
-                        if (iframe) {
-                            target = iframe.contentWindow;
-                        } else {
-                            as.error(FutoInError.CommError, 'Unknown target: ' + target);
-                        }
-                    }
-                    if (target === browser_window) {
-                        as.error(FutoInError.CommError, 'Target matches current window');
-                    }
-                    this.target = target;
-                    var reqas = this.reqas;
-                    var executor = opts.executor || null;
-                    var info = ctx.info;
-                    var target_origin = opts.targetOrigin;
-                    var sniffer = opts.messageSniffer;
-                    this.sniffer = sniffer;
-                    var send_executor_rsp = function (rsp) {
-                        sniffer(target_origin, rsp, false);
-                        target.postMessage(rsp, target_origin || '*');
-                    };
-                    var on_message = function (event) {
-                        sniffer(info, event.data, true);
-                        if (event.source && event.source !== target) {
-                            return;
-                        }
-                        if (!target_origin) {
-                        } else if (event.origin !== target_origin) {
-                            console.log('Error: peer origin mismatch ');
-                            console.log('Error >origin: ' + event.origin);
-                            console.log('Error >required: ' + target_origin);
-                            return;
-                        }
-                        var rsp = event.data;
-                        if (typeof rsp !== 'object') {
-                            console.log('Not object response: ' + rsp);
-                            return;
-                        }
-                        if ('rid' in rsp) {
-                            var rid = rsp.rid;
-                            if (!('f' in rsp) && rid in reqas) {
-                                reqas[rid].success(rsp, true);
-                                delete reqas[rid];
-                            } else if ('f' in rsp && rid.charAt(0) === 'S' && executor) {
-                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
-                            } else {
-                                return;
-                            }
-                            if (event.stopPropagation) {
-                                event.stopPropagation();
-                            }
-                        }
-                    };
-                    browser_window.addEventListener('message', on_message, false);
-                    ctx.native_iface.emit('connect');
-                },
-                close: function () {
-                    if (this.target) {
-                        this.target = null;
-                    }
-                },
-                perform: function (as, ctx, req) {
-                    if (ctx.upload_data || ctx.download_stream) {
-                        as.error(FutoInError.CommError, 'Raw Data is not supported by Web Messaging yet');
-                    }
-                    if (!this.target) {
-                        this.init(as, ctx);
-                    }
-                    var _this = this;
-                    as.add(function (as) {
-                        var reqas = _this.reqas;
-                        var rid = 'C' + _this.rid++;
-                        req.rid = rid;
-                        ctx.signMessage(req);
-                        if (ctx.expect_response) {
-                            reqas[rid] = as;
-                            as.setCancel(function (as) {
-                                void as;
-                                delete reqas[rid];
-                            });
-                        }
-                        _this.sniffer(ctx.info, req, false);
-                        _this.target.postMessage(req, _this.opts.targetOrigin || '*');
-                    });
-                }
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            var async_steps = _require(24);
-            exports.AsyncSteps = async_steps;
-            exports.FutoInError = async_steps.FutoInError;
-            exports.Options = {
-                OPT_CALL_TIMEOUT_MS: 'callTimeoutMS',
-                OPT_PROD_MODE: 'prodMode',
-                OPT_COMM_CONFIG_CB: 'commConfigCallback',
-                OPT_MSG_SNIFFER: 'messageSniffer',
-                OPT_DISCONNECT_SNIFFER: 'disconnectSniffer',
-                OPT_SPEC_DIRS: 'specDirs',
-                OPT_EXECUTOR: 'executor',
-                OPT_TARGET_ORIGIN: 'targetOrigin',
-                OPT_RETRY_COUNT: 'retryCount',
-                OPT_HMAC_KEY: 'hmacKey',
-                OPT_HMAC_ALGO: 'hmacAlgo',
-                SAFE_PAYLOAD_LIMIT: 65536,
-                SVC_RESOLVER: '#resolver',
-                SVC_AUTH: '#auth',
-                SVC_DEFENSE: '#defense',
-                SVC_ACL: '#acl',
-                SVC_LOG: '#log',
-                SVC_CACHE_: '#cache.',
-                FUTOIN_CONTENT_TYPE: 'application/futoin+json'
-            };
-            exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
-        },
-        function (module, exports) {
-            'use strict';
-            var common = _require(3);
+            var common = _require(9);
             var futoin_error = common.FutoInError;
-            var native_iface = _require(5);
-            var _extend = _require(63);
-            var _defaults = _require(62);
-            var simple_ccm = _require(6);
-            var advanced_ccm = _require(0);
-            var spectools = _require(7);
-            var ee = _require(9);
-            var SimpleCCMPublic = common.Options;
-            function SimpleCCM(options) {
-                ee(this);
-                this._iface_info = {};
-                this._iface_impl = {};
-                this._impl = simple_ccm(options);
-                _extend(this, SimpleCCMProto);
-            }
-            _extend(SimpleCCM, SimpleCCMPublic);
-            var SimpleCCMProto = {};
-            SimpleCCM.prototype = SimpleCCMProto;
-            _extend(SimpleCCMProto, SimpleCCMPublic);
-            SimpleCCMProto._secure_replace = /^secure\+/;
-            SimpleCCMProto._secure_test = /^(https|wss|unix):\/\//;
-            SimpleCCMProto._native_iface_builder = function (ccmimpl, info) {
-                return native_iface(ccmimpl, info);
-            };
-            SimpleCCMProto.register = function (as, name, ifacever, endpoint, credentials, options) {
-                var is_channel_reg = name === null;
-                if (!is_channel_reg && name in this._iface_info) {
-                    as.error(futoin_error.InvokerError, 'Already registered');
-                }
-                var m = ifacever.match(common._ifacever_pattern);
-                if (m === null) {
-                    as.error(futoin_error.InvokerError, 'Invalid ifacever');
-                }
-                var iface = m[1];
-                var mjrmnr = m[4];
-                var mjr = m[5];
-                var mnr = m[6];
-                var secure_channel = false;
-                var impl = null;
-                var endpoint_scheme;
-                var is_bidirect = false;
-                if (is_channel_reg) {
-                    endpoint_scheme = 'callback';
-                    is_bidirect = true;
-                } else if (typeof endpoint === 'string') {
-                    if (this._secure_replace.test(endpoint)) {
-                        secure_channel = true;
-                        endpoint = endpoint.replace(this._secure_replace, '');
-                    } else if (this._secure_test.test(endpoint)) {
-                        secure_channel = true;
-                    }
-                    impl = this._native_iface_builder;
-                    endpoint_scheme = endpoint.split(':')[0];
-                    switch (endpoint_scheme) {
-                    case 'http':
-                    case 'https':
-                        break;
-                    case 'ws':
-                    case 'wss':
-                    case 'unix':
-                        is_bidirect = true;
-                        break;
-                    case 'browser':
-                        if (options && options.targetOrigin) {
-                            secure_channel = true;
-                        }
-                        is_bidirect = true;
-                        break;
-                    default:
-                        as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
-                    }
-                } else if ('onInternalRequest' in endpoint) {
-                    secure_channel = true;
-                    impl = this._native_iface_builder;
-                    endpoint_scheme = '#internal#';
-                    is_bidirect = true;
-                } else {
-                    secure_channel = true;
-                    impl = endpoint;
-                    endpoint = null;
-                    endpoint_scheme = null;
-                    is_bidirect = true;
-                }
-                options = options || {};
-                _defaults(options, this._impl.options);
-                var info = {
-                        iface: iface,
-                        version: mjrmnr,
-                        mjrver: mjr,
-                        mnrver: mnr,
-                        endpoint: endpoint,
-                        endpoint_scheme: endpoint_scheme,
-                        creds: credentials || null,
-                        creds_master: credentials === 'master',
-                        creds_hmac: credentials && credentials.substr(0, 6) === '-hmac:',
-                        secure_channel: secure_channel,
-                        impl: impl,
-                        regname: name,
-                        inherits: null,
-                        funcs: null,
-                        constraints: null,
-                        options: options,
-                        _invoker_use: true,
-                        _user_info: null
-                    };
-                if (info.creds_hmac && (!options.hmacKey || !options.hmacAlgo)) {
-                    as.error(futoin_error.InvokerError, 'Missing options.hmacKey or options.hmacAlgo');
-                }
-                if ((info.creds_master || info.creds_hmac) && !spectools.checkHMAC) {
-                    as.error(futoin_error.InvokerError, 'HMAC is not supported in this environment yet');
-                }
-                if (name) {
-                    this._iface_info[name] = info;
-                }
-                var _this = this;
-                as.add(function (as) {
-                    _this._impl.onRegister(as, info);
-                    as.add(function (as) {
-                        if (!info.simple_req) {
-                            if (!('AllowAnonymous' in info.constraints) && !info.creds) {
-                                as.error(futoin_error.SecurityError, 'Requires authenticated user');
-                            }
-                            if ('SecureChannel' in info.constraints && !secure_channel) {
-                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
-                            }
-                            if ('MessageSignature' in info.constraints && !info.creds_master && !info.creds_hmac) {
-                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
-                            }
-                            if ('BiDirectChannel' in info.constraints && !is_bidirect) {
-                                as.error(futoin_error.InvokerError, 'BiDirectChannel is required');
-                            }
-                        }
-                        if (is_channel_reg) {
-                            as.success(info, _this._native_iface_builder(_this._impl, info));
-                        }
-                        _this.emit('register', name, ifacever, info);
-                    });
-                }, function (as, err) {
-                    void as;
-                    void err;
-                    if (name) {
-                        delete _this._iface_info[name];
-                    }
-                });
-            };
-            SimpleCCMProto.iface = function (name) {
-                var info = this._iface_info[name];
-                if (!info) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-                var regname = info.regname;
-                var impl = this._iface_impl[regname];
-                if (!impl) {
-                    var NativeImpl = info.options.nativeImpl;
-                    if (NativeImpl) {
-                        impl = new NativeImpl(this._impl, info);
-                    } else {
-                        impl = info.impl(this._impl, info);
-                    }
-                    this._iface_impl[regname] = impl;
-                }
-                return impl;
-            };
-            SimpleCCMProto.unRegister = function (name) {
-                var info = this._iface_info[name];
-                if (!info) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-                var regname = info.regname;
-                if (regname === name) {
-                    delete this._iface_info[regname];
-                    var impl = this._iface_impl[regname];
-                    if (impl) {
-                        impl._close();
-                        delete this._iface_impl[regname];
-                    }
-                    if (info.aliases) {
-                        var aliases = info.aliases;
-                        for (var i = 0; i < aliases.length; ++i) {
-                            delete this._iface_info[aliases[i]];
-                        }
-                    }
-                } else {
-                    delete this._iface_info[name];
-                    info.aliases.splice(info.aliases.indexOf(name), 0);
-                }
-                this.emit('unregister', name, info);
-            };
-            SimpleCCMProto.defense = function () {
-                return this.iface(this.SVC_DEFENSE);
-            };
-            SimpleCCMProto.log = function () {
-                return this.iface(this.SVC_LOG);
-            };
-            SimpleCCMProto.cache = function (bucket) {
-                return this.iface(this.SVC_CACHE_ + (bucket || 'default'));
-            };
-            SimpleCCMProto.assertIface = function (name, ifacever) {
-                var info = this._iface_info[name];
-                if (!info) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-                var m = ifacever.match(common._ifacever_pattern);
-                if (m === null) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-                var iface = m[1];
-                var mjr = m[5];
-                var mnr = m[6];
-                if (info.iface !== iface || info.mjrver !== mjr || info.mnrver < mnr) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-            };
-            SimpleCCMProto.alias = function (name, alias) {
-                var info = this._iface_info[name];
-                if (!info || this._iface_info[alias]) {
-                    throw new Error(futoin_error.InvokerError);
-                }
-                this._iface_info[alias] = info;
-                if (!info.aliases) {
-                    info.aliases = [alias];
-                } else {
-                    info.aliases.push(alias);
-                }
-                this.emit('register', alias, info.iface + ':' + info.version, info);
-            };
-            SimpleCCMProto.close = function () {
-                var impls = this._iface_impl;
-                for (var n in impls) {
-                    impls[n]._close();
-                }
-                var comms = this._impl.comms;
-                for (var k in comms) {
-                    comms[k].close();
-                }
-                this.emit('close');
-            };
+            var _extend = _require(66);
+            var AdvancedCCMImpl = _require(5);
+            var SimpleCCM = _require(3);
+            var ee = _require(12);
+            var AdvancedCCMPublic = common.Options;
             function AdvancedCCM(options) {
                 ee(this);
                 this._iface_info = {};
                 this._iface_impl = {};
-                this._impl = advanced_ccm(options);
-                _extend(this, AdvancedCCMProto);
+                this._impl = new AdvancedCCMImpl(options);
             }
-            _extend(AdvancedCCM, SimpleCCMPublic);
+            _extend(AdvancedCCM, AdvancedCCMPublic);
             var AdvancedCCMProto = {};
             AdvancedCCM.prototype = AdvancedCCMProto;
-            _extend(AdvancedCCMProto, SimpleCCMProto);
+            _extend(AdvancedCCMProto, SimpleCCM.prototype);
             AdvancedCCMProto.initFromCache = function (as, cache_l1_endpoint) {
                 void cache_l1_endpoint;
                 as.error(futoin_error.NotImplemented, 'Caching is not supported yet');
@@ -782,26 +48,10 @@
             AdvancedCCMProto.cacheInit = function (as) {
                 void as;
             };
-            exports.SimpleCCM = SimpleCCM;
-            exports.AdvancedCCM = AdvancedCCM;
-            exports.FutoInError = futoin_error;
-            exports.NativeIface = native_iface.NativeIface;
-            exports.InterfaceInfo = native_iface.InterfaceInfo;
-            exports.SpecTools = spectools;
-            exports.SpecTools._ifacever_pattern = common._ifacever_pattern;
+            module.exports = AdvancedCCM;
         },
         function (module, exports) {
             'use strict';
-            var common = _require(3);
-            var futoin_error = common.FutoInError;
-            var _extend = _require(63);
-            var _zipObject = _require(26);
-            var ee = _require(9);
-            var async_steps = _require(24);
-            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
-            exports = module.exports = function (ccmimpl, info) {
-                return new module.exports.NativeIface(ccmimpl, info);
-            };
             function InterfaceInfo(raw_info) {
                 this._raw_info = raw_info;
             }
@@ -822,7 +72,18 @@
             InterfaceInfoProto.constraints = function () {
                 return this._raw_info.constraints;
             };
-            exports.InterfaceInfo = InterfaceInfo;
+            module.exports = InterfaceInfo;
+        },
+        function (module, exports) {
+            'use strict';
+            var common = _require(9);
+            var futoin_error = common.FutoInError;
+            var _extend = _require(66);
+            var _zipObject = _require(29);
+            var ee = _require(12);
+            var async_steps = _require(27);
+            var InterfaceInfo = _require(1);
+            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
             function NativeIface(ccmimpl, info) {
                 this._ccmimpl = ccmimpl;
                 this._raw_info = info;
@@ -964,146 +225,255 @@
             };
             NativeIfaceProto._signMessageDummy = function () {
             };
-            exports.NativeIface = NativeIface;
+            module.exports = NativeIface;
         },
         function (module, exports) {
             'use strict';
-            var common = _require(3);
-            var FutoInError = common.FutoInError;
-            var isNode = _require(8);
-            var _defaults = _require(62);
-            var comms_impl;
-            if (isNode) {
-                var hidereq = require;
-                comms_impl = hidereq('./node_comms');
-            } else {
-                comms_impl = _require(2);
+            var common = _require(9);
+            var futoin_error = common.FutoInError;
+            var NativeIface = _require(2);
+            var _extend = _require(66);
+            var _defaults = _require(65);
+            var SimpleCCMImpl = _require(6);
+            var ee = _require(12);
+            var SimpleCCMPublic = common.Options;
+            function SimpleCCM(options) {
+                ee(this);
+                this._iface_info = {};
+                this._iface_impl = {};
+                this._impl = new SimpleCCMImpl(options);
             }
-            exports = module.exports = function (options) {
-                return new module.exports.SimpleCCMImpl(options);
+            _extend(SimpleCCM, SimpleCCMPublic);
+            var SimpleCCMProto = {};
+            SimpleCCM.prototype = SimpleCCMProto;
+            _extend(SimpleCCMProto, SimpleCCMPublic);
+            SimpleCCMProto._secure_replace = /^secure\+/;
+            SimpleCCMProto._secure_test = /^(https|wss|unix):\/\//;
+            SimpleCCMProto._native_iface_builder = function (ccmimpl, info) {
+                return new NativeIface(ccmimpl, info);
             };
-            var defopts = {
-                    callTimeoutMS: 30000,
-                    prodMode: false,
-                    commConfigCallback: null,
-                    retryCount: 1,
-                    messageSniffer: function () {
-                    },
-                    disconnectSniffer: function () {
-                    },
-                    hmacAlgo: 'MD5'
-                };
-            function SimpleCCMImpl(options) {
-                options = options || {};
-                _defaults(options, defopts);
-                this.options = options;
-                this.comms = {};
-            }
-            SimpleCCMImpl.prototype = {
-                onRegister: function (as, info) {
-                    info.funcs = {};
-                    info.inherits = [];
-                    info.constraints = {};
-                    info.simple_req = true;
-                },
-                createMessage: function (as, ctx, params) {
-                    var info = ctx.info;
-                    var req = {
-                            f: info.iface + ':' + info.version + ':' + ctx.name,
-                            p: params,
-                            forcersp: true
-                        };
-                    if (info.creds !== null && info.creds !== 'master') {
-                        req.sec = info.creds;
+            SimpleCCMProto.register = function (as, name, ifacever, endpoint, credentials, options) {
+                var is_channel_reg = name === null;
+                if (!is_channel_reg && name in this._iface_info) {
+                    as.error(futoin_error.InvokerError, 'Already registered');
+                }
+                var m = ifacever.match(common._ifacever_pattern);
+                if (m === null) {
+                    as.error(futoin_error.InvokerError, 'Invalid ifacever');
+                }
+                var iface = m[1];
+                var mjrmnr = m[4];
+                var mjr = m[5];
+                var mnr = m[6];
+                var secure_channel = false;
+                var impl = null;
+                var endpoint_scheme;
+                var is_bidirect = false;
+                if (is_channel_reg) {
+                    endpoint_scheme = 'callback';
+                    is_bidirect = true;
+                } else if (typeof endpoint === 'string') {
+                    if (this._secure_replace.test(endpoint)) {
+                        secure_channel = true;
+                        endpoint = endpoint.replace(this._secure_replace, '');
+                    } else if (this._secure_test.test(endpoint)) {
+                        secure_channel = true;
                     }
-                    as.success(req);
-                },
-                onMessageResponse: function (as, ctx, rsp) {
-                    if ('e' in rsp) {
-                        as.error(rsp.e, rsp.edesc);
-                    } else {
-                        as.success(rsp.r);
-                    }
-                },
-                onDataResponse: function (as, ctx, rsp) {
-                    as.success(rsp);
-                },
-                getComms: function (as, ctx, CommImpl, extra_key) {
-                    var comms;
-                    var key;
-                    var ctxopts = ctx.options;
-                    var globalopts = this.options;
-                    if (ctxopts.executor !== globalopts.executor || ctxopts.messageSniffer !== globalopts.messageSniffer || ctxopts.disconnectSniffer !== globalopts.disconnectSniffer || ctxopts.commConfigCallback !== globalopts.commConfigCallback) {
-                        comms = ctx.native_iface._comms;
-                        key = ctx.info.endpoint_scheme;
-                    } else {
-                        comms = this.comms;
-                        key = ctx.endpoint + '##' + (ctx.credentials || '') + '##' + (extra_key || '');
-                    }
-                    var c = comms[key];
-                    if (!c) {
-                        if (!CommImpl) {
-                            as.error(FutoInError.InvokerError, 'Not implemented ' + ctx.info.endpoint_scheme + ' scheme');
+                    impl = this._native_iface_builder;
+                    endpoint_scheme = endpoint.split(':')[0];
+                    switch (endpoint_scheme) {
+                    case 'http':
+                    case 'https':
+                        break;
+                    case 'ws':
+                    case 'wss':
+                    case 'unix':
+                        is_bidirect = true;
+                        break;
+                    case 'browser':
+                        if (options && options.targetOrigin) {
+                            secure_channel = true;
                         }
-                        c = new CommImpl();
-                        comms[key] = c;
+                        is_bidirect = true;
+                        break;
+                    default:
+                        as.error(futoin_error.InvokerError, 'Unknown endpoint schema');
                     }
-                    return c;
-                },
-                performCommon: function (as, ctx, req, comm) {
-                    var msg;
-                    var content_type;
-                    var retries = ctx.options.retryCount;
-                    as.repeat(retries + 1, function (as, attempt) {
-                        as.add(function (as) {
-                            comm.perform(as, ctx, req);
-                            as.add(function (as, m, c) {
-                                msg = m;
-                                content_type = c;
-                                as.break();
-                            });
-                        }, function (as, err) {
-                            if (err === FutoInError.CommError) {
-                                ctx.native_iface.emit('commError', as.state.error_info, req);
-                                if (attempt < retries) {
-                                    as.continue();
-                                }
+                } else if ('onInternalRequest' in endpoint) {
+                    secure_channel = true;
+                    impl = this._native_iface_builder;
+                    endpoint_scheme = '#internal#';
+                    is_bidirect = true;
+                } else {
+                    secure_channel = true;
+                    impl = endpoint;
+                    endpoint = null;
+                    endpoint_scheme = null;
+                    is_bidirect = true;
+                }
+                options = options || {};
+                _defaults(options, this._impl.options);
+                var info = {
+                        iface: iface,
+                        version: mjrmnr,
+                        mjrver: mjr,
+                        mnrver: mnr,
+                        endpoint: endpoint,
+                        endpoint_scheme: endpoint_scheme,
+                        creds: credentials || null,
+                        creds_master: credentials === 'master',
+                        creds_hmac: credentials && credentials.substr(0, 6) === '-hmac:',
+                        secure_channel: secure_channel,
+                        impl: impl,
+                        regname: name,
+                        inherits: null,
+                        funcs: null,
+                        constraints: null,
+                        options: options,
+                        _invoker_use: true,
+                        _user_info: null
+                    };
+                if (info.creds_hmac && (!options.hmacKey || !options.hmacAlgo)) {
+                    as.error(futoin_error.InvokerError, 'Missing options.hmacKey or options.hmacAlgo');
+                }
+                if (name) {
+                    this._iface_info[name] = info;
+                }
+                var _this = this;
+                as.add(function (as) {
+                    _this._impl.onRegister(as, info);
+                    as.add(function (as) {
+                        if (!info.simple_req) {
+                            if (!('AllowAnonymous' in info.constraints) && !info.creds) {
+                                as.error(futoin_error.SecurityError, 'Requires authenticated user');
                             }
-                        });
-                    }).add(function (as) {
-                        as.success(msg, content_type);
+                            if ('SecureChannel' in info.constraints && !secure_channel) {
+                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
+                            }
+                            if ('MessageSignature' in info.constraints && !info.creds_master && !info.creds_hmac) {
+                                as.error(futoin_error.SecurityError, 'SecureChannel is required');
+                            }
+                            if ('BiDirectChannel' in info.constraints && !is_bidirect) {
+                                as.error(futoin_error.InvokerError, 'BiDirectChannel is required');
+                            }
+                        }
+                        if (is_channel_reg) {
+                            as.success(info, _this._native_iface_builder(_this._impl, info));
+                        }
+                        _this.emit('register', name, ifacever, info);
                     });
-                },
-                perfomHTTP: function (as, ctx, req) {
-                    var comms = this.getComms(as, ctx, comms_impl.HTTPComms);
-                    this.performCommon(as, ctx, req, comms);
-                },
-                perfomWebSocket: function (as, ctx, req) {
-                    var comms = this.getComms(as, ctx, comms_impl.WSComms);
-                    this.performCommon(as, ctx, req, comms);
-                },
-                perfomUNIX: function (as, ctx, req) {
-                    void ctx;
-                    void req;
-                    as.error(FutoInError.InvokerError, 'Not implemented unix:// scheme');
-                },
-                perfomBrowser: function (as, ctx, req) {
-                    var comms = this.getComms(as, ctx, comms_impl.BrowserComms, ctx.options.targetOrigin);
-                    comms.perform(as, ctx, req);
+                }, function (as, err) {
+                    void as;
+                    void err;
+                    if (name) {
+                        delete _this._iface_info[name];
+                    }
+                });
+            };
+            SimpleCCMProto.iface = function (name) {
+                var info = this._iface_info[name];
+                if (!info) {
+                    throw new Error(futoin_error.InvokerError);
+                }
+                var regname = info.regname;
+                var impl = this._iface_impl[regname];
+                if (!impl) {
+                    var NativeImpl = info.options.nativeImpl;
+                    if (NativeImpl) {
+                        impl = new NativeImpl(this._impl, info);
+                    } else {
+                        impl = info.impl(this._impl, info);
+                    }
+                    this._iface_impl[regname] = impl;
+                }
+                return impl;
+            };
+            SimpleCCMProto.unRegister = function (name) {
+                var info = this._iface_info[name];
+                if (!info) {
+                    throw new Error(futoin_error.InvokerError);
+                }
+                var regname = info.regname;
+                if (regname === name) {
+                    delete this._iface_info[regname];
+                    var impl = this._iface_impl[regname];
+                    if (impl) {
+                        impl._close();
+                        delete this._iface_impl[regname];
+                    }
+                    if (info.aliases) {
+                        var aliases = info.aliases;
+                        for (var i = 0; i < aliases.length; ++i) {
+                            delete this._iface_info[aliases[i]];
+                        }
+                    }
+                } else {
+                    delete this._iface_info[name];
+                    info.aliases.splice(info.aliases.indexOf(name), 0);
+                }
+                this.emit('unregister', name, info);
+            };
+            SimpleCCMProto.defense = function () {
+                return this.iface(this.SVC_DEFENSE);
+            };
+            SimpleCCMProto.log = function () {
+                return this.iface(this.SVC_LOG);
+            };
+            SimpleCCMProto.cache = function (bucket) {
+                return this.iface(this.SVC_CACHE_ + (bucket || 'default'));
+            };
+            SimpleCCMProto.assertIface = function (name, ifacever) {
+                var info = this._iface_info[name];
+                if (!info) {
+                    throw new Error(futoin_error.InvokerError);
+                }
+                var m = ifacever.match(common._ifacever_pattern);
+                if (m === null) {
+                    throw new Error(futoin_error.InvokerError);
+                }
+                var iface = m[1];
+                var mjr = m[5];
+                var mnr = m[6];
+                if (info.iface !== iface || info.mjrver !== mjr || info.mnrver < mnr) {
+                    throw new Error(futoin_error.InvokerError);
                 }
             };
-            exports.SimpleCCMImpl = SimpleCCMImpl;
+            SimpleCCMProto.alias = function (name, alias) {
+                var info = this._iface_info[name];
+                if (!info || this._iface_info[alias]) {
+                    throw new Error(futoin_error.InvokerError);
+                }
+                this._iface_info[alias] = info;
+                if (!info.aliases) {
+                    info.aliases = [alias];
+                } else {
+                    info.aliases.push(alias);
+                }
+                this.emit('register', alias, info.iface + ':' + info.version, info);
+            };
+            SimpleCCMProto.close = function () {
+                var impls = this._iface_impl;
+                for (var n in impls) {
+                    impls[n]._close();
+                }
+                var comms = this._impl.comms;
+                for (var k in comms) {
+                    comms[k].close();
+                }
+                this.emit('close');
+            };
+            module.exports = SimpleCCM;
         },
         function (module, exports) {
             'use strict';
-            var common = _require(3);
+            var common = _require(9);
             var FutoInError = common.FutoInError;
             var fs;
             var request;
-            var isNode = _require(8);
-            var _cloneDeep = _require(56);
-            var _zipObject = _require(26);
-            var _difference = _require(25);
+            var isNode = _require(11);
+            var _cloneDeep = _require(59);
+            var _zipObject = _require(29);
+            var _difference = _require(28);
             if (isNode) {
                 var hidereq = require;
                 fs = hidereq('fs');
@@ -1122,6 +492,7 @@
                         SecurityError: true
                     },
                     _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
+                    _ifacever_pattern: common._ifacever_pattern,
                     loadIface: function (as, info, specdirs) {
                         var raw_spec = null;
                         as.forEach(specdirs, function (as, k, v) {
@@ -1543,9 +914,648 @@
                     }
                 };
             if (isNode) {
-                hidereq('./spectools_node')(spectools);
+                hidereq('./lib/node/spectools_hmac')(spectools);
             }
             module.exports = spectools;
+        },
+        function (module, exports) {
+            'use strict';
+            var common = _require(9);
+            var FutoInError = common.FutoInError;
+            var SimpleCCMImpl = _require(6);
+            var SpecTools = _require(4);
+            function AdvancedCCMImpl(options) {
+                options = options || {};
+                var spec_dirs = options.specDirs || [];
+                if (!(spec_dirs instanceof Array)) {
+                    spec_dirs = [spec_dirs];
+                }
+                options.specDirs = spec_dirs;
+                SimpleCCMImpl.call(this, options);
+            }
+            var SCCMImpProto = SimpleCCMImpl.prototype;
+            AdvancedCCMImpl.prototype = {
+                onRegister: function (as, info) {
+                    if ((info.creds_master || info.creds_hmac) && !SpecTools.checkHMAC) {
+                        as.error(FutoInError.InvokerError, 'Master/HMAC is not supported in this environment yet');
+                    }
+                    SpecTools.loadIface(as, info, info.options.specDirs);
+                    if (!info.options.prodMode) {
+                        SpecTools.checkConsistency(as, info);
+                    }
+                },
+                checkParams: function (as, ctx, params) {
+                    var info = ctx.info;
+                    var name = ctx.name;
+                    var k;
+                    if (!(name in info.funcs)) {
+                        as.error(FutoInError.InvokerError, 'Unknown interface function: ' + name);
+                    }
+                    var finfo = info.funcs[name];
+                    if (ctx.upload_data && !finfo.rawupload) {
+                        as.error(FutoInError.InvokerError, 'Raw upload is not allowed');
+                    }
+                    if (!Object.keys(finfo.params).length && Object.keys(params).length) {
+                        as.error(FutoInError.InvokerError, 'No params are defined');
+                    }
+                    for (k in params) {
+                        if (!finfo.params.hasOwnProperty(k)) {
+                            as.error(FutoInError.InvokerError, 'Unknown parameter: ' + k);
+                        }
+                        if (!SpecTools.checkParameterType(info, name, k, params[k])) {
+                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + k);
+                        }
+                    }
+                    for (k in finfo.params) {
+                        if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
+                            as.error(FutoInError.InvokerError, 'Missing parameter ' + k);
+                        }
+                    }
+                },
+                createMessage: function (as, ctx, params) {
+                    var info = ctx.info;
+                    var options = info.options;
+                    if (!options.prodMode) {
+                        this.checkParams(as, ctx, params);
+                    }
+                    var req = {
+                            f: info.iface + ':' + info.version + ':' + ctx.name,
+                            p: params
+                        };
+                    ctx.expect_response = info.funcs[ctx.name].expect_result;
+                    if (info.creds !== null) {
+                        if (info.creds_master) {
+                            as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
+                            ctx.signMessage = function (req) {
+                                void req;
+                            };
+                        } else if (info.creds_hmac) {
+                            ctx.signMessage = function (req) {
+                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + SpecTools.genHMAC(as, info.options, req).toString('base64');
+                            };
+                        } else {
+                            req.sec = info.creds;
+                        }
+                    }
+                    as.success(req);
+                },
+                onMessageResponse: function (as, ctx, rsp) {
+                    var info = ctx.info;
+                    var name = ctx.name;
+                    var func_info = info.funcs[name];
+                    if (info.creds_master) {
+                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
+                    } else if (info.creds_hmac) {
+                        var rsp_sec;
+                        try {
+                            rsp_sec = new Buffer(rsp.sec, 'base64');
+                        } catch (e) {
+                            as.error(FutoInError.SecurityError, 'Missing response HMAC');
+                        }
+                        delete rsp.sec;
+                        var required_sec = SpecTools.genHMAC(as, info.options, rsp);
+                        if (!SpecTools.checkHMAC(rsp_sec, required_sec)) {
+                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
+                        }
+                    }
+                    if ('e' in rsp) {
+                        var e = rsp.e;
+                        if (e in func_info.throws || e in SpecTools.standard_errors) {
+                            as.error(e, rsp.edesc);
+                        } else {
+                            as.error(FutoInError.InternalError, 'Not expected exception from Executor');
+                        }
+                    }
+                    if (func_info.rawresult) {
+                        as.error(FutoInError.InternalError, 'Raw result is expected');
+                    }
+                    if (info.creds === 'master') {
+                    }
+                    var resvars = func_info.result;
+                    var rescount = Object.keys(resvars).length;
+                    for (var k in rsp.r) {
+                        if (resvars.hasOwnProperty(k)) {
+                            SpecTools.checkResultType(as, info, name, k, rsp.r[k]);
+                            --rescount;
+                        }
+                    }
+                    if (rescount > 0) {
+                        as.error(FutoInError.InternalError, 'Missing result variables');
+                    }
+                    as.success(rsp.r);
+                },
+                onDataResponse: function (as, ctx, rsp) {
+                    if (ctx.info.funcs[ctx.name].rawresult) {
+                        as.success(rsp);
+                    } else {
+                        as.error(FutoInError.InternalError, 'Raw result is not expected');
+                    }
+                },
+                getComms: SCCMImpProto.getComms,
+                performCommon: SCCMImpProto.performCommon,
+                perfomHTTP: SCCMImpProto.perfomHTTP,
+                perfomWebSocket: SCCMImpProto.perfomWebSocket,
+                perfomUNIX: SCCMImpProto.perfomUNIX,
+                perfomBrowser: SCCMImpProto.perfomBrowser
+            };
+            module.exports = AdvancedCCMImpl;
+        },
+        function (module, exports) {
+            'use strict';
+            var common = _require(9);
+            var FutoInError = common.FutoInError;
+            var isNode = _require(11);
+            var _defaults = _require(65);
+            var comms_impl;
+            if (isNode) {
+                var hidereq = require;
+                comms_impl = hidereq('./node/comms');
+            } else {
+                comms_impl = _require(8);
+            }
+            var defopts = {
+                    callTimeoutMS: 30000,
+                    prodMode: false,
+                    commConfigCallback: null,
+                    retryCount: 1,
+                    messageSniffer: function () {
+                    },
+                    disconnectSniffer: function () {
+                    },
+                    hmacAlgo: 'MD5'
+                };
+            function SimpleCCMImpl(options) {
+                options = options || {};
+                _defaults(options, defopts);
+                this.options = options;
+                this.comms = {};
+            }
+            SimpleCCMImpl.prototype = {
+                onRegister: function (as, info) {
+                    if (info.creds_master || info.creds_hmac) {
+                        as.error(FutoInError.InvokerError, 'Master/HMAC is supported only in AdvancedCCM');
+                    }
+                    info.funcs = {};
+                    info.inherits = [];
+                    info.constraints = {};
+                    info.simple_req = true;
+                },
+                createMessage: function (as, ctx, params) {
+                    var info = ctx.info;
+                    var req = {
+                            f: info.iface + ':' + info.version + ':' + ctx.name,
+                            p: params,
+                            forcersp: true
+                        };
+                    if (info.creds !== null && info.creds !== 'master') {
+                        req.sec = info.creds;
+                    }
+                    as.success(req);
+                },
+                onMessageResponse: function (as, ctx, rsp) {
+                    if ('e' in rsp) {
+                        as.error(rsp.e, rsp.edesc);
+                    } else {
+                        as.success(rsp.r);
+                    }
+                },
+                onDataResponse: function (as, ctx, rsp) {
+                    as.success(rsp);
+                },
+                getComms: function (as, ctx, CommImpl, extra_key) {
+                    var comms;
+                    var key;
+                    var ctxopts = ctx.options;
+                    var globalopts = this.options;
+                    if (ctxopts.executor !== globalopts.executor || ctxopts.messageSniffer !== globalopts.messageSniffer || ctxopts.disconnectSniffer !== globalopts.disconnectSniffer || ctxopts.commConfigCallback !== globalopts.commConfigCallback) {
+                        comms = ctx.native_iface._comms;
+                        key = ctx.info.endpoint_scheme;
+                    } else {
+                        comms = this.comms;
+                        key = ctx.endpoint + '##' + (ctx.credentials || '') + '##' + (extra_key || '');
+                    }
+                    var c = comms[key];
+                    if (!c) {
+                        if (!CommImpl) {
+                            as.error(FutoInError.InvokerError, 'Not implemented ' + ctx.info.endpoint_scheme + ' scheme');
+                        }
+                        c = new CommImpl();
+                        comms[key] = c;
+                    }
+                    return c;
+                },
+                performCommon: function (as, ctx, req, comm) {
+                    var msg;
+                    var content_type;
+                    var retries = ctx.options.retryCount;
+                    as.repeat(retries + 1, function (as, attempt) {
+                        as.add(function (as) {
+                            comm.perform(as, ctx, req);
+                            as.add(function (as, m, c) {
+                                msg = m;
+                                content_type = c;
+                                as.break();
+                            });
+                        }, function (as, err) {
+                            if (err === FutoInError.CommError) {
+                                ctx.native_iface.emit('commError', as.state.error_info, req);
+                                if (attempt < retries) {
+                                    as.continue();
+                                }
+                            }
+                        });
+                    }).add(function (as) {
+                        as.success(msg, content_type);
+                    });
+                },
+                perfomHTTP: function (as, ctx, req) {
+                    var comms = this.getComms(as, ctx, comms_impl.HTTPComms);
+                    this.performCommon(as, ctx, req, comms);
+                },
+                perfomWebSocket: function (as, ctx, req) {
+                    var comms = this.getComms(as, ctx, comms_impl.WSComms);
+                    this.performCommon(as, ctx, req, comms);
+                },
+                perfomUNIX: function (as, ctx, req) {
+                    void ctx;
+                    void req;
+                    as.error(FutoInError.InvokerError, 'Not implemented unix:// scheme');
+                },
+                perfomBrowser: function (as, ctx, req) {
+                    var comms = this.getComms(as, ctx, comms_impl.BrowserComms, ctx.options.targetOrigin);
+                    comms.perform(as, ctx, req);
+                }
+            };
+            module.exports = SimpleCCMImpl;
+        },
+        function (module, exports) {
+            (function (window) {
+                'use strict';
+                var futoin = window.FutoIn || {};
+                if (typeof futoin.Invoker === 'undefined') {
+                    var FutoInInvoker = _require(10);
+                    var SimpleCCM = FutoInInvoker.SimpleCCM;
+                    window.SimpleCCM = SimpleCCM;
+                    var AdvancedCCM = FutoInInvoker.AdvancedCCM;
+                    window.AdvancedCCM = AdvancedCCM;
+                    futoin.Invoker = FutoInInvoker;
+                    window.FutoInInvoker = FutoInInvoker;
+                    window.FutoIn = futoin;
+                    if (module) {
+                        module.exports = FutoInInvoker;
+                    }
+                }
+            }(window));
+        },
+        function (module, exports) {
+            'use strict';
+            var ee = _require(12);
+            var common = _require(9);
+            var FutoInError = common.FutoInError;
+            var MyWebSocket = WebSocket;
+            var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
+            exports.HTTPComms = function () {
+            };
+            exports.HTTPComms.prototype = {
+                close: function () {
+                },
+                perform: function (as, ctx, req) {
+                    var _this = this;
+                    as.add(function (as) {
+                        _this._perform(as, ctx, req);
+                    });
+                },
+                _perform: function (as, ctx, req) {
+                    ctx.signMessage(req);
+                    var sniffer = ctx.options.messageSniffer;
+                    var httpreq = new XMLHttpRequest();
+                    var url = ctx.endpoint;
+                    var rawreq = ctx.upload_data;
+                    var content_type;
+                    var auth_header;
+                    if (rawreq || rawreq === '') {
+                        content_type = 'application/octet-stream';
+                        if (url.charAt(url.length - 1) !== '/') {
+                            url += '/';
+                        }
+                        url += req.f.replace(/:/g, '/') + '/';
+                        if ('sec' in req) {
+                            if (req.sec === ctx.options.credentials) {
+                                auth_header = 'Basic ' + window.btoa(req.sec);
+                            } else {
+                                url += req.sec + '/';
+                            }
+                        }
+                        var params = [];
+                        for (var k in req.p) {
+                            var v = req.p[k];
+                            if (typeof v !== 'string') {
+                                v = JSON.stringify(v);
+                            }
+                            params.push(encodeURIComponent(k) + '=' + encodeURIComponent(v));
+                        }
+                        url += '?' + params.join('&');
+                        sniffer(ctx.info, req, false);
+                    } else {
+                        content_type = FUTOIN_CONTENT_TYPE;
+                        rawreq = JSON.stringify(req);
+                        sniffer(ctx.info, rawreq, false);
+                    }
+                    if (ctx.expect_response) {
+                        if (ctx.download_stream) {
+                            httpreq.responseType = ctx.download_stream;
+                        }
+                        httpreq.onreadystatechange = function () {
+                            if (this.readyState !== this.DONE) {
+                                return;
+                            }
+                            var response = ctx.download_stream ? this.response : this.responseText;
+                            if (response) {
+                                var content_type = this.getResponseHeader('content-type');
+                                if (content_type === FUTOIN_CONTENT_TYPE) {
+                                    sniffer(ctx.info, response, true);
+                                } else {
+                                    sniffer(ctx.info, '%DATA%', true);
+                                }
+                                as.success(response, content_type);
+                            } else {
+                                try {
+                                    as.error(FutoInError.CommError, 'Low error');
+                                } catch (ex) {
+                                }
+                            }
+                        };
+                        as.setCancel(function () {
+                            httpreq.abort();
+                        });
+                    }
+                    httpreq.open('POST', url, true);
+                    httpreq.setRequestHeader('Content-Type', content_type);
+                    if (auth_header) {
+                        httpreq.setRequestHeader('Authorization', auth_header);
+                    }
+                    httpreq.send(rawreq);
+                    if (!ctx.expect_response) {
+                        as.success();
+                    }
+                }
+            };
+            exports.WSComms = function () {
+                this.rid = 1;
+                this.reqas = {};
+                this.evt = ee();
+            };
+            exports.WSComms.prototype = {
+                _waiting_open: false,
+                init: function (as, ctx) {
+                    var opts = ctx.options;
+                    var ws = new MyWebSocket(ctx.endpoint);
+                    this.ws = ws;
+                    this._waiting_open = true;
+                    var reqas = this.reqas;
+                    var executor = opts.executor || null;
+                    var info = ctx.info;
+                    var _this = this;
+                    var sniffer = opts.messageSniffer;
+                    this.sniffer = sniffer;
+                    var send_executor_rsp = function (rsp) {
+                        var rawrsp = executor.packPayloadJSON(rsp);
+                        sniffer(info, rawrsp, false);
+                        ws.send(rawrsp);
+                    };
+                    var cleanup = function (event) {
+                        opts.disconnectSniffer(info);
+                        ws.close();
+                        delete _this.ws;
+                        for (var k in reqas) {
+                            try {
+                                reqas[k].error(FutoInError.CommError, event.wasClean ? 'Cleanup' : 'Error');
+                            } catch (ex) {
+                            }
+                        }
+                        delete _this.reqas;
+                        _this.reqas = {};
+                        _this._waiting_open = false;
+                        ctx.native_iface.emit('disconnect');
+                    };
+                    ws.onclose = cleanup;
+                    ws.onerror = cleanup;
+                    ws.onopen = function (event) {
+                        void event;
+                        _this._waiting_open = false;
+                        _this.evt.emit('open');
+                        ctx.native_iface.emit('connect');
+                    };
+                    ws.onmessage = function (event) {
+                        sniffer(info, event.data, true);
+                        var rsp;
+                        try {
+                            rsp = JSON.parse(event.data);
+                        } catch (e) {
+                            return;
+                        }
+                        if ('rid' in rsp) {
+                            var rid = rsp.rid;
+                            if (rid in reqas) {
+                                reqas[rid].success(rsp, true);
+                                delete reqas[rid];
+                            } else if (rid.charAt(0) === 'S' && executor) {
+                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
+                            }
+                        }
+                    };
+                },
+                close: function () {
+                    if (this.ws) {
+                        this.ws.close();
+                    }
+                },
+                perform: function (as, ctx, req) {
+                    var _this = this;
+                    if (!('ws' in this)) {
+                        _this.init(as, ctx);
+                    }
+                    if (this._waiting_open) {
+                        as.add(function (as) {
+                            if (!_this._waiting_open) {
+                                return;
+                            }
+                            var on_open = function () {
+                                as.success();
+                            };
+                            _this.evt.once('open', on_open);
+                            as.setCancel(function () {
+                                _this.evt.off('open', on_open);
+                            });
+                        });
+                    }
+                    as.add(function (as) {
+                        _this._perform(as, ctx, req);
+                    });
+                },
+                _perform: function (as, ctx, req) {
+                    if (!('ws' in this)) {
+                        as.error(FutoInError.CommError, 'Disconnect while in progress');
+                    }
+                    var reqas = this.reqas;
+                    var rid = 'C' + this.rid++;
+                    req.rid = rid;
+                    ctx.signMessage(req);
+                    if (ctx.expect_response) {
+                        reqas[rid] = as;
+                        as.setCancel(function () {
+                            delete reqas[rid];
+                        });
+                    }
+                    var rawreq = JSON.stringify(req);
+                    this.sniffer(ctx.info, rawreq, false);
+                    this.ws.send(rawreq);
+                }
+            };
+            if (!MyWebSocket) {
+                exports.WSComms = exports.HTTPComms;
+            }
+            exports.BrowserComms = function () {
+                this.rid = 1;
+                this.reqas = {};
+            };
+            exports.BrowserComms.prototype = {
+                init: function (as, ctx) {
+                    var opts = ctx.options;
+                    this.opts = opts;
+                    var target = ctx.endpoint.split('://', 2)[1];
+                    var browser_window = window;
+                    var iframe;
+                    if (target === 'parent') {
+                        target = browser_window.parent;
+                    } else if (target in browser_window && 'postMessage' in browser_window[target]) {
+                        target = browser_window[target];
+                    } else {
+                        var browser_document = document;
+                        iframe = browser_document.getElementById(target);
+                        if (iframe) {
+                            target = iframe.contentWindow;
+                        } else {
+                            as.error(FutoInError.CommError, 'Unknown target: ' + target);
+                        }
+                    }
+                    if (target === browser_window) {
+                        as.error(FutoInError.CommError, 'Target matches current window');
+                    }
+                    this.target = target;
+                    var reqas = this.reqas;
+                    var executor = opts.executor || null;
+                    var info = ctx.info;
+                    var target_origin = opts.targetOrigin;
+                    var sniffer = opts.messageSniffer;
+                    this.sniffer = sniffer;
+                    var send_executor_rsp = function (rsp) {
+                        sniffer(target_origin, rsp, false);
+                        target.postMessage(rsp, target_origin || '*');
+                    };
+                    var on_message = function (event) {
+                        sniffer(info, event.data, true);
+                        if (event.source && event.source !== target) {
+                            return;
+                        }
+                        if (!target_origin) {
+                        } else if (event.origin !== target_origin) {
+                            console.log('Error: peer origin mismatch ');
+                            console.log('Error >origin: ' + event.origin);
+                            console.log('Error >required: ' + target_origin);
+                            return;
+                        }
+                        var rsp = event.data;
+                        if (typeof rsp !== 'object') {
+                            console.log('Not object response: ' + rsp);
+                            return;
+                        }
+                        if ('rid' in rsp) {
+                            var rid = rsp.rid;
+                            if (!('f' in rsp) && rid in reqas) {
+                                reqas[rid].success(rsp, true);
+                                delete reqas[rid];
+                            } else if ('f' in rsp && rid.charAt(0) === 'S' && executor) {
+                                executor.onEndpointRequest(info, rsp, send_executor_rsp);
+                            } else {
+                                return;
+                            }
+                            if (event.stopPropagation) {
+                                event.stopPropagation();
+                            }
+                        }
+                    };
+                    browser_window.addEventListener('message', on_message, false);
+                    ctx.native_iface.emit('connect');
+                },
+                close: function () {
+                    if (this.target) {
+                        this.target = null;
+                    }
+                },
+                perform: function (as, ctx, req) {
+                    if (ctx.upload_data || ctx.download_stream) {
+                        as.error(FutoInError.CommError, 'Raw Data is not supported by Web Messaging yet');
+                    }
+                    if (!this.target) {
+                        this.init(as, ctx);
+                    }
+                    var _this = this;
+                    as.add(function (as) {
+                        var reqas = _this.reqas;
+                        var rid = 'C' + _this.rid++;
+                        req.rid = rid;
+                        ctx.signMessage(req);
+                        if (ctx.expect_response) {
+                            reqas[rid] = as;
+                            as.setCancel(function (as) {
+                                void as;
+                                delete reqas[rid];
+                            });
+                        }
+                        _this.sniffer(ctx.info, req, false);
+                        _this.target.postMessage(req, _this.opts.targetOrigin || '*');
+                    });
+                }
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var async_steps = _require(27);
+            exports.AsyncSteps = async_steps;
+            exports.FutoInError = async_steps.FutoInError;
+            exports.Options = {
+                OPT_CALL_TIMEOUT_MS: 'callTimeoutMS',
+                OPT_PROD_MODE: 'prodMode',
+                OPT_COMM_CONFIG_CB: 'commConfigCallback',
+                OPT_MSG_SNIFFER: 'messageSniffer',
+                OPT_DISCONNECT_SNIFFER: 'disconnectSniffer',
+                OPT_SPEC_DIRS: 'specDirs',
+                OPT_EXECUTOR: 'executor',
+                OPT_TARGET_ORIGIN: 'targetOrigin',
+                OPT_RETRY_COUNT: 'retryCount',
+                OPT_HMAC_KEY: 'hmacKey',
+                OPT_HMAC_ALGO: 'hmacAlgo',
+                SAFE_PAYLOAD_LIMIT: 65536,
+                SVC_RESOLVER: '#resolver',
+                SVC_AUTH: '#auth',
+                SVC_DEFENSE: '#defense',
+                SVC_ACL: '#acl',
+                SVC_LOG: '#log',
+                SVC_CACHE_: '#cache.',
+                FUTOIN_CONTENT_TYPE: 'application/futoin+json'
+            };
+            exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
+        },
+        function (module, exports) {
+            'use strict';
+            var common = _require(9);
+            exports.SimpleCCM = _require(3);
+            exports.AdvancedCCM = _require(0);
+            exports.FutoInError = common.FutoInError;
+            exports.InterfaceInfo = _require(1);
+            exports.NativeIface = _require(2);
+            exports.SpecTools = _require(4);
         },
         function (module, exports) {
             module.exports = false;
@@ -1556,7 +1566,7 @@
         },
         function (module, exports) {
             'use strict';
-            var d = _require(10), callable = _require(19), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
+            var d = _require(13), callable = _require(22), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
                     configurable: true,
                     enumerable: false,
                     writable: true
@@ -1675,7 +1685,7 @@
         },
         function (module, exports) {
             'use strict';
-            var assign = _require(11), normalizeOpts = _require(18), isCallable = _require(14), contains = _require(21), d;
+            var assign = _require(14), normalizeOpts = _require(21), isCallable = _require(17), contains = _require(24), d;
             d = module.exports = function (dscr, value) {
                 var c, e, w, options, desc;
                 if (arguments.length < 2 || typeof dscr !== 'string') {
@@ -1740,7 +1750,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(12)() ? Object.assign : _require(13);
+            module.exports = _require(15)() ? Object.assign : _require(16);
         },
         function (module, exports) {
             'use strict';
@@ -1755,7 +1765,7 @@
         },
         function (module, exports) {
             'use strict';
-            var keys = _require(15), value = _require(20), max = Math.max;
+            var keys = _require(18), value = _require(23), max = Math.max;
             module.exports = function (dest, src) {
                 var error, i, l = max(arguments.length, 2), assign;
                 dest = Object(value(dest));
@@ -1784,7 +1794,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(16)() ? Object.keys : _require(17);
+            module.exports = _require(19)() ? Object.keys : _require(20);
         },
         function (module, exports) {
             'use strict';
@@ -1840,7 +1850,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(22)() ? String.prototype.contains : _require(23);
+            module.exports = _require(25)() ? String.prototype.contains : _require(26);
         },
         function (module, exports) {
             'use strict';
@@ -1862,7 +1872,7 @@
             module.exports = __external_$as;
         },
         function (module, exports) {
-            var baseDifference = _require(34), baseFlatten = _require(35), isArguments = _require(57), isArray = _require(58);
+            var baseDifference = _require(37), baseFlatten = _require(38), isArguments = _require(60), isArray = _require(61);
             function difference() {
                 var index = -1, length = arguments.length;
                 while (++index < length) {
@@ -1876,7 +1886,7 @@
             module.exports = difference;
         },
         function (module, exports) {
-            var isArray = _require(58);
+            var isArray = _require(61);
             function zipObject(props, values) {
                 var index = -1, length = props ? props.length : 0, result = {};
                 if (length && !values && !isArray(props[0])) {
@@ -1895,7 +1905,7 @@
             module.exports = zipObject;
         },
         function (module, exports) {
-            var cachePush = _require(43), isNative = _require(59);
+            var cachePush = _require(46), isNative = _require(62);
             var Set = isNative(Set = global.Set) && Set;
             var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
             function SetCache(values) {
@@ -1941,7 +1951,7 @@
             module.exports = assignDefaults;
         },
         function (module, exports) {
-            var baseCopy = _require(33), keys = _require(64);
+            var baseCopy = _require(36), keys = _require(67);
             function baseAssign(object, source, customizer) {
                 var props = keys(source);
                 if (!customizer) {
@@ -1959,7 +1969,7 @@
             module.exports = baseAssign;
         },
         function (module, exports) {
-            var arrayCopy = _require(28), arrayEach = _require(29), baseCopy = _require(33), baseForOwn = _require(37), initCloneArray = _require(47), initCloneByTag = _require(48), initCloneObject = _require(49), isArray = _require(58), isObject = _require(60), keys = _require(64);
+            var arrayCopy = _require(31), arrayEach = _require(32), baseCopy = _require(36), baseForOwn = _require(40), initCloneArray = _require(50), initCloneByTag = _require(51), initCloneObject = _require(52), isArray = _require(61), isObject = _require(63), keys = _require(67);
             var argsTag = '[object Arguments]', arrayTag = '[object Array]', boolTag = '[object Boolean]', dateTag = '[object Date]', errorTag = '[object Error]', funcTag = '[object Function]', mapTag = '[object Map]', numberTag = '[object Number]', objectTag = '[object Object]', regexpTag = '[object RegExp]', setTag = '[object Set]', stringTag = '[object String]', weakMapTag = '[object WeakMap]';
             var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
             var cloneableTags = {};
@@ -2028,7 +2038,7 @@
             module.exports = baseCopy;
         },
         function (module, exports) {
-            var baseIndexOf = _require(38), cacheIndexOf = _require(42), createCache = _require(45);
+            var baseIndexOf = _require(41), cacheIndexOf = _require(45), createCache = _require(48);
             function baseDifference(array, values) {
                 var length = array ? array.length : 0, result = [];
                 if (!length) {
@@ -2060,7 +2070,7 @@
             module.exports = baseDifference;
         },
         function (module, exports) {
-            var isArguments = _require(57), isArray = _require(58), isLength = _require(52), isObjectLike = _require(53);
+            var isArguments = _require(60), isArray = _require(61), isLength = _require(55), isObjectLike = _require(56);
             function baseFlatten(array, isDeep, isStrict, fromIndex) {
                 var index = (fromIndex || 0) - 1, length = array.length, resIndex = -1, result = [];
                 while (++index < length) {
@@ -2083,7 +2093,7 @@
             module.exports = baseFlatten;
         },
         function (module, exports) {
-            var toObject = _require(55);
+            var toObject = _require(58);
             function baseFor(object, iteratee, keysFunc) {
                 var index = -1, iterable = toObject(object), props = keysFunc(object), length = props.length;
                 while (++index < length) {
@@ -2097,14 +2107,14 @@
             module.exports = baseFor;
         },
         function (module, exports) {
-            var baseFor = _require(36), keys = _require(64);
+            var baseFor = _require(39), keys = _require(67);
             function baseForOwn(object, iteratee) {
                 return baseFor(object, iteratee, keys);
             }
             module.exports = baseForOwn;
         },
         function (module, exports) {
-            var indexOfNaN = _require(46);
+            var indexOfNaN = _require(49);
             function baseIndexOf(array, value, fromIndex) {
                 if (value !== value) {
                     return indexOfNaN(array, fromIndex);
@@ -2129,7 +2139,7 @@
             module.exports = baseToString;
         },
         function (module, exports) {
-            var identity = _require(69);
+            var identity = _require(72);
             function bindCallback(func, thisArg, argCount) {
                 if (typeof func != 'function') {
                     return identity;
@@ -2162,7 +2172,7 @@
             module.exports = bindCallback;
         },
         function (module, exports) {
-            var constant = _require(68), isNative = _require(59);
+            var constant = _require(71), isNative = _require(62);
             var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer, bufferSlice = isNative(bufferSlice = ArrayBuffer && new ArrayBuffer(0).slice) && bufferSlice, floor = Math.floor, Uint8Array = isNative(Uint8Array = global.Uint8Array) && Uint8Array;
             var Float64Array = function () {
                     try {
@@ -2192,7 +2202,7 @@
             module.exports = bufferClone;
         },
         function (module, exports) {
-            var isObject = _require(60);
+            var isObject = _require(63);
             function cacheIndexOf(cache, value) {
                 var data = cache.data, result = typeof value == 'string' || isObject(value) ? data.set.has(value) : data.hash[value];
                 return result ? 0 : -1;
@@ -2200,7 +2210,7 @@
             module.exports = cacheIndexOf;
         },
         function (module, exports) {
-            var isObject = _require(60);
+            var isObject = _require(63);
             function cachePush(value) {
                 var data = this.data;
                 if (typeof value == 'string' || isObject(value)) {
@@ -2212,7 +2222,7 @@
             module.exports = cachePush;
         },
         function (module, exports) {
-            var bindCallback = _require(40), isIterateeCall = _require(51);
+            var bindCallback = _require(43), isIterateeCall = _require(54);
             function createAssigner(assigner) {
                 return function () {
                     var length = arguments.length, object = arguments[0];
@@ -2240,7 +2250,7 @@
             module.exports = createAssigner;
         },
         function (module, exports) {
-            var SetCache = _require(27), constant = _require(68), isNative = _require(59);
+            var SetCache = _require(30), constant = _require(71), isNative = _require(62);
             var Set = isNative(Set = global.Set) && Set;
             var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
             var createCache = !(nativeCreate && Set) ? constant(null) : function (values) {
@@ -2275,7 +2285,7 @@
             module.exports = initCloneArray;
         },
         function (module, exports) {
-            var bufferClone = _require(41);
+            var bufferClone = _require(44);
             var boolTag = '[object Boolean]', dateTag = '[object Date]', numberTag = '[object Number]', regexpTag = '[object RegExp]', stringTag = '[object String]';
             var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
             var reFlags = /\w*$/;
@@ -2329,7 +2339,7 @@
             module.exports = isIndex;
         },
         function (module, exports) {
-            var isIndex = _require(50), isLength = _require(52), isObject = _require(60);
+            var isIndex = _require(53), isLength = _require(55), isObject = _require(63);
             function isIterateeCall(value, index, object) {
                 if (!isObject(object)) {
                     return false;
@@ -2359,7 +2369,7 @@
             module.exports = isObjectLike;
         },
         function (module, exports) {
-            var isArguments = _require(57), isArray = _require(58), isIndex = _require(50), isLength = _require(52), keysIn = _require(65), support = _require(67);
+            var isArguments = _require(60), isArray = _require(61), isIndex = _require(53), isLength = _require(55), keysIn = _require(68), support = _require(70);
             var objectProto = Object.prototype;
             var hasOwnProperty = objectProto.hasOwnProperty;
             function shimKeys(object) {
@@ -2377,14 +2387,14 @@
             module.exports = shimKeys;
         },
         function (module, exports) {
-            var isObject = _require(60);
+            var isObject = _require(63);
             function toObject(value) {
                 return isObject(value) ? value : Object(value);
             }
             module.exports = toObject;
         },
         function (module, exports) {
-            var baseClone = _require(32), bindCallback = _require(40);
+            var baseClone = _require(35), bindCallback = _require(43);
             function cloneDeep(value, customizer, thisArg) {
                 customizer = typeof customizer == 'function' && bindCallback(customizer, thisArg, 1);
                 return baseClone(value, true, customizer);
@@ -2392,7 +2402,7 @@
             module.exports = cloneDeep;
         },
         function (module, exports) {
-            var isLength = _require(52), isObjectLike = _require(53);
+            var isLength = _require(55), isObjectLike = _require(56);
             var argsTag = '[object Arguments]';
             var objectProto = Object.prototype;
             var objToString = objectProto.toString;
@@ -2403,7 +2413,7 @@
             module.exports = isArguments;
         },
         function (module, exports) {
-            var isLength = _require(52), isNative = _require(59), isObjectLike = _require(53);
+            var isLength = _require(55), isNative = _require(62), isObjectLike = _require(56);
             var arrayTag = '[object Array]';
             var objectProto = Object.prototype;
             var objToString = objectProto.toString;
@@ -2414,7 +2424,7 @@
             module.exports = isArray;
         },
         function (module, exports) {
-            var escapeRegExp = _require(66), isObjectLike = _require(53);
+            var escapeRegExp = _require(69), isObjectLike = _require(56);
             var funcTag = '[object Function]';
             var reHostCtor = /^\[object .+?Constructor\]$/;
             var objectProto = Object.prototype;
@@ -2440,12 +2450,12 @@
             module.exports = isObject;
         },
         function (module, exports) {
-            var baseAssign = _require(31), createAssigner = _require(44);
+            var baseAssign = _require(34), createAssigner = _require(47);
             var assign = createAssigner(baseAssign);
             module.exports = assign;
         },
         function (module, exports) {
-            var arrayCopy = _require(28), assign = _require(61), assignDefaults = _require(30);
+            var arrayCopy = _require(31), assign = _require(64), assignDefaults = _require(33);
             function defaults(object) {
                 if (object == null) {
                     return object;
@@ -2457,10 +2467,10 @@
             module.exports = defaults;
         },
         function (module, exports) {
-            module.exports = _require(61);
+            module.exports = _require(64);
         },
         function (module, exports) {
-            var isLength = _require(52), isNative = _require(59), isObject = _require(60), shimKeys = _require(54);
+            var isLength = _require(55), isNative = _require(62), isObject = _require(63), shimKeys = _require(57);
             var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
             var keys = !nativeKeys ? shimKeys : function (object) {
                     if (object) {
@@ -2474,7 +2484,7 @@
             module.exports = keys;
         },
         function (module, exports) {
-            var isArguments = _require(57), isArray = _require(58), isIndex = _require(50), isLength = _require(52), isObject = _require(60), support = _require(67);
+            var isArguments = _require(60), isArray = _require(61), isIndex = _require(53), isLength = _require(55), isObject = _require(63), support = _require(70);
             var objectProto = Object.prototype;
             var hasOwnProperty = objectProto.hasOwnProperty;
             function keysIn(object) {
@@ -2500,7 +2510,7 @@
             module.exports = keysIn;
         },
         function (module, exports) {
-            var baseToString = _require(39);
+            var baseToString = _require(42);
             var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g, reHasRegExpChars = RegExp(reRegExpChars.source);
             function escapeRegExp(string) {
                 string = baseToString(string);
@@ -2509,7 +2519,7 @@
             module.exports = escapeRegExp;
         },
         function (module, exports) {
-            var isNative = _require(59);
+            var isNative = _require(62);
             var reThis = /\bthis\b/;
             var objectProto = Object.prototype;
             var document = (document = global.window) && document.document;
@@ -2548,6 +2558,6 @@
             module.exports = identity;
         }
     ];
-    return _require(1);
+    return _require(7);
 }));
 //# sourceMappingURL=futoin-invoker.js.map

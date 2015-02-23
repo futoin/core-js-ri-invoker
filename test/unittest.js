@@ -1,8 +1,8 @@
 var _ = require( 'lodash' );
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
-var logface = require( '../lib/logface' );
-var cacheface = require( '../lib/cacheface' );
+var logface = require( '../LogFace' );
+var cacheface = require( '../CacheFace' );
 var invoker;
 var as;
 var ccm;
