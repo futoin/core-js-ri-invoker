@@ -1117,13 +1117,14 @@ if ( isNode )
                     var res2 = SpecTools.genHMAC( as, options, req );
                     
                     //SpecTools.hmacbase.should.equal( hmacbase );
-                    res1.equals( res2 ).should.be.true;
+                    SpecTools.checkHMAC( res1, res2 ).should.be.true;
                     
                     var testres = crypto
                             .createHmac( algo_lo, key )
                             .update( hmacbase )
                             .digest();
-                    //testres.equals( res1 ).should.be.true;
+
+                    SpecTools.checkHMAC( res1, testres ).should.be.true;
                     testres
                         .toString( 'hex' )
                         .should.equal(

@@ -118,7 +118,7 @@
                         }
                         delete rsp.sec;
                         var required_sec = spectools.genHMAC(as, info.options, rsp);
-                        if (!rsp_sec.equals(required_sec)) {
+                        if (!spectools.checkHMAC(rsp_sec, required_sec)) {
                             as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
                         }
                     }
@@ -634,6 +634,9 @@
                     };
                 if (info.creds_hmac && (!options.hmacKey || !options.hmacAlgo)) {
                     as.error(futoin_error.InvokerError, 'Missing options.hmacKey or options.hmacAlgo');
+                }
+                if ((info.creds_master || info.creds_hmac) && !spectools.checkHMAC) {
+                    as.error(futoin_error.InvokerError, 'HMAC is not supported in this environment yet');
                 }
                 if (name) {
                     this._iface_info[name] = info;
