@@ -2,15 +2,11 @@
   [![NPM Version](https://img.shields.io/npm/v/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
   [![NPM Downloads](https://img.shields.io/npm/dm/futoin-invoker.svg?style=flat)](https://www.npmjs.com/package/futoin-invoker)
   [![Build Status](https://travis-ci.org/futoin/core-js-ri-invoker.svg?branch=master)](https://travis-ci.org/futoin/core-js-ri-invoker)
+  [![stable](https://img.shields.io/badge/stability-stable-green.svg?style=flat)](https://www.npmjs.com/package/futoin-asyncsteps)
 
   [![NPM](https://nodei.co/npm/futoin-invoker.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/futoin-invoker/)
 
-**[Stability: 2 - Unstable](http://nodejs.org/api/documentation.html)**
-
-# WARNING
-
-This project is in **active development** and *is not feature-complete yet*, but is already **mature enough**.
-The documentation of this specific implementation is not complete either.
+**[Stability: 3 - Stable](http://nodejs.org/api/documentation.html)**
 
 # FutoIn reference implementation
 
