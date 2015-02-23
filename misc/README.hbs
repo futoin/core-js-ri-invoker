@@ -17,13 +17,13 @@ The documentation of this specific implementation is not complete either.
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.3
+    Version: 1.4
     
     FTN3: FutoIn Interface Definition
-    Version: 1.1
+    Version: 1.2
 
     FTN5: FutoIn HTTP integration
-    Version: 1.1
+    Version: 1.2
 
     FTN9: FutoIn Interface - AuditLog
     Version: 1.0 (client)
@@ -62,6 +62,7 @@ It has the following advantages:
     channel-based instead of message-based security, etc.)
 * Inversion of Control / Dependency Injection - implementations are referenced by 
     static names like "mymodule.some.service" in code. The rest is hidden in CCM configuration.
+* Easy HMAC-based message signature and user authentication
 * Security enforcement
 
 The primary communication channel is WebSockets. Large raw data upload and download
