@@ -66,7 +66,9 @@
                         if (!finfo.params.hasOwnProperty(k)) {
                             as.error(FutoInError.InvokerError, 'Unknown parameter: ' + k);
                         }
-                        spectools.checkParameterType(as, info, name, k, params[k]);
+                        if (!spectools.checkParameterType(info, name, k, params[k])) {
+                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + k);
+                        }
                     }
                     for (k in finfo.params) {
                         if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
@@ -93,7 +95,7 @@
                             };
                         } else if (info.creds_hmac) {
                             ctx.signMessage = function (req) {
-                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + spectools.genHMAC(as, info, req);
+                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + spectools.genHMAC(as, info.options, req).toString('base64');
                             };
                         } else {
                             req.sec = info.creds;
@@ -105,6 +107,21 @@
                     var info = ctx.info;
                     var name = ctx.name;
                     var func_info = info.funcs[name];
+                    if (info.creds_master) {
+                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
+                    } else if (info.creds_hmac) {
+                        var rsp_sec;
+                        try {
+                            rsp_sec = new Buffer(rsp.sec, 'base64');
+                        } catch (e) {
+                            as.error(FutoInError.SecurityError, 'Missing response HMAC');
+                        }
+                        delete rsp.sec;
+                        var required_sec = spectools.genHMAC(as, info.options, rsp);
+                        if (!rsp_sec.equals(required_sec)) {
+                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
+                        }
+                    }
                     if ('e' in rsp) {
                         var e = rsp.e;
                         if (e in func_info.throws || e in spectools.standard_errors) {
@@ -115,16 +132,6 @@
                     }
                     if (func_info.rawresult) {
                         as.error(FutoInError.InternalError, 'Raw result is expected');
-                    }
-                    if (info.creds_master) {
-                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
-                    } else if (info.creds_hmac) {
-                        var rsp_sec = rsp.sec;
-                        delete rsp.sec;
-                        var required_sec = info.creds + ':' + info.options.hmacAlgo + ':' + spectools.genHMAC(as, info, rsp);
-                        if (rsp_sec !== required_sec) {
-                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
-                        }
                     }
                     if (info.creds === 'master') {
                     }
@@ -980,7 +987,8 @@
                     messageSniffer: function () {
                     },
                     disconnectSniffer: function () {
-                    }
+                    },
+                    hmacAlgo: 'MD5'
                 };
             function SimpleCCMImpl(options) {
                 options = options || {};
@@ -1511,10 +1519,8 @@
                         }
                         return false;
                     },
-                    checkParameterType: function (as, info, funcname, varname, value) {
-                        if (!spectools.checkType(info, info.funcs[funcname].params[varname].type, value)) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
-                        }
+                    checkParameterType: function (info, funcname, varname, value) {
+                        return spectools.checkType(info, info.funcs[funcname].params[varname].type, value);
                     },
                     checkResultType: function (as, info, funcname, varname, value) {
                         if (!spectools.checkType(info, info.funcs[funcname].result[varname].type, value)) {

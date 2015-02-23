@@ -54,7 +54,7 @@ console.log( 'Join method: ' + diff + ' @' + ( count/diff*1e3 ) + '/sec' );
 
     for ( var i = 0; i < count; ++i )
     {
-        spectools._genHMAC( algo, key, req );
+        spectools.genHMACRaw( algo, key, req );
     }
 
     diff = performance_now() - start

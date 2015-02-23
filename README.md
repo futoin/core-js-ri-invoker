@@ -304,7 +304,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
   * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
-  * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
+  * [SpecTools.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType)
   * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
   * [SpecTools.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC)
   * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
@@ -531,7 +531,7 @@ Base64 encoded key for HMAC generation
 <a name="SimpleCCM.OPT_HMAC_ALGO"></a>
 ##const: SimpleCCM.OPT_HMAC_ALGO
 Hash algorithm for HMAC generation:
-MD5, SHA224, SHA256, SHA384, SHA256
+MD5(default), SHA224, SHA256, SHA384, SHA256
 
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 ##const: SimpleCCM.SAFE_PAYLOAD_LIMIT
@@ -793,7 +793,7 @@ Results with DerivedKeyAccessor through as.success()
   * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
   * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
-  * [SpecTools.checkParameterType(as, info, funcname, varname, value)](#SpecTools.checkParameterType)
+  * [SpecTools.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType)
   * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
   * [SpecTools.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC)
   * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
@@ -848,12 +848,11 @@ Check if value matches required type
 
 **Returns**: `Boolean`  
 <a name="SpecTools.checkParameterType"></a>
-##SpecTools.checkParameterType(as, info, funcname, varname, value)
+##SpecTools.checkParameterType(info, funcname, varname, value)
 Check if parameter value matches required type
 
 **Params**
 
-- as `AsyncSteps`  
 - info `Object` - previously loaded iface  
 - funcname `string` - function name  
 - varname `string` - parameter name  
@@ -883,7 +882,7 @@ NOTE: for simplicity, 'sec' field must not be present
 - info `object` - Interface raw info object  
 - ftnreq `object` - Request Object  
 
-**Returns**: `string` - Base64-encoded HMAC signature  
+**Returns**: `Buffer` - Binary HMAC signature  
 <a name="SpecTools.standard_errors"></a>
 ##const: SpecTools.standard_errors
 Enumeration of standard errors

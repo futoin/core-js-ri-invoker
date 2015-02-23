@@ -1095,6 +1095,12 @@ if ( isNode )
         
         var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
         
+        it ( 'should correclt create HMAC base', function(){
+            var b = [];
+            SpecTools._hmacBase( b, req );
+            b.join('').should.equal( hmacbase );
+        } );
+        
         for ( var i = 0, c = algos.length; i < c; ++i )
         {
             (function( i ){
@@ -1102,24 +1108,27 @@ if ( isNode )
                 var algo_lo = algo.toLowerCase();
 
                 it ( 'should gen correct ' + algo + ' HMAC', function(){
-                    var info = {
-                        options : {
-                            hmacKey : keyb64,
-                            hmacAlgo : algo,
-                        }
+                    var options = {
+                        hmacKey : keyb64,
+                        hmacAlgo : algo,
                     };
 
-                    var res1 = SpecTools.genHMAC( as, info, req );
-                    var res2 = SpecTools.genHMAC( as, info, req );
+                    var res1 = SpecTools.genHMAC( as, options, req );
+                    var res2 = SpecTools.genHMAC( as, options, req );
                     
                     //SpecTools.hmacbase.should.equal( hmacbase );
-                    res1.should.equal( res2 );
+                    res1.equals( res2 ).should.be.true;
                     
                     var testres = crypto
                             .createHmac( algo_lo, key )
                             .update( hmacbase )
-                            .digest( 'base64' );
-                    testres.should.equal( res1 );
+                            .digest();
+                    //testres.equals( res1 ).should.be.true;
+                    testres
+                        .toString( 'hex' )
+                        .should.equal(
+                            res1.toString( 'hex' )
+                        );
                 } );
             })( i );
         }
