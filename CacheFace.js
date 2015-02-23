@@ -1,5 +1,6 @@
 'use strict';
 
+var _clone = require( 'lodash/lang/clone' );
 var _extend = require( 'lodash/object/extend' );
 var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
@@ -46,68 +47,69 @@ CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
  * CacheFace prototype
  * @ignore
  */
-var CacheFaceProto = {
-    /**
-     * Get or Set cached value
-     *
-     * NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
-     *   of *params* values
-     *
-     * @param {AsyncSteps} as
-     * @param {string} key_prefix - unique key prefix
-     * @param {Function} callable - func( as, params.. ) - a callable
-     *      which is called to generated value on cache miss
-     * @param {Array?} params - parameters to be passed to *callable*
-     * @param {integer?} ttl_ms - time to live in ms to use, if value is set on cache miss
-     *
-     * @alias CacheFace#getOrSet
-     */
-    getOrSet : function( as, key_prefix, callable, params, ttl_ms )
-    {
-        params = params || [];
-        ttl_ms = ttl_ms || 0;
+var CacheFaceProto = _clone( NativeIface.prototype );
+CacheFace.prototype = CacheFaceProto;
 
-        var key = key_prefix + params.join( '_' );
-        var _this = this;
+/**
+ * Get or Set cached value
+ *
+ * NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
+ *   of *params* values
+ *
+ * @param {AsyncSteps} as
+ * @param {string} key_prefix - unique key prefix
+ * @param {Function} callable - func( as, params.. ) - a callable
+ *      which is called to generated value on cache miss
+ * @param {Array?} params - parameters to be passed to *callable*
+ * @param {integer?} ttl_ms - time to live in ms to use, if value is set on cache miss
+ *
+ * @alias CacheFace#getOrSet
+ */
+CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
+{
+    params = params || [];
+    ttl_ms = ttl_ms || 0;
 
-        as.add(
-            function( as )
+    var key = key_prefix + params.join( '_' );
+    var _this = this;
+
+    as.add(
+        function( as )
+        {
+            _this.call( as, 'get', { key : key } );
+        },
+        function( as, err )
+        {
+            if ( err === 'CacheMiss' )
             {
-                _this.call( as, 'get', { key : key } );
-            },
-            function( as, err )
-            {
-                if ( err === 'CacheMiss' )
-                {
-                    as.success();
-                }
+                as.success();
             }
-        ).add(
-            function( as, res )
+        }
+    ).add(
+        function( as, res )
+        {
+            if ( res )
             {
-                if ( res )
-                {
-                    as.success( res.value );
-                }
-                else
-                {
-                    // TODO: implement cache hammering protection
-                    var p = [ as ].concat( params ); // avoid side-effect
-                    callable.apply( null, p );
+                as.success( res.value );
+            }
+            else
+            {
+                // TODO: implement cache hammering protection
+                var p = [ as ].concat( params ); // avoid side-effect
+                callable.apply( null, p );
 
-                    as.add( function( as, value )
+                as.add( function( as, value )
+                {
+                    _this.call( as, 'set', { key : key, value : value, ttl : ttl_ms } );
+
+                    as.add( function( as )
                     {
-                        _this.call( as, 'set', { key : key, value : value, ttl : ttl_ms } );
-
-                        as.add( function( as )
-                        {
-                            as.success( value );
-                        } );
+                        as.success( value );
                     } );
-                }
+                } );
             }
-        );
-    }
+        }
+    );
 };
 
 module.exports = CacheFace;

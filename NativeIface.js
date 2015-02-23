@@ -2,7 +2,6 @@
 
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
-var _extend = require( 'lodash/object/extend' );
 var _zipObject = require( 'lodash/array/zipObject' );
 var ee = require( 'event-emitter' );
 var async_steps = require( 'futoin-asyncsteps' );
@@ -21,7 +20,6 @@ function NativeIface( ccmimpl, info )
     this._iface_info = null;
     this._comms = {};
 
-    _extend( this, NativeIfaceProto );
     ee( this );
 
     for ( var fn in this._raw_info.funcs )

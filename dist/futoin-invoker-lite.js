@@ -24,34 +24,6 @@
     _require.modules = [
         function (module, exports) {
             'use strict';
-            var _clone = _require(59);
-            var common = _require(9);
-            var futoin_error = common.FutoInError;
-            var _extend = _require(67);
-            var AdvancedCCMImpl = _require(5);
-            var SimpleCCM = _require(3);
-            var ee = _require(12);
-            var AdvancedCCMPublic = common.Options;
-            function AdvancedCCM(options) {
-                ee(this);
-                this._iface_info = {};
-                this._iface_impl = {};
-                this._impl = new AdvancedCCMImpl(options);
-            }
-            _extend(AdvancedCCM, AdvancedCCMPublic);
-            var AdvancedCCMProto = _clone(SimpleCCM.prototype);
-            AdvancedCCM.prototype = AdvancedCCMProto;
-            AdvancedCCMProto.initFromCache = function (as, cache_l1_endpoint) {
-                void cache_l1_endpoint;
-                as.error(futoin_error.NotImplemented, 'Caching is not supported yet');
-            };
-            AdvancedCCMProto.cacheInit = function (as) {
-                void as;
-            };
-            module.exports = AdvancedCCM;
-        },
-        function (module, exports) {
-            'use strict';
             function InterfaceInfo(raw_info) {
                 this._raw_info = raw_info;
             }
@@ -76,12 +48,12 @@
         },
         function (module, exports) {
             'use strict';
-            var common = _require(9);
+            var common = _require(6);
             var futoin_error = common.FutoInError;
-            var _zipObject = _require(29);
-            var ee = _require(12);
-            var async_steps = _require(27);
-            var InterfaceInfo = _require(1);
+            var _zipObject = _require(24);
+            var ee = _require(8);
+            var async_steps = _require(23);
+            var InterfaceInfo = _require(0);
             var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
             function NativeIface(ccmimpl, info) {
                 this._ccmimpl = ccmimpl;
@@ -227,13 +199,13 @@
         },
         function (module, exports) {
             'use strict';
-            var common = _require(9);
+            var common = _require(6);
             var futoin_error = common.FutoInError;
-            var NativeIface = _require(2);
-            var _extend = _require(67);
-            var _defaults = _require(66);
-            var SimpleCCMImpl = _require(6);
-            var ee = _require(12);
+            var NativeIface = _require(1);
+            var _extend = _require(43);
+            var _defaults = _require(42);
+            var SimpleCCMImpl = _require(3);
+            var ee = _require(8);
             var SimpleCCMPublic = common.Options;
             function SimpleCCM(options) {
                 ee(this);
@@ -464,612 +436,16 @@
         },
         function (module, exports) {
             'use strict';
-            var common = _require(9);
+            var common = _require(6);
             var FutoInError = common.FutoInError;
-            var fs;
-            var request;
-            var isNode = _require(11);
-            var _cloneDeep = _require(60);
-            var _zipObject = _require(29);
-            var _difference = _require(28);
-            if (isNode) {
-                var hidereq = require;
-                fs = hidereq('fs');
-                request = hidereq('request');
-            }
-            var spectools = {
-                    standard_errors: {
-                        UnknownInterface: true,
-                        NotSupportedVersion: true,
-                        NotImplemented: true,
-                        Unauthorized: true,
-                        InternalError: true,
-                        InvalidRequest: true,
-                        DefenseRejected: true,
-                        PleaseReauth: true,
-                        SecurityError: true
-                    },
-                    _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
-                    _ifacever_pattern: common._ifacever_pattern,
-                    loadIface: function (as, info, specdirs) {
-                        var raw_spec = null;
-                        as.forEach(specdirs, function (as, k, v) {
-                            var fn = info.iface + '-' + info.version + '-iface.json';
-                            as.add(function (read_as) {
-                                if (typeof v !== 'string' || !isNode) {
-                                    return;
-                                }
-                                var uri = v + '/' + fn;
-                                var on_read = function (data) {
-                                    if (!read_as) {
-                                        return;
-                                    }
-                                    try {
-                                        v = JSON.parse(data);
-                                        v._just_loaded = true;
-                                        read_as.success();
-                                        return;
-                                    } catch (e) {
-                                    }
-                                    try {
-                                        read_as.continue();
-                                    } catch (e) {
-                                    }
-                                };
-                                if (uri.substr(0, 4) === 'http') {
-                                    request(uri, function (error, response, body) {
-                                        on_read(body);
-                                    });
-                                } else {
-                                    fs.readFile(uri, { encoding: 'utf8' }, function (err, data) {
-                                        on_read(data);
-                                    });
-                                }
-                                read_as.setCancel(function (as) {
-                                    void as;
-                                    read_as = null;
-                                });
-                            }).add(function (as) {
-                                if (typeof v !== 'string' || isNode) {
-                                    return;
-                                }
-                                var uri = v + '/' + fn;
-                                var httpreq = new XMLHttpRequest();
-                                httpreq.onreadystatechange = function () {
-                                    if (this.readyState !== this.DONE) {
-                                        return;
-                                    }
-                                    var response = this.responseText;
-                                    if (response) {
-                                        try {
-                                            v = JSON.parse(response);
-                                            v._just_loaded = true;
-                                            as.success();
-                                            return;
-                                        } catch (e) {
-                                        }
-                                    }
-                                    try {
-                                        as.continue();
-                                    } catch (ex) {
-                                    }
-                                };
-                                httpreq.open('GET', uri, true);
-                                httpreq.send();
-                                as.setCancel(function (as) {
-                                    void as;
-                                    httpreq.abort();
-                                });
-                            }).add(function (as) {
-                                if (typeof v === 'object' && v.iface === info.iface && v.version === info.version) {
-                                    raw_spec = v;
-                                    as.break();
-                                }
-                            });
-                        }).add(function (as) {
-                            if (raw_spec === null) {
-                                as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
-                            }
-                            spectools.parseIface(as, info, specdirs, raw_spec);
-                        });
-                    },
-                    parseIface: function (as, info, specdirs, raw_spec) {
-                        if (raw_spec._just_loaded) {
-                            info.funcs = raw_spec.funcs || {};
-                            info.types = raw_spec.types || {};
-                        } else {
-                            info.funcs = _cloneDeep(raw_spec.funcs || {});
-                            info.types = _cloneDeep(raw_spec.types || {});
-                        }
-                        spectools._parseFuncs(as, info);
-                        spectools._parseTypes(as, info);
-                        if ('requires' in raw_spec) {
-                            var requires = raw_spec.requires;
-                            if (!Array.isArray(requires)) {
-                                as.error(FutoInError.InternalError, '"requires" is not array');
-                            }
-                            info.constraints = _zipObject(requires, requires);
-                        } else {
-                            info.constraints = {};
-                        }
-                        spectools._checkFTN3Rev(as, info, raw_spec);
-                        info.inherits = [];
-                        if ('inherit' in raw_spec) {
-                            var m = raw_spec.inherit.match(common._ifacever_pattern);
-                            if (m === null) {
-                                as.error(FutoInError.InvokerError, 'Invalid inherit ifacever: ' + raw_spec.inherit);
-                            }
-                            var sup_info = {};
-                            sup_info.iface = m[1];
-                            sup_info.version = m[4];
-                            spectools.loadIface(as, sup_info, specdirs);
-                            as.add(function (as) {
-                                spectools._parseImportInherit(as, info, specdirs, raw_spec, sup_info);
-                                info.inherits.push(raw_spec.inherit);
-                                info.inherits = info.inherits.concat(sup_info.inherits);
-                            });
-                        }
-                        if ('imports' in raw_spec) {
-                            info.imports = raw_spec.imports.slice();
-                            as.forEach(raw_spec.imports, function (as, k, v) {
-                                var m = v.match(common._ifacever_pattern);
-                                if (m === null) {
-                                    as.error(FutoInError.InvokerError, 'Invalid import ifacever: ' + v);
-                                }
-                                var imp_info = {};
-                                imp_info.iface = m[1];
-                                imp_info.version = m[4];
-                                spectools.loadIface(as, imp_info, specdirs);
-                                as.add(function (as) {
-                                    spectools._parseImportInherit(as, info, specdirs, raw_spec, imp_info);
-                                    info.imports = info.imports.concat(imp_info.imports);
-                                });
-                            });
-                        } else {
-                            info.imports = [];
-                        }
-                    },
-                    _checkFTN3Rev: function (as, info, raw_spec) {
-                        var ftn3rev = raw_spec.ftn3rev || '1.0';
-                        var rv = ftn3rev.match(spectools._ver_pattern);
-                        if (rv === null) {
-                            as.error(FutoInError.InternalError, 'Invalid ftn3rev field');
-                        }
-                        var mjr = parseInt(rv[1]);
-                        var mnr = parseInt(rv[2]);
-                        if (mjr === 1) {
-                            if (mnr < 1) {
-                                if (raw_spec.imports || raw_spec.types || 'BiDirectChannel' in info.constraints) {
-                                    as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
-                                }
-                            }
-                            if (mnr < 2) {
-                            }
-                            if (!info._invoker_use && mnr > 1) {
-                                as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
-                            }
-                        } else {
-                            as.error(FutoInError.InternalError, 'Not supported FTN3 revision');
-                        }
-                    },
-                    _parseFuncs: function (as, info) {
-                        var finfo;
-                        var pn;
-                        for (var f in info.funcs) {
-                            finfo = info.funcs[f];
-                            finfo.min_args = 0;
-                            if ('params' in finfo) {
-                                var fparams = finfo.params;
-                                if (typeof fparams !== 'object') {
-                                    as.error(FutoInError.InternalError, 'Invalid params object');
-                                }
-                                for (pn in fparams) {
-                                    var pinfo = fparams[pn];
-                                    if (typeof pinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid param object');
-                                    }
-                                    if (!('type' in pinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for params');
-                                    }
-                                    if (!('default' in pinfo)) {
-                                        finfo.min_args += 1;
-                                    }
-                                }
-                            } else {
-                                finfo.params = {};
-                            }
-                            finfo.expect_result = false;
-                            if ('result' in finfo) {
-                                var fresult = finfo.result;
-                                if (typeof fresult !== 'object') {
-                                    as.error(FutoInError.InternalError, 'Invalid result object');
-                                }
-                                for (var rn in fresult) {
-                                    var rinfo = fresult[rn];
-                                    if (typeof rinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid resultvar object');
-                                    }
-                                    if (!('type' in rinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for result');
-                                    }
-                                    finfo.expect_result = true;
-                                }
-                            } else {
-                                finfo.result = {};
-                            }
-                            if (!('rawupload' in finfo)) {
-                                finfo.rawupload = false;
-                            }
-                            if (!('rawresult' in finfo)) {
-                                finfo.rawresult = false;
-                            }
-                            if (finfo.rawresult) {
-                                finfo.expect_result = true;
-                            }
-                            if ('throws' in finfo) {
-                                if (!finfo.expect_result) {
-                                    as.error(FutoInError.InternalError, '"throws" without result');
-                                }
-                                var throws = finfo.throws;
-                                if (!Array.isArray(throws)) {
-                                    as.error(FutoInError.InternalError, '"throws" is not array');
-                                }
-                                finfo.throws = _zipObject(throws, throws);
-                            } else {
-                                finfo.throws = {};
-                            }
-                        }
-                    },
-                    _parseTypes: function (as, info) {
-                        var tinfo;
-                        for (var t in info.types) {
-                            tinfo = info.types[t];
-                            if (!('type' in tinfo)) {
-                                as.error(FutoInError.InternalError, 'Missing "type" for custom type');
-                            }
-                            if (tinfo.type === 'map') {
-                                if (!('fields' in tinfo)) {
-                                    tinfo.fields = {};
-                                    continue;
-                                }
-                                for (var f in tinfo.fields) {
-                                    if (!('type' in tinfo.fields[f])) {
-                                        as.error(FutoInError.InternalError, 'Missing "type" for custom type field');
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    _parseImportInherit: function (as, info, specdirs, raw_spec, sup_info) {
-                        var i;
-                        var pn;
-                        for (var t in sup_info.types) {
-                            if (t in info.types) {
-                                as.error(FutoInError.InternalError, 'Iface type redifintion: ' + t);
-                                continue;
-                            }
-                            info.types[t] = sup_info.types[t];
-                        }
-                        for (var f in sup_info.funcs) {
-                            var fdef = sup_info.funcs[f];
-                            if (!(f in info.funcs)) {
-                                info.funcs[f] = fdef;
-                                continue;
-                            }
-                            var sup_params = fdef.params;
-                            var params = info.funcs[f].params;
-                            var sup_params_keys = Object.keys(sup_params);
-                            var params_keys = Object.keys(params);
-                            if (params_keys.length < sup_params_keys.length) {
-                                as.error(FutoInError.InternalError, 'Invalid param count for \'' + f + '\'');
-                            }
-                            for (i = 0; i < sup_params_keys.length; ++i) {
-                                pn = sup_params_keys[i];
-                                if (pn !== params_keys[i]) {
-                                    as.error(FutoInError.InternalError, 'Invalid param order for \'' + f + '/' + pn + '\'');
-                                }
-                                if (sup_params[pn].type !== params[pn].type) {
-                                    as.error(FutoInError.InternalError, 'Param type mismatch \'' + f + '/' + pn + '\'');
-                                }
-                            }
-                            for (; i < params_keys.length; ++i) {
-                                pn = params_keys[i];
-                                if (!(pn in sup_params) && !('default' in params[pn] || params[pn] === null)) {
-                                    as.error(FutoInError.InternalError, 'Missing default for \'' + f + '/' + pn + '\'');
-                                }
-                            }
-                            if (fdef.rawresult !== info.funcs[f].rawresult) {
-                                as.error(FutoInError.InternalError, '\'rawresult\' flag mismatch for \'' + f + '\'');
-                            }
-                            if (fdef.rawupload && !info.funcs[f].rawupload) {
-                                as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
-                            }
-                        }
-                        if (_difference(Object.keys(sup_info.constraints), raw_spec.requires).length) {
-                            as.error(FutoInError.InternalError, 'Missing constraints from inherited');
-                        }
-                    },
-                    checkConsistency: function (as, info) {
-                        void as;
-                        void info;
-                    },
-                    checkType: function (info, type, val, _type_stack) {
-                        if (val === null) {
-                            return false;
-                        }
-                        switch (type) {
-                        case 'any':
-                            return true;
-                        case 'boolean':
-                        case 'string':
-                        case 'number':
-                            return typeof val === type;
-                        case 'map':
-                            return typeof val === 'object' && !(val instanceof Array);
-                        case 'integer':
-                            return typeof val === 'number' && (val | 0) === val;
-                        case 'array':
-                            return val instanceof Array;
-                        default:
-                            if (!('types' in info) || !(type in info.types)) {
-                                return false;
-                            }
-                        }
-                        if (type in info.types) {
-                            var tdef = info.types[type];
-                            _type_stack = _type_stack || {};
-                            var base_type = tdef.type;
-                            if (base_type in _type_stack) {
-                                if (console) {
-                                    console.log('[ERROR] Custom type recursion: ' + tdef);
-                                }
-                                throw new Error(FutoInError.InternalError);
-                            }
-                            _type_stack[type] = true;
-                            if (!this.checkType(info, base_type, val, _type_stack)) {
-                                return false;
-                            }
-                            switch (base_type) {
-                            case 'integer':
-                            case 'number':
-                                if ('min' in tdef && val < tdef.min) {
-                                    return false;
-                                }
-                                if ('max' in tdef && val > tdef.max) {
-                                    return false;
-                                }
-                                return true;
-                            case 'string':
-                                if ('regex' in tdef) {
-                                    var comp_regex;
-                                    if ('_comp_regex' in info) {
-                                        comp_regex = info._comp_regex;
-                                    } else {
-                                        comp_regex = {};
-                                        info._comp_regex = comp_regex;
-                                    }
-                                    if (!(type in comp_regex)) {
-                                        comp_regex[type] = new RegExp(tdef.regex);
-                                    }
-                                    return val.match(comp_regex[type]) !== null;
-                                }
-                                return true;
-                            case 'array':
-                                var val_len = val.length;
-                                if ('minlen' in tdef && val_len < tdef.minlen) {
-                                    return false;
-                                }
-                                if ('maxlen' in tdef && val_len > tdef.maxlen) {
-                                    return false;
-                                }
-                                if ('elemtype' in tdef) {
-                                    var elemtype = tdef.elemtype;
-                                    for (var i = 0; i < val_len; ++i) {
-                                        if (!this.checkType(info, elemtype, val[i], [])) {
-                                            return false;
-                                        }
-                                    }
-                                }
-                                return true;
-                            case 'map':
-                                var fields = tdef.fields;
-                                for (var f in fields) {
-                                    var field_def = fields[f];
-                                    if (!(f in val) || val[f] === null) {
-                                        if (field_def.optional) {
-                                            val[f] = null;
-                                            return true;
-                                        }
-                                        return false;
-                                    }
-                                    if (!this.checkType(info, field_def.type, val[f], [])) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            }
-                        }
-                        return false;
-                    },
-                    checkParameterType: function (info, funcname, varname, value) {
-                        return spectools.checkType(info, info.funcs[funcname].params[varname].type, value);
-                    },
-                    checkResultType: function (as, info, funcname, varname, value) {
-                        if (!spectools.checkType(info, info.funcs[funcname].result[varname].type, value)) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for result: ' + varname);
-                        }
-                    },
-                    checkFutoInType: function (as, type, varname, value) {
-                        if (!spectools.checkType({}, type, value)) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + varname);
-                        }
-                    },
-                    genHMAC: function (as, info, ftnreq) {
-                        void as;
-                        void info;
-                        void ftnreq;
-                        as.error(FutoInError.InvalidRequest, 'HMAC generation is supported only for server environment');
-                    }
-                };
-            if (isNode) {
-                hidereq('./lib/node/spectools_hmac')(spectools);
-            }
-            module.exports = spectools;
-        },
-        function (module, exports) {
-            'use strict';
-            var common = _require(9);
-            var FutoInError = common.FutoInError;
-            var SimpleCCMImpl = _require(6);
-            var SpecTools = _require(4);
-            function AdvancedCCMImpl(options) {
-                options = options || {};
-                var spec_dirs = options.specDirs || [];
-                if (!(spec_dirs instanceof Array)) {
-                    spec_dirs = [spec_dirs];
-                }
-                options.specDirs = spec_dirs;
-                SimpleCCMImpl.call(this, options);
-            }
-            var SCCMImpProto = SimpleCCMImpl.prototype;
-            AdvancedCCMImpl.prototype = {
-                onRegister: function (as, info) {
-                    if ((info.creds_master || info.creds_hmac) && !SpecTools.checkHMAC) {
-                        as.error(FutoInError.InvokerError, 'Master/HMAC is not supported in this environment yet');
-                    }
-                    SpecTools.loadIface(as, info, info.options.specDirs);
-                    if (!info.options.prodMode) {
-                        SpecTools.checkConsistency(as, info);
-                    }
-                },
-                checkParams: function (as, ctx, params) {
-                    var info = ctx.info;
-                    var name = ctx.name;
-                    var k;
-                    if (!(name in info.funcs)) {
-                        as.error(FutoInError.InvokerError, 'Unknown interface function: ' + name);
-                    }
-                    var finfo = info.funcs[name];
-                    if (ctx.upload_data && !finfo.rawupload) {
-                        as.error(FutoInError.InvokerError, 'Raw upload is not allowed');
-                    }
-                    if (!Object.keys(finfo.params).length && Object.keys(params).length) {
-                        as.error(FutoInError.InvokerError, 'No params are defined');
-                    }
-                    for (k in params) {
-                        if (!finfo.params.hasOwnProperty(k)) {
-                            as.error(FutoInError.InvokerError, 'Unknown parameter: ' + k);
-                        }
-                        if (!SpecTools.checkParameterType(info, name, k, params[k])) {
-                            as.error(FutoInError.InvalidRequest, 'Type mismatch for parameter: ' + k);
-                        }
-                    }
-                    for (k in finfo.params) {
-                        if (!params.hasOwnProperty(k) && !finfo.params[k].hasOwnProperty('default')) {
-                            as.error(FutoInError.InvokerError, 'Missing parameter ' + k);
-                        }
-                    }
-                },
-                createMessage: function (as, ctx, params) {
-                    var info = ctx.info;
-                    var options = info.options;
-                    if (!options.prodMode) {
-                        this.checkParams(as, ctx, params);
-                    }
-                    var req = {
-                            f: info.iface + ':' + info.version + ':' + ctx.name,
-                            p: params
-                        };
-                    ctx.expect_response = info.funcs[ctx.name].expect_result;
-                    if (info.creds !== null) {
-                        if (info.creds_master) {
-                            as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
-                            ctx.signMessage = function (req) {
-                                void req;
-                            };
-                        } else if (info.creds_hmac) {
-                            ctx.signMessage = function (req) {
-                                req.sec = info.creds + ':' + options.hmacAlgo + ':' + SpecTools.genHMAC(as, info.options, req).toString('base64');
-                            };
-                        } else {
-                            req.sec = info.creds;
-                        }
-                    }
-                    as.success(req);
-                },
-                onMessageResponse: function (as, ctx, rsp) {
-                    var info = ctx.info;
-                    var name = ctx.name;
-                    var func_info = info.funcs[name];
-                    if (info.creds_master) {
-                        as.error(FutoInError.InvokerError, 'MasterService support is not implemented');
-                    } else if (info.creds_hmac) {
-                        var rsp_sec;
-                        try {
-                            rsp_sec = new Buffer(rsp.sec, 'base64');
-                        } catch (e) {
-                            as.error(FutoInError.SecurityError, 'Missing response HMAC');
-                        }
-                        delete rsp.sec;
-                        var required_sec = SpecTools.genHMAC(as, info.options, rsp);
-                        if (!SpecTools.checkHMAC(rsp_sec, required_sec)) {
-                            as.error(FutoInError.SecurityError, 'Response HMAC mismatch');
-                        }
-                    }
-                    if ('e' in rsp) {
-                        var e = rsp.e;
-                        if (e in func_info.throws || e in SpecTools.standard_errors) {
-                            as.error(e, rsp.edesc);
-                        } else {
-                            as.error(FutoInError.InternalError, 'Not expected exception from Executor');
-                        }
-                    }
-                    if (func_info.rawresult) {
-                        as.error(FutoInError.InternalError, 'Raw result is expected');
-                    }
-                    if (info.creds === 'master') {
-                    }
-                    var resvars = func_info.result;
-                    var rescount = Object.keys(resvars).length;
-                    for (var k in rsp.r) {
-                        if (resvars.hasOwnProperty(k)) {
-                            SpecTools.checkResultType(as, info, name, k, rsp.r[k]);
-                            --rescount;
-                        }
-                    }
-                    if (rescount > 0) {
-                        as.error(FutoInError.InternalError, 'Missing result variables');
-                    }
-                    as.success(rsp.r);
-                },
-                onDataResponse: function (as, ctx, rsp) {
-                    if (ctx.info.funcs[ctx.name].rawresult) {
-                        as.success(rsp);
-                    } else {
-                        as.error(FutoInError.InternalError, 'Raw result is not expected');
-                    }
-                },
-                getComms: SCCMImpProto.getComms,
-                performCommon: SCCMImpProto.performCommon,
-                perfomHTTP: SCCMImpProto.perfomHTTP,
-                perfomWebSocket: SCCMImpProto.perfomWebSocket,
-                perfomUNIX: SCCMImpProto.perfomUNIX,
-                perfomBrowser: SCCMImpProto.perfomBrowser
-            };
-            module.exports = AdvancedCCMImpl;
-        },
-        function (module, exports) {
-            'use strict';
-            var common = _require(9);
-            var FutoInError = common.FutoInError;
-            var isNode = _require(11);
-            var _defaults = _require(66);
+            var isNode = _require(7);
+            var _defaults = _require(42);
             var comms_impl;
             if (isNode) {
                 var hidereq = require;
                 comms_impl = hidereq('./node/comms');
             } else {
-                comms_impl = _require(8);
+                comms_impl = _require(4);
             }
             var defopts = {
                     callTimeoutMS: 30000,
@@ -1187,28 +563,9 @@
             module.exports = SimpleCCMImpl;
         },
         function (module, exports) {
-            (function (window) {
-                'use strict';
-                var futoin = window.FutoIn || {};
-                if (typeof futoin.Invoker === 'undefined') {
-                    var FutoInInvoker = _require(10);
-                    var SimpleCCM = FutoInInvoker.SimpleCCM;
-                    window.SimpleCCM = SimpleCCM;
-                    var AdvancedCCM = FutoInInvoker.AdvancedCCM;
-                    window.AdvancedCCM = AdvancedCCM;
-                    futoin.Invoker = FutoInInvoker;
-                    window.FutoInInvoker = FutoInInvoker;
-                    window.FutoIn = futoin;
-                    if (module) {
-                        module.exports = FutoInInvoker;
-                    }
-                }
-            }(window));
-        },
-        function (module, exports) {
             'use strict';
-            var ee = _require(12);
-            var common = _require(9);
+            var ee = _require(8);
+            var common = _require(6);
             var FutoInError = common.FutoInError;
             var MyWebSocket = WebSocket;
             var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
@@ -1518,8 +875,17 @@
             };
         },
         function (module, exports) {
+            (function (window) {
+                'use strict';
+                window.SimpleCCM = _require(2);
+                if (module) {
+                    module.exports = window.SimpleCCM;
+                }
+            }(window));
+        },
+        function (module, exports) {
             'use strict';
-            var async_steps = _require(27);
+            var async_steps = _require(23);
             exports.AsyncSteps = async_steps;
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
@@ -1546,16 +912,6 @@
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
         },
         function (module, exports) {
-            'use strict';
-            var common = _require(9);
-            exports.SimpleCCM = _require(3);
-            exports.AdvancedCCM = _require(0);
-            exports.FutoInError = common.FutoInError;
-            exports.InterfaceInfo = _require(1);
-            exports.NativeIface = _require(2);
-            exports.SpecTools = _require(4);
-        },
-        function (module, exports) {
             module.exports = false;
             try {
                 module.exports = Object.prototype.toString.call(global.process) === '[object process]';
@@ -1564,7 +920,7 @@
         },
         function (module, exports) {
             'use strict';
-            var d = _require(13), callable = _require(22), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
+            var d = _require(9), callable = _require(18), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
                     configurable: true,
                     enumerable: false,
                     writable: true
@@ -1683,7 +1039,7 @@
         },
         function (module, exports) {
             'use strict';
-            var assign = _require(14), normalizeOpts = _require(21), isCallable = _require(17), contains = _require(24), d;
+            var assign = _require(10), normalizeOpts = _require(17), isCallable = _require(13), contains = _require(20), d;
             d = module.exports = function (dscr, value) {
                 var c, e, w, options, desc;
                 if (arguments.length < 2 || typeof dscr !== 'string') {
@@ -1748,7 +1104,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(15)() ? Object.assign : _require(16);
+            module.exports = _require(11)() ? Object.assign : _require(12);
         },
         function (module, exports) {
             'use strict';
@@ -1763,7 +1119,7 @@
         },
         function (module, exports) {
             'use strict';
-            var keys = _require(18), value = _require(23), max = Math.max;
+            var keys = _require(14), value = _require(19), max = Math.max;
             module.exports = function (dest, src) {
                 var error, i, l = max(arguments.length, 2), assign;
                 dest = Object(value(dest));
@@ -1792,7 +1148,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(19)() ? Object.keys : _require(20);
+            module.exports = _require(15)() ? Object.keys : _require(16);
         },
         function (module, exports) {
             'use strict';
@@ -1848,7 +1204,7 @@
         },
         function (module, exports) {
             'use strict';
-            module.exports = _require(25)() ? String.prototype.contains : _require(26);
+            module.exports = _require(21)() ? String.prototype.contains : _require(22);
         },
         function (module, exports) {
             'use strict';
@@ -1870,21 +1226,7 @@
             module.exports = __external_$as;
         },
         function (module, exports) {
-            var baseDifference = _require(37), baseFlatten = _require(38), isArguments = _require(61), isArray = _require(62);
-            function difference() {
-                var index = -1, length = arguments.length;
-                while (++index < length) {
-                    var value = arguments[index];
-                    if (isArray(value) || isArguments(value)) {
-                        break;
-                    }
-                }
-                return baseDifference(value, baseFlatten(arguments, false, true, ++index));
-            }
-            module.exports = difference;
-        },
-        function (module, exports) {
-            var isArray = _require(62);
+            var isArray = _require(38);
             function zipObject(props, values) {
                 var index = -1, length = props ? props.length : 0, result = {};
                 if (length && !values && !isArray(props[0])) {
@@ -1903,23 +1245,6 @@
             module.exports = zipObject;
         },
         function (module, exports) {
-            var cachePush = _require(46), isNative = _require(63);
-            var Set = isNative(Set = global.Set) && Set;
-            var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-            function SetCache(values) {
-                var length = values ? values.length : 0;
-                this.data = {
-                    'hash': nativeCreate(null),
-                    'set': new Set()
-                };
-                while (length--) {
-                    this.push(values[length]);
-                }
-            }
-            SetCache.prototype.push = cachePush;
-            module.exports = SetCache;
-        },
-        function (module, exports) {
             function arrayCopy(source, array) {
                 var index = -1, length = source.length;
                 array || (array = Array(length));
@@ -1931,25 +1256,13 @@
             module.exports = arrayCopy;
         },
         function (module, exports) {
-            function arrayEach(array, iteratee) {
-                var index = -1, length = array.length;
-                while (++index < length) {
-                    if (iteratee(array[index], index, array) === false) {
-                        break;
-                    }
-                }
-                return array;
-            }
-            module.exports = arrayEach;
-        },
-        function (module, exports) {
             function assignDefaults(objectValue, sourceValue) {
                 return typeof objectValue == 'undefined' ? sourceValue : objectValue;
             }
             module.exports = assignDefaults;
         },
         function (module, exports) {
-            var baseCopy = _require(36), keys = _require(68);
+            var baseCopy = _require(28), keys = _require(44);
             function baseAssign(object, source, customizer) {
                 var props = keys(source);
                 if (!customizer) {
@@ -1967,60 +1280,6 @@
             module.exports = baseAssign;
         },
         function (module, exports) {
-            var arrayCopy = _require(31), arrayEach = _require(32), baseCopy = _require(36), baseForOwn = _require(40), initCloneArray = _require(50), initCloneByTag = _require(51), initCloneObject = _require(52), isArray = _require(62), isObject = _require(64), keys = _require(68);
-            var argsTag = '[object Arguments]', arrayTag = '[object Array]', boolTag = '[object Boolean]', dateTag = '[object Date]', errorTag = '[object Error]', funcTag = '[object Function]', mapTag = '[object Map]', numberTag = '[object Number]', objectTag = '[object Object]', regexpTag = '[object RegExp]', setTag = '[object Set]', stringTag = '[object String]', weakMapTag = '[object WeakMap]';
-            var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
-            var cloneableTags = {};
-            cloneableTags[argsTag] = cloneableTags[arrayTag] = cloneableTags[arrayBufferTag] = cloneableTags[boolTag] = cloneableTags[dateTag] = cloneableTags[float32Tag] = cloneableTags[float64Tag] = cloneableTags[int8Tag] = cloneableTags[int16Tag] = cloneableTags[int32Tag] = cloneableTags[numberTag] = cloneableTags[objectTag] = cloneableTags[regexpTag] = cloneableTags[stringTag] = cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] = cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
-            cloneableTags[errorTag] = cloneableTags[funcTag] = cloneableTags[mapTag] = cloneableTags[setTag] = cloneableTags[weakMapTag] = false;
-            var objectProto = Object.prototype;
-            var objToString = objectProto.toString;
-            function baseClone(value, isDeep, customizer, key, object, stackA, stackB) {
-                var result;
-                if (customizer) {
-                    result = object ? customizer(value, key, object) : customizer(value);
-                }
-                if (typeof result != 'undefined') {
-                    return result;
-                }
-                if (!isObject(value)) {
-                    return value;
-                }
-                var isArr = isArray(value);
-                if (isArr) {
-                    result = initCloneArray(value);
-                    if (!isDeep) {
-                        return arrayCopy(value, result);
-                    }
-                } else {
-                    var tag = objToString.call(value), isFunc = tag == funcTag;
-                    if (tag == objectTag || tag == argsTag || isFunc && !object) {
-                        result = initCloneObject(isFunc ? {} : value);
-                        if (!isDeep) {
-                            return baseCopy(value, result, keys(value));
-                        }
-                    } else {
-                        return cloneableTags[tag] ? initCloneByTag(value, tag, isDeep) : object ? value : {};
-                    }
-                }
-                stackA || (stackA = []);
-                stackB || (stackB = []);
-                var length = stackA.length;
-                while (length--) {
-                    if (stackA[length] == value) {
-                        return stackB[length];
-                    }
-                }
-                stackA.push(value);
-                stackB.push(result);
-                (isArr ? arrayEach : baseForOwn)(value, function (subValue, key) {
-                    result[key] = baseClone(subValue, isDeep, customizer, key, value, stackA, stackB);
-                });
-                return result;
-            }
-            module.exports = baseClone;
-        },
-        function (module, exports) {
             function baseCopy(source, object, props) {
                 if (!props) {
                     props = object;
@@ -2036,98 +1295,6 @@
             module.exports = baseCopy;
         },
         function (module, exports) {
-            var baseIndexOf = _require(41), cacheIndexOf = _require(45), createCache = _require(48);
-            function baseDifference(array, values) {
-                var length = array ? array.length : 0, result = [];
-                if (!length) {
-                    return result;
-                }
-                var index = -1, indexOf = baseIndexOf, isCommon = true, cache = isCommon && values.length >= 200 && createCache(values), valuesLength = values.length;
-                if (cache) {
-                    indexOf = cacheIndexOf;
-                    isCommon = false;
-                    values = cache;
-                }
-                outer:
-                    while (++index < length) {
-                        var value = array[index];
-                        if (isCommon && value === value) {
-                            var valuesIndex = valuesLength;
-                            while (valuesIndex--) {
-                                if (values[valuesIndex] === value) {
-                                    continue outer;
-                                }
-                            }
-                            result.push(value);
-                        } else if (indexOf(values, value) < 0) {
-                            result.push(value);
-                        }
-                    }
-                return result;
-            }
-            module.exports = baseDifference;
-        },
-        function (module, exports) {
-            var isArguments = _require(61), isArray = _require(62), isLength = _require(55), isObjectLike = _require(56);
-            function baseFlatten(array, isDeep, isStrict, fromIndex) {
-                var index = (fromIndex || 0) - 1, length = array.length, resIndex = -1, result = [];
-                while (++index < length) {
-                    var value = array[index];
-                    if (isObjectLike(value) && isLength(value.length) && (isArray(value) || isArguments(value))) {
-                        if (isDeep) {
-                            value = baseFlatten(value, isDeep, isStrict);
-                        }
-                        var valIndex = -1, valLength = value.length;
-                        result.length += valLength;
-                        while (++valIndex < valLength) {
-                            result[++resIndex] = value[valIndex];
-                        }
-                    } else if (!isStrict) {
-                        result[++resIndex] = value;
-                    }
-                }
-                return result;
-            }
-            module.exports = baseFlatten;
-        },
-        function (module, exports) {
-            var toObject = _require(58);
-            function baseFor(object, iteratee, keysFunc) {
-                var index = -1, iterable = toObject(object), props = keysFunc(object), length = props.length;
-                while (++index < length) {
-                    var key = props[index];
-                    if (iteratee(iterable[key], key, iterable) === false) {
-                        break;
-                    }
-                }
-                return object;
-            }
-            module.exports = baseFor;
-        },
-        function (module, exports) {
-            var baseFor = _require(39), keys = _require(68);
-            function baseForOwn(object, iteratee) {
-                return baseFor(object, iteratee, keys);
-            }
-            module.exports = baseForOwn;
-        },
-        function (module, exports) {
-            var indexOfNaN = _require(49);
-            function baseIndexOf(array, value, fromIndex) {
-                if (value !== value) {
-                    return indexOfNaN(array, fromIndex);
-                }
-                var index = (fromIndex || 0) - 1, length = array.length;
-                while (++index < length) {
-                    if (array[index] === value) {
-                        return index;
-                    }
-                }
-                return -1;
-            }
-            module.exports = baseIndexOf;
-        },
-        function (module, exports) {
             function baseToString(value) {
                 if (typeof value == 'string') {
                     return value;
@@ -2137,7 +1304,7 @@
             module.exports = baseToString;
         },
         function (module, exports) {
-            var identity = _require(73);
+            var identity = _require(48);
             function bindCallback(func, thisArg, argCount) {
                 if (typeof func != 'function') {
                     return identity;
@@ -2170,57 +1337,7 @@
             module.exports = bindCallback;
         },
         function (module, exports) {
-            var constant = _require(72), isNative = _require(63);
-            var ArrayBuffer = isNative(ArrayBuffer = global.ArrayBuffer) && ArrayBuffer, bufferSlice = isNative(bufferSlice = ArrayBuffer && new ArrayBuffer(0).slice) && bufferSlice, floor = Math.floor, Uint8Array = isNative(Uint8Array = global.Uint8Array) && Uint8Array;
-            var Float64Array = function () {
-                    try {
-                        var func = isNative(func = global.Float64Array) && func, result = new func(new ArrayBuffer(10), 0, 1) && func;
-                    } catch (e) {
-                    }
-                    return result;
-                }();
-            var FLOAT64_BYTES_PER_ELEMENT = Float64Array ? Float64Array.BYTES_PER_ELEMENT : 0;
-            function bufferClone(buffer) {
-                return bufferSlice.call(buffer, 0);
-            }
-            if (!bufferSlice) {
-                bufferClone = !(ArrayBuffer && Uint8Array) ? constant(null) : function (buffer) {
-                    var byteLength = buffer.byteLength, floatLength = Float64Array ? floor(byteLength / FLOAT64_BYTES_PER_ELEMENT) : 0, offset = floatLength * FLOAT64_BYTES_PER_ELEMENT, result = new ArrayBuffer(byteLength);
-                    if (floatLength) {
-                        var view = new Float64Array(result, 0, floatLength);
-                        view.set(new Float64Array(buffer, 0, floatLength));
-                    }
-                    if (byteLength != offset) {
-                        view = new Uint8Array(result, offset);
-                        view.set(new Uint8Array(buffer, offset));
-                    }
-                    return result;
-                };
-            }
-            module.exports = bufferClone;
-        },
-        function (module, exports) {
-            var isObject = _require(64);
-            function cacheIndexOf(cache, value) {
-                var data = cache.data, result = typeof value == 'string' || isObject(value) ? data.set.has(value) : data.hash[value];
-                return result ? 0 : -1;
-            }
-            module.exports = cacheIndexOf;
-        },
-        function (module, exports) {
-            var isObject = _require(64);
-            function cachePush(value) {
-                var data = this.data;
-                if (typeof value == 'string' || isObject(value)) {
-                    data.set.add(value);
-                } else {
-                    data.hash[value] = true;
-                }
-            }
-            module.exports = cachePush;
-        },
-        function (module, exports) {
-            var bindCallback = _require(43), isIterateeCall = _require(54);
+            var bindCallback = _require(30), isIterateeCall = _require(33);
             function createAssigner(assigner) {
                 return function () {
                     var length = arguments.length, object = arguments[0];
@@ -2248,86 +1365,6 @@
             module.exports = createAssigner;
         },
         function (module, exports) {
-            var SetCache = _require(30), constant = _require(72), isNative = _require(63);
-            var Set = isNative(Set = global.Set) && Set;
-            var nativeCreate = isNative(nativeCreate = Object.create) && nativeCreate;
-            var createCache = !(nativeCreate && Set) ? constant(null) : function (values) {
-                    return new SetCache(values);
-                };
-            module.exports = createCache;
-        },
-        function (module, exports) {
-            function indexOfNaN(array, fromIndex, fromRight) {
-                var length = array.length, index = fromRight ? fromIndex || length : (fromIndex || 0) - 1;
-                while (fromRight ? index-- : ++index < length) {
-                    var other = array[index];
-                    if (other !== other) {
-                        return index;
-                    }
-                }
-                return -1;
-            }
-            module.exports = indexOfNaN;
-        },
-        function (module, exports) {
-            var objectProto = Object.prototype;
-            var hasOwnProperty = objectProto.hasOwnProperty;
-            function initCloneArray(array) {
-                var length = array.length, result = new array.constructor(length);
-                if (length && typeof array[0] == 'string' && hasOwnProperty.call(array, 'index')) {
-                    result.index = array.index;
-                    result.input = array.input;
-                }
-                return result;
-            }
-            module.exports = initCloneArray;
-        },
-        function (module, exports) {
-            var bufferClone = _require(44);
-            var boolTag = '[object Boolean]', dateTag = '[object Date]', numberTag = '[object Number]', regexpTag = '[object RegExp]', stringTag = '[object String]';
-            var arrayBufferTag = '[object ArrayBuffer]', float32Tag = '[object Float32Array]', float64Tag = '[object Float64Array]', int8Tag = '[object Int8Array]', int16Tag = '[object Int16Array]', int32Tag = '[object Int32Array]', uint8Tag = '[object Uint8Array]', uint8ClampedTag = '[object Uint8ClampedArray]', uint16Tag = '[object Uint16Array]', uint32Tag = '[object Uint32Array]';
-            var reFlags = /\w*$/;
-            function initCloneByTag(object, tag, isDeep) {
-                var Ctor = object.constructor;
-                switch (tag) {
-                case arrayBufferTag:
-                    return bufferClone(object);
-                case boolTag:
-                case dateTag:
-                    return new Ctor(+object);
-                case float32Tag:
-                case float64Tag:
-                case int8Tag:
-                case int16Tag:
-                case int32Tag:
-                case uint8Tag:
-                case uint8ClampedTag:
-                case uint16Tag:
-                case uint32Tag:
-                    var buffer = object.buffer;
-                    return new Ctor(isDeep ? bufferClone(buffer) : buffer, object.byteOffset, object.length);
-                case numberTag:
-                case stringTag:
-                    return new Ctor(object);
-                case regexpTag:
-                    var result = new Ctor(object.source, reFlags.exec(object));
-                    result.lastIndex = object.lastIndex;
-                }
-                return result;
-            }
-            module.exports = initCloneByTag;
-        },
-        function (module, exports) {
-            function initCloneObject(object) {
-                var Ctor = object.constructor;
-                if (!(typeof Ctor == 'function' && Ctor instanceof Ctor)) {
-                    Ctor = Object;
-                }
-                return new Ctor();
-            }
-            module.exports = initCloneObject;
-        },
-        function (module, exports) {
             var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
             function isIndex(value, length) {
                 value = +value;
@@ -2337,7 +1374,7 @@
             module.exports = isIndex;
         },
         function (module, exports) {
-            var isIndex = _require(53), isLength = _require(55), isObject = _require(64);
+            var isIndex = _require(32), isLength = _require(34), isObject = _require(40);
             function isIterateeCall(value, index, object) {
                 if (!isObject(object)) {
                     return false;
@@ -2367,7 +1404,7 @@
             module.exports = isObjectLike;
         },
         function (module, exports) {
-            var isArguments = _require(61), isArray = _require(62), isIndex = _require(53), isLength = _require(55), keysIn = _require(69), support = _require(71);
+            var isArguments = _require(37), isArray = _require(38), isIndex = _require(32), isLength = _require(34), keysIn = _require(45), support = _require(47);
             var objectProto = Object.prototype;
             var hasOwnProperty = objectProto.hasOwnProperty;
             function shimKeys(object) {
@@ -2385,37 +1422,7 @@
             module.exports = shimKeys;
         },
         function (module, exports) {
-            var isObject = _require(64);
-            function toObject(value) {
-                return isObject(value) ? value : Object(value);
-            }
-            module.exports = toObject;
-        },
-        function (module, exports) {
-            var baseClone = _require(35), bindCallback = _require(43), isIterateeCall = _require(54);
-            function clone(value, isDeep, customizer, thisArg) {
-                if (isDeep && typeof isDeep != 'boolean' && isIterateeCall(value, isDeep, customizer)) {
-                    isDeep = false;
-                } else if (typeof isDeep == 'function') {
-                    thisArg = customizer;
-                    customizer = isDeep;
-                    isDeep = false;
-                }
-                customizer = typeof customizer == 'function' && bindCallback(customizer, thisArg, 1);
-                return baseClone(value, isDeep, customizer);
-            }
-            module.exports = clone;
-        },
-        function (module, exports) {
-            var baseClone = _require(35), bindCallback = _require(43);
-            function cloneDeep(value, customizer, thisArg) {
-                customizer = typeof customizer == 'function' && bindCallback(customizer, thisArg, 1);
-                return baseClone(value, true, customizer);
-            }
-            module.exports = cloneDeep;
-        },
-        function (module, exports) {
-            var isLength = _require(55), isObjectLike = _require(56);
+            var isLength = _require(34), isObjectLike = _require(35);
             var argsTag = '[object Arguments]';
             var objectProto = Object.prototype;
             var objToString = objectProto.toString;
@@ -2426,7 +1433,7 @@
             module.exports = isArguments;
         },
         function (module, exports) {
-            var isLength = _require(55), isNative = _require(63), isObjectLike = _require(56);
+            var isLength = _require(34), isNative = _require(39), isObjectLike = _require(35);
             var arrayTag = '[object Array]';
             var objectProto = Object.prototype;
             var objToString = objectProto.toString;
@@ -2437,7 +1444,7 @@
             module.exports = isArray;
         },
         function (module, exports) {
-            var escapeRegExp = _require(70), isObjectLike = _require(56);
+            var escapeRegExp = _require(46), isObjectLike = _require(35);
             var funcTag = '[object Function]';
             var reHostCtor = /^\[object .+?Constructor\]$/;
             var objectProto = Object.prototype;
@@ -2463,12 +1470,12 @@
             module.exports = isObject;
         },
         function (module, exports) {
-            var baseAssign = _require(34), createAssigner = _require(47);
+            var baseAssign = _require(27), createAssigner = _require(31);
             var assign = createAssigner(baseAssign);
             module.exports = assign;
         },
         function (module, exports) {
-            var arrayCopy = _require(31), assign = _require(65), assignDefaults = _require(33);
+            var arrayCopy = _require(25), assign = _require(41), assignDefaults = _require(26);
             function defaults(object) {
                 if (object == null) {
                     return object;
@@ -2480,10 +1487,10 @@
             module.exports = defaults;
         },
         function (module, exports) {
-            module.exports = _require(65);
+            module.exports = _require(41);
         },
         function (module, exports) {
-            var isLength = _require(55), isNative = _require(63), isObject = _require(64), shimKeys = _require(57);
+            var isLength = _require(34), isNative = _require(39), isObject = _require(40), shimKeys = _require(36);
             var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
             var keys = !nativeKeys ? shimKeys : function (object) {
                     if (object) {
@@ -2497,7 +1504,7 @@
             module.exports = keys;
         },
         function (module, exports) {
-            var isArguments = _require(61), isArray = _require(62), isIndex = _require(53), isLength = _require(55), isObject = _require(64), support = _require(71);
+            var isArguments = _require(37), isArray = _require(38), isIndex = _require(32), isLength = _require(34), isObject = _require(40), support = _require(47);
             var objectProto = Object.prototype;
             var hasOwnProperty = objectProto.hasOwnProperty;
             function keysIn(object) {
@@ -2523,7 +1530,7 @@
             module.exports = keysIn;
         },
         function (module, exports) {
-            var baseToString = _require(42);
+            var baseToString = _require(29);
             var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g, reHasRegExpChars = RegExp(reRegExpChars.source);
             function escapeRegExp(string) {
                 string = baseToString(string);
@@ -2532,7 +1539,7 @@
             module.exports = escapeRegExp;
         },
         function (module, exports) {
-            var isNative = _require(63);
+            var isNative = _require(39);
             var reThis = /\bthis\b/;
             var objectProto = Object.prototype;
             var document = (document = global.window) && document.document;
@@ -2557,20 +1564,12 @@
             module.exports = support;
         },
         function (module, exports) {
-            function constant(value) {
-                return function () {
-                    return value;
-                };
-            }
-            module.exports = constant;
-        },
-        function (module, exports) {
             function identity(value) {
                 return value;
             }
             module.exports = identity;
         }
     ];
-    return _require(7);
+    return _require(5);
 }));
-//# sourceMappingURL=futoin-invoker.js.map
+//# sourceMappingURL=futoin-invoker-lite.js.map

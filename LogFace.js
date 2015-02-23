@@ -1,6 +1,6 @@
 'use strict';
 
-var _extend = require( 'lodash/object/extend' );
+var _clone = require( 'lodash/lang/clone' );
 var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
 var async_steps = require( 'futoin-asyncsteps' );
@@ -23,7 +23,6 @@ function( str )
  */
 function LogFace()
 {
-    _extend( this, LogFaceProto );
     NativeIface.apply( this, arguments );
 }
 
@@ -53,169 +52,170 @@ LogFace.register = function( as, ccm, endpoint, credentials, options )
  * LogFace prototype
  * @ignore
  */
-var LogFaceProto = {
-    /**
-     * Debug log level
-     * @const
-     * @alias LogFace.LVL_DEBUG
-     */
-    LVL_DEBUG : 'debug',
+var LogFaceProto = _clone( NativeIface.prototype );
+LogFace.prototype = LogFaceProto;
 
-    /**
-     * Info log level
-     * @const
-     * @alias LogFace.LVL_INFO
-     */
-    LVL_INFO : 'info',
+/**
+ * Debug log level
+ * @const
+ * @alias LogFace.LVL_DEBUG
+ */
+LogFaceProto.LVL_DEBUG = 'debug';
 
-    /**
-     * Warn log level
-     * @const
-     * @alias LogFace.LVL_WARN
-     */
-    LVL_WARN : 'warn',
+/**
+ * Info log level
+ * @const
+ * @alias LogFace.LVL_INFO
+ */
+LogFaceProto.LVL_INFO = 'info';
 
-    /**
-     * Error log level
-     * @const
-     * @alias LogFace.LVL_ERROR
-     */
-    LVL_ERROR : 'error',
+/**
+ * Warn log level
+ * @const
+ * @alias LogFace.LVL_WARN
+ */
+LogFaceProto.LVL_WARN = 'warn';
 
-    /**
-     * Security log level
-     * @const
-     * @alias LogFace.LVL_SECURITY
-     */
-    LVL_SECURITY : 'security',
+/**
+ * Error log level
+ * @const
+ * @alias LogFace.LVL_ERROR
+ */
+LogFaceProto.LVL_ERROR = 'error';
 
-    /**
-     * Generate 'ts' field log messages
-     * @private
-     */
-    _ts : function()
-    {
-        var d = new Date();
-        return d.getUTCFullYear().toString() +
-            ( '0' + ( d.getUTCMonth() + 1 ).toString() ).slice( -2 ) +
-            ( '0' + d.getUTCDate().toString() ).slice( -2 ) +
-            ( '0' + d.getUTCHours().toString() ).slice( -2 ) +
-            ( '0' + d.getUTCMinutes().toString() ).slice( -2 ) +
-            ( '0' + d.getUTCSeconds().toString() ).slice( -2 ) +
-            '.' + d.getUTCMilliseconds().toString();
-    },
+/**
+ * Security log level
+ * @const
+ * @alias LogFace.LVL_SECURITY
+ */
+LogFaceProto.LVL_SECURITY = 'security';
 
-    /**
-     * Log message
-     * @param {string} lvl - debug|info|warn|error|security
-     * @param {string} txt - message to log
-     * @alias LogFace#msg
-     */
-    msg : function( lvl, txt )
-    {
-        var _this = this;
+/**
+ * Generate 'ts' field log messages
+ * @private
+ */
+LogFaceProto._ts = function()
+{
+    var d = new Date();
+    return d.getUTCFullYear().toString() +
+        ( '0' + ( d.getUTCMonth() + 1 ).toString() ).slice( -2 ) +
+        ( '0' + d.getUTCDate().toString() ).slice( -2 ) +
+        ( '0' + d.getUTCHours().toString() ).slice( -2 ) +
+        ( '0' + d.getUTCMinutes().toString() ).slice( -2 ) +
+        ( '0' + d.getUTCSeconds().toString() ).slice( -2 ) +
+        '.' + d.getUTCMilliseconds().toString();
+};
 
-        async_steps()
-        .add(
-            function( as )
-            {
-                _this.call( as, 'msg', {
-                    lvl : lvl,
-                    txt : txt,
-                    ts : _this._ts()
-                } );
-            },
-            function( as, err )
-            {
-                console.log( 'LOGFAIL:' + lvl + ':' + txt );
-                console.log( 'ERROR:' + err + ':' + as.state.error_info );
-                console.log( as.state.last_exception.stack );
-            }
-        )
-        .execute();
-    },
+/**
+ * Log message
+ * @param {string} lvl - debug|info|warn|error|security
+ * @param {string} txt - message to log
+ * @alias LogFace#msg
+ */
+LogFaceProto.msg = function( lvl, txt )
+{
+    var _this = this;
 
-    /**
-     * Log message
-     * @param {string} lvl - debug|info|warn|error|security
-     * @param {string} txt - message to log
-     * @param {string} data - raw data
-     * @alias LogFace#msg
-     */
-    hexdump : function( lvl, txt, data )
-    {
-        var _this = this;
+    async_steps()
+    .add(
+        function( as )
+        {
+            _this.call( as, 'msg', {
+                lvl : lvl,
+                txt : txt,
+                ts : _this._ts()
+            } );
+        },
+        function( as, err )
+        {
+            console.log( 'LOGFAIL:' + lvl + ':' + txt );
+            console.log( 'ERROR:' + err + ':' + as.state.error_info );
+            console.log( as.state.last_exception.stack );
+        }
+    )
+    .execute();
+};
 
-        async_steps()
-        .add(
-            function( as )
-            {
-                _this.call( as, 'hexdump', {
-                    lvl : lvl,
-                    txt : txt,
-                    ts : _this._ts(),
-                    data : btoa( data )
-                } );
-            },
-            function( as, err )
-            {
-                console.log( 'LOGFAIL:' + lvl + ':' + txt );
-                console.log( 'ERROR:' + err + ':' + as.state.error_info );
-                console.log( as.state.last_exception.stack );
-            }
-        )
-        .execute();
-    },
+/**
+ * Log message
+ * @param {string} lvl - debug|info|warn|error|security
+ * @param {string} txt - message to log
+ * @param {string} data - raw data
+ * @alias LogFace#msg
+ */
+LogFaceProto.hexdump = function( lvl, txt, data )
+{
+    var _this = this;
 
-    /**
-     * Log message in debug level
-     * @param {string} txt - message to log
-     * @alias LogFace#debug
-     */
-    debug : function( txt )
-    {
-        this.msg( 'debug', txt );
-    },
+    async_steps()
+    .add(
+        function( as )
+        {
+            _this.call( as, 'hexdump', {
+                lvl : lvl,
+                txt : txt,
+                ts : _this._ts(),
+                data : btoa( data )
+            } );
+        },
+        function( as, err )
+        {
+            console.log( 'LOGFAIL:' + lvl + ':' + txt );
+            console.log( 'ERROR:' + err + ':' + as.state.error_info );
+            console.log( as.state.last_exception.stack );
+        }
+    )
+    .execute();
+};
 
-    /**
-     * Log message in info level
-     * @param {string} txt - message to log
-     * @alias LogFace#info
-     */
-    info : function( txt )
-    {
-        this.msg( 'info', txt );
-    },
+/**
+ * Log message in debug level
+ * @param {string} txt - message to log
+ * @alias LogFace#debug
+ */
+LogFaceProto.debug = function( txt )
+{
+    this.msg( 'debug', txt );
+};
 
-    /**
-     * Log message in warn level
-     * @param {string} txt - message to log
-     * @alias LogFace#warn
-     */
-    warn : function( txt )
-    {
-        this.msg( 'warn', txt );
-    },
+/**
+ * Log message in info level
+ * @param {string} txt - message to log
+ * @alias LogFace#info
+ */
+LogFaceProto.info = function( txt )
+{
+    this.msg( 'info', txt );
+};
 
-    /**
-     * Log message in error level
-     * @param {string} txt - message to log
-     * @alias LogFace#error
-     */
-    error : function( txt )
-    {
-        this.msg( 'error', txt );
-    },
+/**
+ * Log message in warn level
+ * @param {string} txt - message to log
+ * @alias LogFace#warn
+ */
+LogFaceProto.warn = function( txt )
+{
+    this.msg( 'warn', txt );
+};
 
-    /**
-     * Log message in security level
-     * @param {string} txt - message to log
-     * @alias LogFace#security
-     */
-    security : function( txt )
-    {
-        this.msg( 'security', txt );
-    },
+/**
+ * Log message in error level
+ * @param {string} txt - message to log
+ * @alias LogFace#error
+ */
+LogFaceProto.error = function( txt )
+{
+    this.msg( 'error', txt );
+};
+
+/**
+ * Log message in security level
+ * @param {string} txt - message to log
+ * @alias LogFace#security
+ */
+LogFaceProto.security = function( txt )
+{
+    this.msg( 'security', txt );
 };
 
 module.exports = LogFace;

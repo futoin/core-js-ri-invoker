@@ -22,6 +22,21 @@ module.exports = function (grunt) {
                     }
                 }
             },
+            distlite: {
+                files: {
+                    'dist/<%= pkg.name %>-lite.js' : 'lib/browser_lite.js'
+                },
+                options: {
+                    map : true,
+                    exports: 'FutoInInvoker',
+                    external : {
+                        'futoin-asyncsteps' : {
+                            'global' : '$as',
+                            'amd' : 'futoin-asyncsteps'
+                        }
+                    }
+                }
+            },
             unittest: {
                 files: {
                     'dist/unittest.js' : 'test/unittest.js',
@@ -43,7 +58,8 @@ module.exports = function (grunt) {
         uglify: {
             dist: {
                 files: {
-                    'dist/futoin-invoker.min.js' : [ 'dist/futoin-invoker.js' ]
+                    'dist/futoin-invoker.min.js' : [ 'dist/futoin-invoker.js' ],
+                    'dist/futoin-invoker-lite.min.js' : [ 'dist/futoin-invoker-lite.js' ]
                 }
             }
         },

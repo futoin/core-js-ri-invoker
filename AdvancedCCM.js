@@ -4,6 +4,7 @@
  * @module futoin-invoker
  */
 
+var _clone = require( 'lodash/lang/clone' );
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
 var _extend = require( 'lodash/object/extend' );
@@ -37,10 +38,8 @@ _extend( AdvancedCCM, AdvancedCCMPublic );
  * AdvancedCCM proto
  * @ignore
  */
-var AdvancedCCMProto = {};
+var AdvancedCCMProto = _clone( SimpleCCM.prototype );
 AdvancedCCM.prototype = AdvancedCCMProto;
-
-_extend( AdvancedCCMProto, SimpleCCM.prototype );
 
 /**
  * Try to load internal registration info from cache

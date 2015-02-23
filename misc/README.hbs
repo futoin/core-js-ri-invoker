@@ -89,6 +89,16 @@ Command line:
 $ npm install futoin-invoker --save
 ```
 
+All public classes can be accessed through module:
+```javascript
+var AdvancedCCM = require('futoin-invoker').AdvancedCCM;
+```
+
+or included modular way, e.g.:
+```javascript
+var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
+```
+
 # Installation for Browser
 
 ```sh
@@ -96,7 +106,7 @@ $ bower install futoin-invoker --save
 ```
 
 Please note that browser build is available under in dist/ folder in sources generated
-with [pure-sjc](https://github.com/RReverser/pure-cjs). It depends on
+with [pure-sjc](https://github.com/RReverser/pure-cjs). It include modular parts of
 [lodash](https://www.npmjs.com/package/lodash).
 
 *Note: there are the following globals available*:
