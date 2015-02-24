@@ -922,8 +922,15 @@
             var FutoInError = common.FutoInError;
             var SimpleCCMImpl = _require(6);
             var SpecTools = _require(4);
+            var _defaults = _require(66);
+            var AdvancedCCMOptions = {
+                    specDirs: [],
+                    hmacKey: null,
+                    hmacAlgo: 'MD5'
+                };
             function AdvancedCCMImpl(options) {
                 options = options || {};
+                _defaults(options, AdvancedCCMOptions);
                 var spec_dirs = options.specDirs || [];
                 if (!(spec_dirs instanceof Array)) {
                     spec_dirs = [spec_dirs];
@@ -1071,20 +1078,21 @@
             } else {
                 comms_impl = _require(8);
             }
-            var defopts = {
+            var SimpleCCMOptions = {
                     callTimeoutMS: 30000,
                     prodMode: false,
                     commConfigCallback: null,
-                    retryCount: 1,
                     messageSniffer: function () {
                     },
                     disconnectSniffer: function () {
                     },
-                    hmacAlgo: 'MD5'
+                    executor: null,
+                    targetOrigin: null,
+                    retryCount: 1
                 };
             function SimpleCCMImpl(options) {
                 options = options || {};
-                _defaults(options, defopts);
+                _defaults(options, SimpleCCMOptions);
                 this.options = options;
                 this.comms = {};
             }
@@ -1523,17 +1531,6 @@
             exports.AsyncSteps = async_steps;
             exports.FutoInError = async_steps.FutoInError;
             exports.Options = {
-                OPT_CALL_TIMEOUT_MS: 'callTimeoutMS',
-                OPT_PROD_MODE: 'prodMode',
-                OPT_COMM_CONFIG_CB: 'commConfigCallback',
-                OPT_MSG_SNIFFER: 'messageSniffer',
-                OPT_DISCONNECT_SNIFFER: 'disconnectSniffer',
-                OPT_SPEC_DIRS: 'specDirs',
-                OPT_EXECUTOR: 'executor',
-                OPT_TARGET_ORIGIN: 'targetOrigin',
-                OPT_RETRY_COUNT: 'retryCount',
-                OPT_HMAC_KEY: 'hmacKey',
-                OPT_HMAC_ALGO: 'hmacAlgo',
                 SAFE_PAYLOAD_LIMIT: 65536,
                 SVC_RESOLVER: '#resolver',
                 SVC_AUTH: '#auth',

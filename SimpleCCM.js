@@ -1,9 +1,5 @@
 "use strict";
 
-/**
- * @module futoin-invoker
- */
-
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
 var NativeIface = require( './NativeIface' );
@@ -25,7 +21,8 @@ var SimpleCCMPublic = common.Options;
  * @link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html
  * @alias SimpleCCM
  * @class
- * @param {object=} options - map of options (see OPT_* consts)
+ * @param {object=} options - map of options
+ * @see SimpleCCMOptions
  */
 function SimpleCCM( options )
 {
@@ -72,6 +69,7 @@ SimpleCCMProto._native_iface_builder = function( ccmimpl, info )
  * NOTE: some more reserved words and/or patterns can appear in the future
  * @param {object=} options - fine tune global CCM options per endpoint
  * @alias SimpleCCM#register
+ * @fires SimpleCCM#event:register
  */
 SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, options )
 {
@@ -304,6 +302,7 @@ SimpleCCMProto.iface = function( name )
  * Unregister previously registered interface (should not be used, unless really needed)
  * @param {string} name - see register()
  * @alias SimpleCCM#unRegister
+ * @fires SimpleCCM#event:unregister
  */
 SimpleCCMProto.unRegister = function( name )
 {
@@ -415,6 +414,7 @@ SimpleCCMProto.assertIface = function( name, ifacever )
  * @param {string} name - unique identifier in scope of CCM instance
  * @param {string} alias - alternative name for registered interface
  * @alias SimpleCCM#alias
+ * @fires SimpleCCM#event:register
  */
 SimpleCCMProto.alias = function( name, alias )
 {
@@ -443,6 +443,7 @@ SimpleCCMProto.alias = function( name, alias )
 /**
  * Shutdown CCM (close all active comms)
  * @alias SimpleCCM#close
+ * @fires SimpleCCM#event:close
  */
 SimpleCCMProto.close = function()
 {
@@ -466,3 +467,20 @@ SimpleCCMProto.close = function()
 };
 
 module.exports = SimpleCCM;
+
+/**
+ * CCM regiser event. Fired on new interface registration.
+ * ( name, ifacever, info )
+ * @event SimpleCCM#event:register
+ */
+
+/**
+ * CCM regiser event. Fired on interface unregistration.
+ * ( name, info )
+ * @event SimpleCCM#event:unregister
+ */
+
+/**
+ * CCM close event. Fired on CCM shutdown.
+ * @event SimpleCCM#event:close
+ */

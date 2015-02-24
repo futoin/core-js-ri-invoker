@@ -238,19 +238,35 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 **Modules**
 
 * [futoin-invoker](#module_futoin-invoker)
-* [futoin-invoker](#module_futoin-invoker)
-* [futoin-invoker](#module_futoin-invoker)
 
 **Classes**
 
 * [class: AdvancedCCM](#AdvancedCCM)
   * [new AdvancedCCM()](#new_AdvancedCCM)
-  * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
+  * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
+  * [advancedCCM.iface(name)](#AdvancedCCM#iface)
+  * [advancedCCM.unRegister(name)](#AdvancedCCM#unRegister)
+  * [advancedCCM.defense()](#AdvancedCCM#defense)
+  * [advancedCCM.log()](#AdvancedCCM#log)
+  * [advancedCCM.cache()](#AdvancedCCM#cache)
+  * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
+  * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
+  * [advancedCCM.close()](#AdvancedCCM#close)
+  * [event: "event:register"](#AdvancedCCM#event_register)
+  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
+  * [event: "event:close"](#AdvancedCCM#event_close)
 * [class: CacheFace](#CacheFace)
   * [new CacheFace()](#new_CacheFace)
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
   * [CacheFace.register()](#CacheFace.register)
   * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace#getOrSet)
+  * [cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])](#CacheFace#call)
+  * [cacheFace.ifaceInfo()](#CacheFace#ifaceInfo)
+  * [cacheFace.bindDerivedKey()](#CacheFace#bindDerivedKey)
+  * [event: "event:connect"](#CacheFace#event_connect)
+  * [event: "event:disconnect"](#CacheFace#event_disconnect)
+  * [event: "event:close"](#CacheFace#event_close)
+  * [event: "event:commError"](#CacheFace#event_commError)
 * [class: InterfaceInfo](#InterfaceInfo)
   * [new InterfaceInfo()](#new_InterfaceInfo)
   * [interfaceInfo.name()](#InterfaceInfo#name)
@@ -263,22 +279,33 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [LogFace.ifacespec](#LogFace.ifacespec)
   * [LogFace.register()](#LogFace.register)
   * [logFace.msg(lvl, txt)](#LogFace#msg)
-  * [logFace.msg(lvl, txt, data)](#LogFace#msg)
+  * [logFace.hexdump(lvl, txt, data)](#LogFace#hexdump)
   * [logFace.debug(txt)](#LogFace#debug)
   * [logFace.info(txt)](#LogFace#info)
   * [logFace.warn(txt)](#LogFace#warn)
   * [logFace.error(txt)](#LogFace#error)
   * [logFace.security(txt)](#LogFace#security)
+  * [logFace.call(as, name, params, upload_data, [download_stream], [timeout])](#LogFace#call)
+  * [logFace.ifaceInfo()](#LogFace#ifaceInfo)
+  * [logFace.bindDerivedKey()](#LogFace#bindDerivedKey)
   * [const: LogFace.LVL_DEBUG](#LogFace.LVL_DEBUG)
   * [const: LogFace.LVL_INFO](#LogFace.LVL_INFO)
   * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
   * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
   * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
+  * [event: "event:connect"](#LogFace#event_connect)
+  * [event: "event:disconnect"](#LogFace#event_disconnect)
+  * [event: "event:close"](#LogFace#event_close)
+  * [event: "event:commError"](#LogFace#event_commError)
 * [class: NativeIface](#NativeIface)
   * [new NativeIface()](#new_NativeIface)
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
-  * [nativeIface.call()](#NativeIface#call)
+  * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
+  * [event: "event:connect"](#NativeIface#event_connect)
+  * [event: "event:disconnect"](#NativeIface#event_disconnect)
+  * [event: "event:close"](#NativeIface#event_close)
+  * [event: "event:commError"](#NativeIface#event_commError)
 * [class: SimpleCCM](#SimpleCCM)
   * [new SimpleCCM([options])](#new_SimpleCCM)
   * [simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM#register)
@@ -290,14 +317,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
   * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
   * [simpleCCM.close()](#SimpleCCM#close)
-  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
-  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
-  * [const: SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
-  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
-  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
-  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
-  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
-  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -305,6 +324,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+  * [event: "event:register"](#SimpleCCM#event_register)
+  * [event: "event:unregister"](#SimpleCCM#event_unregister)
+  * [event: "event:close"](#SimpleCCM#event_close)
 * [class: SpecTools](#SpecTools)
   * [new SpecTools()](#new_SpecTools)
   * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
@@ -315,6 +337,21 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [SpecTools.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
   * [SpecTools.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC)
   * [const: SpecTools.standard_errors](#SpecTools.standard_errors)
+* [class: AdvancedCCMOptions](#AdvancedCCMOptions)
+  * [new AdvancedCCMOptions()](#new_AdvancedCCMOptions)
+  * [AdvancedCCMOptions.specDirs](#AdvancedCCMOptions.specDirs)
+  * [AdvancedCCMOptions.hmacKey](#AdvancedCCMOptions.hmacKey)
+  * [AdvancedCCMOptions.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)
+* [class: SimpleCCMOptions](#SimpleCCMOptions)
+  * [new SimpleCCMOptions()](#new_SimpleCCMOptions)
+  * [SimpleCCMOptions.callTimeoutMS](#SimpleCCMOptions.callTimeoutMS)
+  * [SimpleCCMOptions.prodMode](#SimpleCCMOptions.prodMode)
+  * [SimpleCCMOptions.commConfigCallback](#SimpleCCMOptions.commConfigCallback)
+  * [SimpleCCMOptions.executor](#SimpleCCMOptions.executor)
+  * [SimpleCCMOptions.targetOrigin](#SimpleCCMOptions.targetOrigin)
+  * [SimpleCCMOptions.retryCount](#SimpleCCMOptions.retryCount)
+  * [SimpleCCMOptions.messageSniffer()](#SimpleCCMOptions.messageSniffer)
+  * [SimpleCCMOptions.disconnectSniffer()](#SimpleCCMOptions.disconnectSniffer)
 
 **Members**
 
@@ -328,14 +365,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
   * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
   * [simpleCCM.close()](#SimpleCCM#close)
-  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
-  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
-  * [const: SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
-  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
-  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
-  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
-  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
-  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -343,8 +372,22 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+  * [event: "event:register"](#SimpleCCM#event_register)
+  * [event: "event:unregister"](#SimpleCCM#event_unregister)
+  * [event: "event:close"](#SimpleCCM#event_close)
 * [AdvancedCCM](#AdvancedCCM)
-  * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
+  * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
+  * [advancedCCM.iface(name)](#AdvancedCCM#iface)
+  * [advancedCCM.unRegister(name)](#AdvancedCCM#unRegister)
+  * [advancedCCM.defense()](#AdvancedCCM#defense)
+  * [advancedCCM.log()](#AdvancedCCM#log)
+  * [advancedCCM.cache()](#AdvancedCCM#cache)
+  * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
+  * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
+  * [advancedCCM.close()](#AdvancedCCM#close)
+  * [event: "event:register"](#AdvancedCCM#event_register)
+  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
+  * [event: "event:close"](#AdvancedCCM#event_close)
 * [Invoker](#Invoker)
 * [FutoInInvoker](#FutoInInvoker)
 * [SimpleCCM](#SimpleCCM)
@@ -357,14 +400,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
   * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
   * [simpleCCM.close()](#SimpleCCM#close)
-  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
-  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
-  * [const: SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
-  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
-  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
-  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
-  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
-  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -372,31 +407,143 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+  * [event: "event:register"](#SimpleCCM#event_register)
+  * [event: "event:unregister"](#SimpleCCM#event_unregister)
+  * [event: "event:close"](#SimpleCCM#event_close)
  
-<a name="module_futoin-invoker"></a>
-#futoin-invoker
-<a name="module_futoin-invoker"></a>
-#futoin-invoker
 <a name="module_futoin-invoker"></a>
 #futoin-invoker
 <a name="AdvancedCCM"></a>
 #class: AdvancedCCM
+**Extends**: `SimpleCCM`  
 **Members**
 
 * [class: AdvancedCCM](#AdvancedCCM)
   * [new AdvancedCCM()](#new_AdvancedCCM)
-  * [const: AdvancedCCM.OPT_SPEC_DIRS](#AdvancedCCM.OPT_SPEC_DIRS)
+  * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
+  * [advancedCCM.iface(name)](#AdvancedCCM#iface)
+  * [advancedCCM.unRegister(name)](#AdvancedCCM#unRegister)
+  * [advancedCCM.defense()](#AdvancedCCM#defense)
+  * [advancedCCM.log()](#AdvancedCCM#log)
+  * [advancedCCM.cache()](#AdvancedCCM#cache)
+  * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
+  * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
+  * [advancedCCM.close()](#AdvancedCCM#close)
+  * [event: "event:register"](#AdvancedCCM#event_register)
+  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
+  * [event: "event:close"](#AdvancedCCM#event_close)
 
 <a name="new_AdvancedCCM"></a>
 ##new AdvancedCCM()
 Advanced CCM - Reference Implementation
 
-<a name="AdvancedCCM.OPT_SPEC_DIRS"></a>
-##const: AdvancedCCM.OPT_SPEC_DIRS
-Search dirs for spec definition or spec instance directly
+**Extends**: `SimpleCCM`  
+<a name="AdvancedCCM#register"></a>
+##advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])
+Register standard MasterService end-point (adds steps to *as*)
+
+**Params**
+
+- as `AsyncSteps` - AsyncSteps instance as registration may be waiting for external resources  
+- name `string` - unique identifier in scope of CCM instance  
+- ifacever `string` - interface identifier and its version separated by colon  
+- endpoint `string` - URI
+     OR any other resource identifier of function( ccmimpl, info )
+         returning iface implementing peer, accepted by CCM implementation
+     OR instance of Executor  
+- \[credentials\] `string` - optional, authentication credentials:
+'master' - enable MasterService authentication logic (Advanced CCM only)
+'{user}:{clear-text-password}' - send as is in the 'sec' section
+NOTE: some more reserved words and/or patterns can appear in the future  
+- \[options\] `object` - fine tune global CCM options per endpoint  
+
+**Fires**
+
+- [event:register](#SimpleCCM#event_register)
+
+<a name="AdvancedCCM#iface"></a>
+##advancedCCM.iface(name)
+Get native interface wrapper for invocation of iface methods
+
+**Params**
+
+- name `string` - see register()  
+
+**Returns**: `NativeInterface` - - native interface  
+<a name="AdvancedCCM#unRegister"></a>
+##advancedCCM.unRegister(name)
+Unregister previously registered interface (should not be used, unless really needed)
+
+**Params**
+
+- name `string` - see register()  
+
+**Fires**
+
+- [event:unregister](#SimpleCCM#event_unregister)
+
+<a name="AdvancedCCM#defense"></a>
+##advancedCCM.defense()
+Shortcut to iface( "#defense" )
+
+<a name="AdvancedCCM#log"></a>
+##advancedCCM.log()
+Returns extended API interface as defined in FTN9 IF AuditLogService
+
+**Returns**: `object`  
+<a name="AdvancedCCM#cache"></a>
+##advancedCCM.cache()
+Returns extended API interface as defined in [FTN14 Cache][]
+
+**Returns**: `object`  
+<a name="AdvancedCCM#assertIface"></a>
+##advancedCCM.assertIface(name, ifacever)
+Assert that interface registered by name matches major version and minor is not less than required.
+This function must generate fatal error and forbid any further execution
+
+**Params**
+
+- name `string` - unique identifier in scope of CCM instance  
+- ifacever `string` - interface identifier and its version separated by colon  
+
+<a name="AdvancedCCM#alias"></a>
+##advancedCCM.alias(name, alias)
+Alias interface name with another name
+
+**Params**
+
+- name `string` - unique identifier in scope of CCM instance  
+- alias `string` - alternative name for registered interface  
+
+**Fires**
+
+- [event:register](#SimpleCCM#event_register)
+
+<a name="AdvancedCCM#close"></a>
+##advancedCCM.close()
+Shutdown CCM (close all active comms)
+
+**Fires**
+
+- [event:close](#SimpleCCM#event_close)
+
+<a name="AdvancedCCM#event_register"></a>
+##event: "event:register"
+CCM regiser event. Fired on new interface registration.
+( name, ifacever, info )
+
+<a name="AdvancedCCM#event_unregister"></a>
+##event: "event:unregister"
+CCM regiser event. Fired on interface unregistration.
+( name, info )
+
+<a name="AdvancedCCM#event_close"></a>
+##event: "event:close"
+CCM close event. Fired on CCM shutdown.
 
 <a name="CacheFace"></a>
 #class: CacheFace
+**Extends**: `NativeIface`  
 **Members**
 
 * [class: CacheFace](#CacheFace)
@@ -404,6 +551,13 @@ Search dirs for spec definition or spec instance directly
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
   * [CacheFace.register()](#CacheFace.register)
   * [cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace#getOrSet)
+  * [cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])](#CacheFace#call)
+  * [cacheFace.ifaceInfo()](#CacheFace#ifaceInfo)
+  * [cacheFace.bindDerivedKey()](#CacheFace#bindDerivedKey)
+  * [event: "event:connect"](#CacheFace#event_connect)
+  * [event: "event:disconnect"](#CacheFace#event_disconnect)
+  * [event: "event:close"](#CacheFace#event_close)
+  * [event: "event:commError"](#CacheFace#event_commError)
 
 <a name="new_CacheFace"></a>
 ##new CacheFace()
@@ -414,6 +568,7 @@ Register with CacheFace.register()
 NOTE: it is not directly available in Invoker module
 interface, include separately
 
+**Extends**: `NativeIface`  
 <a name="CacheFace.ifacespec"></a>
 ##CacheFace.ifacespec
 Embedded spec for FutoIn CacheFace
@@ -437,6 +592,46 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
      which is called to generated value on cache miss  
 - params `Array` - parameters to be passed to *callable*  
 - ttl_ms `integer` - time to live in ms to use, if value is set on cache miss  
+
+<a name="CacheFace#call"></a>
+##cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])
+Generic FutoIn function call interface
+Result is passed through AsyncSteps.success() as a map.
+
+**Params**
+
+- as `AsyncSteps` - AsyncSteps object  
+- name `string` - FutoIn iface function name  
+- params `object` - map of func parameters  
+- upload_data `string` | `stream.Readable` - raw upload data or input stram  
+- \[download_stream\] `stream.Writable` - output stream for raw download data  
+- \[timeout\] `int` - if provided, overrides the default. <=0 - disables timeout  
+
+<a name="CacheFace#ifaceInfo"></a>
+##cacheFace.ifaceInfo()
+Get interface info
+
+**Returns**: `object`  
+<a name="CacheFace#bindDerivedKey"></a>
+##cacheFace.bindDerivedKey()
+Results with DerivedKeyAccessor through as.success()
+
+<a name="CacheFace#event_connect"></a>
+##event: "event:connect"
+Fired when interface establishes connection.
+
+<a name="CacheFace#event_disconnect"></a>
+##event: "event:disconnect"
+Fired when interface connection is closed.
+
+<a name="CacheFace#event_close"></a>
+##event: "event:close"
+Interface close event. Fired on interface unregistration.
+
+<a name="CacheFace#event_commError"></a>
+##event: "event:commError"
+Interface communication error. Fired during call processing.
+( error_info, rawreq )
 
 <a name="InterfaceInfo"></a>
 #class: InterfaceInfo
@@ -481,6 +676,7 @@ Get list of interface constraints, may be null
 **Returns**: `object`  
 <a name="LogFace"></a>
 #class: LogFace
+**Extends**: `NativeIface`  
 **Members**
 
 * [class: LogFace](#LogFace)
@@ -488,17 +684,24 @@ Get list of interface constraints, may be null
   * [LogFace.ifacespec](#LogFace.ifacespec)
   * [LogFace.register()](#LogFace.register)
   * [logFace.msg(lvl, txt)](#LogFace#msg)
-  * [logFace.msg(lvl, txt, data)](#LogFace#msg)
+  * [logFace.hexdump(lvl, txt, data)](#LogFace#hexdump)
   * [logFace.debug(txt)](#LogFace#debug)
   * [logFace.info(txt)](#LogFace#info)
   * [logFace.warn(txt)](#LogFace#warn)
   * [logFace.error(txt)](#LogFace#error)
   * [logFace.security(txt)](#LogFace#security)
+  * [logFace.call(as, name, params, upload_data, [download_stream], [timeout])](#LogFace#call)
+  * [logFace.ifaceInfo()](#LogFace#ifaceInfo)
+  * [logFace.bindDerivedKey()](#LogFace#bindDerivedKey)
   * [const: LogFace.LVL_DEBUG](#LogFace.LVL_DEBUG)
   * [const: LogFace.LVL_INFO](#LogFace.LVL_INFO)
   * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
   * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
   * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
+  * [event: "event:connect"](#LogFace#event_connect)
+  * [event: "event:disconnect"](#LogFace#event_disconnect)
+  * [event: "event:close"](#LogFace#event_close)
+  * [event: "event:commError"](#LogFace#event_commError)
 
 <a name="new_LogFace"></a>
 ##new LogFace()
@@ -509,6 +712,7 @@ Register with LogFace.register().
 NOTE: it is not directly available Invoker module
 interface, include separately
 
+**Extends**: `NativeIface`  
 <a name="LogFace.ifacespec"></a>
 ##LogFace.ifacespec
 Embedded spec for FutoIn LogFace
@@ -526,8 +730,8 @@ Log message
 - lvl `string` - debug|info|warn|error|security  
 - txt `string` - message to log  
 
-<a name="LogFace#msg"></a>
-##logFace.msg(lvl, txt, data)
+<a name="LogFace#hexdump"></a>
+##logFace.hexdump(lvl, txt, data)
 Log message
 
 **Params**
@@ -576,6 +780,29 @@ Log message in security level
 
 - txt `string` - message to log  
 
+<a name="LogFace#call"></a>
+##logFace.call(as, name, params, upload_data, [download_stream], [timeout])
+Generic FutoIn function call interface
+Result is passed through AsyncSteps.success() as a map.
+
+**Params**
+
+- as `AsyncSteps` - AsyncSteps object  
+- name `string` - FutoIn iface function name  
+- params `object` - map of func parameters  
+- upload_data `string` | `stream.Readable` - raw upload data or input stram  
+- \[download_stream\] `stream.Writable` - output stream for raw download data  
+- \[timeout\] `int` - if provided, overrides the default. <=0 - disables timeout  
+
+<a name="LogFace#ifaceInfo"></a>
+##logFace.ifaceInfo()
+Get interface info
+
+**Returns**: `object`  
+<a name="LogFace#bindDerivedKey"></a>
+##logFace.bindDerivedKey()
+Results with DerivedKeyAccessor through as.success()
+
 <a name="LogFace.LVL_DEBUG"></a>
 ##const: LogFace.LVL_DEBUG
 Debug log level
@@ -596,6 +823,23 @@ Error log level
 ##const: LogFace.LVL_SECURITY
 Security log level
 
+<a name="LogFace#event_connect"></a>
+##event: "event:connect"
+Fired when interface establishes connection.
+
+<a name="LogFace#event_disconnect"></a>
+##event: "event:disconnect"
+Fired when interface connection is closed.
+
+<a name="LogFace#event_close"></a>
+##event: "event:close"
+Interface close event. Fired on interface unregistration.
+
+<a name="LogFace#event_commError"></a>
+##event: "event:commError"
+Interface communication error. Fired during call processing.
+( error_info, rawreq )
+
 <a name="NativeIface"></a>
 #class: NativeIface
 **Members**
@@ -603,8 +847,12 @@ Security log level
 * [class: NativeIface](#NativeIface)
   * [new NativeIface()](#new_NativeIface)
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
-  * [nativeIface.call()](#NativeIface#call)
+  * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
+  * [event: "event:connect"](#NativeIface#event_connect)
+  * [event: "event:disconnect"](#NativeIface#event_disconnect)
+  * [event: "event:close"](#NativeIface#event_close)
+  * [event: "event:commError"](#NativeIface#event_commError)
 
 <a name="new_NativeIface"></a>
 ##new NativeIface()
@@ -624,14 +872,31 @@ Result is passed through AsyncSteps.success() as a map.
 - \[download_stream\] `stream.Writable` - output stream for raw download data  
 - \[timeout\] `int` - if provided, overrides the default. <=0 - disables timeout  
 
-<a name="NativeIface#call"></a>
-##nativeIface.call()
+<a name="NativeIface#ifaceInfo"></a>
+##nativeIface.ifaceInfo()
 Get interface info
 
 **Returns**: `object`  
 <a name="NativeIface#bindDerivedKey"></a>
 ##nativeIface.bindDerivedKey()
 Results with DerivedKeyAccessor through as.success()
+
+<a name="NativeIface#event_connect"></a>
+##event: "event:connect"
+Fired when interface establishes connection.
+
+<a name="NativeIface#event_disconnect"></a>
+##event: "event:disconnect"
+Fired when interface connection is closed.
+
+<a name="NativeIface#event_close"></a>
+##event: "event:close"
+Interface close event. Fired on interface unregistration.
+
+<a name="NativeIface#event_commError"></a>
+##event: "event:commError"
+Interface communication error. Fired during call processing.
+( error_info, rawreq )
 
 <a name="SimpleCCM"></a>
 #class: SimpleCCM
@@ -648,14 +913,6 @@ Results with DerivedKeyAccessor through as.success()
   * [simpleCCM.assertIface(name, ifacever)](#SimpleCCM#assertIface)
   * [simpleCCM.alias(name, alias)](#SimpleCCM#alias)
   * [simpleCCM.close()](#SimpleCCM#close)
-  * [const: SimpleCCM.OPT_CALL_TIMEOUT_MS](#SimpleCCM.OPT_CALL_TIMEOUT_MS)
-  * [const: SimpleCCM.OPT_PROD_MODE](#SimpleCCM.OPT_PROD_MODE)
-  * [const: SimpleCCM.OPT_COMM_CONFIG_CB](#SimpleCCM.OPT_COMM_CONFIG_CB)
-  * [const: SimpleCCM.OPT_SPEC_DIRS](#SimpleCCM.OPT_SPEC_DIRS)
-  * [const: SimpleCCM.OPT_TARGET_ORIGIN](#SimpleCCM.OPT_TARGET_ORIGIN)
-  * [const: SimpleCCM.OPT_RETRY_COUNT](#SimpleCCM.OPT_RETRY_COUNT)
-  * [const: SimpleCCM.OPT_HMAC_KEY](#SimpleCCM.OPT_HMAC_KEY)
-  * [const: SimpleCCM.OPT_HMAC_ALGO](#SimpleCCM.OPT_HMAC_ALGO)
   * [const: SimpleCCM.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
   * [const: SimpleCCM.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
   * [const: SimpleCCM.SVC_AUTH](#SimpleCCM.SVC_AUTH)
@@ -663,6 +920,9 @@ Results with DerivedKeyAccessor through as.success()
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+  * [event: "event:register"](#SimpleCCM#event_register)
+  * [event: "event:unregister"](#SimpleCCM#event_unregister)
+  * [event: "event:close"](#SimpleCCM#event_close)
 
 <a name="new_SimpleCCM"></a>
 ##new SimpleCCM([options])
@@ -672,7 +932,7 @@ Base Connection and Credentials Manager with limited error control
 
 **Params**
 
-- \[options\] `object` - map of options (see OPT_* consts)  
+- \[options\] `object` - map of options  
 
 <a name="SimpleCCM#register"></a>
 ##simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])
@@ -693,6 +953,10 @@ Register standard MasterService end-point (adds steps to *as*)
 NOTE: some more reserved words and/or patterns can appear in the future  
 - \[options\] `object` - fine tune global CCM options per endpoint  
 
+**Fires**
+
+- [event:register](#SimpleCCM#event_register)
+
 <a name="SimpleCCM#iface"></a>
 ##simpleCCM.iface(name)
 Get native interface wrapper for invocation of iface methods
@@ -709,6 +973,10 @@ Unregister previously registered interface (should not be used, unless really ne
 **Params**
 
 - name `string` - see register()  
+
+**Fires**
+
+- [event:unregister](#SimpleCCM#event_unregister)
 
 <a name="SimpleCCM#defense"></a>
 ##simpleCCM.defense()
@@ -743,47 +1011,23 @@ Alias interface name with another name
 - name `string` - unique identifier in scope of CCM instance  
 - alias `string` - alternative name for registered interface  
 
+**Fires**
+
+- [event:register](#SimpleCCM#event_register)
+
 <a name="SimpleCCM#close"></a>
 ##simpleCCM.close()
 Shutdown CCM (close all active comms)
 
-<a name="SimpleCCM.OPT_CALL_TIMEOUT_MS"></a>
-##const: SimpleCCM.OPT_CALL_TIMEOUT_MS
-Overall call timeout (int)
+**Fires**
 
-<a name="SimpleCCM.OPT_PROD_MODE"></a>
-##const: SimpleCCM.OPT_PROD_MODE
-Production mode - disables some checks without compomising security
-
-<a name="SimpleCCM.OPT_COMM_CONFIG_CB"></a>
-##const: SimpleCCM.OPT_COMM_CONFIG_CB
-Communication configuration callback( type, specific-args )
-
-<a name="SimpleCCM.OPT_SPEC_DIRS"></a>
-##const: SimpleCCM.OPT_SPEC_DIRS
-Client-side executor for bi-directional communication channels
-
-<a name="SimpleCCM.OPT_TARGET_ORIGIN"></a>
-##const: SimpleCCM.OPT_TARGET_ORIGIN
-browser-only. Origin of target for *window.postMessage()*
-
-<a name="SimpleCCM.OPT_RETRY_COUNT"></a>
-##const: SimpleCCM.OPT_RETRY_COUNT
-How many times to retry the call on CommError
-
-<a name="SimpleCCM.OPT_HMAC_KEY"></a>
-##const: SimpleCCM.OPT_HMAC_KEY
-Base64 encoded key for HMAC generation
-
-<a name="SimpleCCM.OPT_HMAC_ALGO"></a>
-##const: SimpleCCM.OPT_HMAC_ALGO
-Hash algorithm for HMAC generation:
-MD5(default), SHA224, SHA256, SHA384, SHA256
+- [event:close](#SimpleCCM#event_close)
 
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 ##const: SimpleCCM.SAFE_PAYLOAD_LIMIT
 Maximum FutoIn message payload size (not related to raw data)
 
+**Default**: `65536`  
 <a name="SimpleCCM.SVC_RESOLVER"></a>
 ##const: SimpleCCM.SVC_RESOLVER
 Runtime iface resolution v1.x
@@ -807,6 +1051,20 @@ Audit Logging v1.x
 <a name="SimpleCCM.SVC_CACHE_"></a>
 ##const: SimpleCCM.SVC_CACHE_
 cache v1.x iface name prefix
+
+<a name="SimpleCCM#event_register"></a>
+##event: "event:register"
+CCM regiser event. Fired on new interface registration.
+( name, ifacever, info )
+
+<a name="SimpleCCM#event_unregister"></a>
+##event: "event:unregister"
+CCM regiser event. Fired on interface unregistration.
+( name, info )
+
+<a name="SimpleCCM#event_close"></a>
+##event: "event:close"
+CCM close event. Fired on CCM shutdown.
 
 <a name="SpecTools"></a>
 #class: SpecTools
@@ -912,6 +1170,103 @@ NOTE: for simplicity, 'sec' field must not be present
 ##const: SpecTools.standard_errors
 Enumeration of standard errors
 
+<a name="AdvancedCCMOptions"></a>
+#class: AdvancedCCMOptions
+**Extends**: `SimpleCCMOptions`  
+**Members**
+
+* [class: AdvancedCCMOptions](#AdvancedCCMOptions)
+  * [new AdvancedCCMOptions()](#new_AdvancedCCMOptions)
+  * [AdvancedCCMOptions.specDirs](#AdvancedCCMOptions.specDirs)
+  * [AdvancedCCMOptions.hmacKey](#AdvancedCCMOptions.hmacKey)
+  * [AdvancedCCMOptions.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)
+
+<a name="new_AdvancedCCMOptions"></a>
+##new AdvancedCCMOptions()
+This is a pseudo-class for documentation purposes
+
+NOTE: Each option can be set on global level and overriden per interface.
+
+**Extends**: `SimpleCCMOptions`  
+<a name="AdvancedCCMOptions.specDirs"></a>
+##AdvancedCCMOptions.specDirs
+Search dirs for spec definition or spec instance directly. It can
+be single value or array of values. Each value is either path/URL (string) or
+iface spec instance (object).
+
+**Default**: `[]`  
+<a name="AdvancedCCMOptions.hmacKey"></a>
+##AdvancedCCMOptions.hmacKey
+Base64 encoded key for HMAC generation. See FTN6/FTN7
+
+<a name="AdvancedCCMOptions.hmacAlgo"></a>
+##AdvancedCCMOptions.hmacAlgo
+Hash algorithm for HMAC generation:
+MD5(default), SHA224, SHA256, SHA384, SHA256
+
+**Default**: `MD5`  
+<a name="SimpleCCMOptions"></a>
+#class: SimpleCCMOptions
+**Members**
+
+* [class: SimpleCCMOptions](#SimpleCCMOptions)
+  * [new SimpleCCMOptions()](#new_SimpleCCMOptions)
+  * [SimpleCCMOptions.callTimeoutMS](#SimpleCCMOptions.callTimeoutMS)
+  * [SimpleCCMOptions.prodMode](#SimpleCCMOptions.prodMode)
+  * [SimpleCCMOptions.commConfigCallback](#SimpleCCMOptions.commConfigCallback)
+  * [SimpleCCMOptions.executor](#SimpleCCMOptions.executor)
+  * [SimpleCCMOptions.targetOrigin](#SimpleCCMOptions.targetOrigin)
+  * [SimpleCCMOptions.retryCount](#SimpleCCMOptions.retryCount)
+  * [SimpleCCMOptions.messageSniffer()](#SimpleCCMOptions.messageSniffer)
+  * [SimpleCCMOptions.disconnectSniffer()](#SimpleCCMOptions.disconnectSniffer)
+
+<a name="new_SimpleCCMOptions"></a>
+##new SimpleCCMOptions()
+This is a pseudo-class for documentation purposes.
+
+NOTE: Each option can be set on global level and overriden per interface.
+
+<a name="SimpleCCMOptions.callTimeoutMS"></a>
+##SimpleCCMOptions.callTimeoutMS
+Overall call timeout (int)
+
+**Default**: `3000`  
+<a name="SimpleCCMOptions.prodMode"></a>
+##SimpleCCMOptions.prodMode
+Production mode - disables some checks without compomising security
+
+**Default**: `false`  
+<a name="SimpleCCMOptions.commConfigCallback"></a>
+##SimpleCCMOptions.commConfigCallback
+Communication configuration callback( type, specific-args )
+
+**Default**: `null`  
+<a name="SimpleCCMOptions.executor"></a>
+##SimpleCCMOptions.executor
+Client-side executor for bi-directional communication channels
+
+<a name="SimpleCCMOptions.targetOrigin"></a>
+##SimpleCCMOptions.targetOrigin
+*browser-only.* Origin of target for *window.postMessage()*
+
+<a name="SimpleCCMOptions.retryCount"></a>
+##SimpleCCMOptions.retryCount
+How many times to retry the call on CommError.
+NOTE: actual attempt count is retryCount + 1
+
+**Default**: `1`  
+<a name="SimpleCCMOptions.messageSniffer"></a>
+##SimpleCCMOptions.messageSniffer()
+Message sniffer callback( iface_info, msg, is_incomming ).
+Useful for audit logging.
+
+**Default**: `dummy`  
+<a name="SimpleCCMOptions.disconnectSniffer"></a>
+##SimpleCCMOptions.disconnectSniffer()
+Bi-directional channel disconnect sniffer callback( iface_info ).
+Useful for audit logging.
+
+**Default**: `dummy`  
 <a name="SimpleCCM"></a>
 #SimpleCCM
 **window.SimpleCCM** - Browser-only reference to futoin-asyncsteps.SimpleCCM

@@ -1,9 +1,5 @@
 "use strict";
 
-/**
- * @module futoin-invoker
- */
-
 var _clone = require( 'lodash/lang/clone' );
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
@@ -23,6 +19,8 @@ var AdvancedCCMPublic = common.Options;
  * @link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html
  * @alias AdvancedCCM
  * @class
+ * @extends SimpleCCM
+ * @see AdvancedCCMOptions
  */
 function AdvancedCCM( options )
 {

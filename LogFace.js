@@ -20,6 +20,7 @@ function( str )
  * interface, include separately
  * @class
  * @alias LogFace
+ * @augments NativeIface
  */
 function LogFace()
 {
@@ -141,7 +142,7 @@ LogFaceProto.msg = function( lvl, txt )
  * @param {string} lvl - debug|info|warn|error|security
  * @param {string} txt - message to log
  * @param {string} data - raw data
- * @alias LogFace#msg
+ * @alias LogFace#hexdump
  */
 LogFaceProto.hexdump = function( lvl, txt, data )
 {

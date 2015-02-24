@@ -257,7 +257,7 @@ NativeIfaceProto._member_call_generate = function( name, finfo )
 /**
  * Get interface info
  * @returns {object}
- * @alias NativeIface#call
+ * @alias NativeIface#ifaceInfo
  */
 NativeIfaceProto.ifaceInfo = function()
 {
@@ -303,3 +303,24 @@ NativeIfaceProto._signMessageDummy = function()
 {};
 
 module.exports = NativeIface;
+
+/**
+ * Fired when interface establishes connection.
+ * @event NativeIface#event:connect
+ */
+
+/**
+ * Fired when interface connection is closed.
+ * @event NativeIface#event:disconnect
+ */
+
+/**
+ * Interface close event. Fired on interface unregistration.
+ * @event NativeIface#event:close
+ */
+
+/**
+ * Interface communication error. Fired during call processing.
+ * ( error_info, rawreq )
+ * @event NativeIface#event:commError
+ */

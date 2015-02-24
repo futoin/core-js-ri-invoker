@@ -14,6 +14,7 @@ var common = require( './lib/common' );
  * interface, include separately
  * @class
  * @alias CacheFace
+ * @augments NativeIface
  */
 function CacheFace()
 {

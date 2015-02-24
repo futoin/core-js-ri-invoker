@@ -316,7 +316,7 @@ describe( 'AdvancedCCM', function()
     beforeEach(function(){
         as = async_steps();
         var opts = {};
-        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+        opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
     });
     
@@ -897,13 +897,13 @@ describe( 'NativeIface', function()
             as.state.outgoing_msg = [];
             
             var opts = {};
-            opts[invoker.SimpleCCM.OPT_COMM_CONFIG_CB] = function( proto, agent_opts ) {
+            opts.commConfigCallback = function( proto, agent_opts ) {
                 if ( proto === 'http' )
                 {
                     agent_opts.maxSockets = 3;
                 }
             };
-            opts[ invoker.AdvancedCCM.OPT_MSG_SNIFFER ] = function( info, msg, is_incomming )
+            opts.messageSniffer = function( info, msg, is_incomming )
             {
                 if ( is_incomming )
                 {
@@ -1056,8 +1056,8 @@ describe( 'NativeIface', function()
             as.state.outgoing_msg = [];
             
             var opts = {};
-            opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
-            opts[ invoker.AdvancedCCM.OPT_MSG_SNIFFER ] = function( info, msg, is_incomming )
+            opts.specDirs = thisDir + '/specs';
+            opts.messageSniffer = function( info, msg, is_incomming )
             {
                 if ( is_incomming )
                 {
@@ -1383,7 +1383,7 @@ describe( 'LogFace', function()
         as = async_steps();
         
         var opts = {};
-        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+        opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
         
         as
@@ -1453,7 +1453,7 @@ describe( 'CacheFace', function()
         as = async_steps();
         
         var opts = {};
-        opts[ invoker.AdvancedCCM.OPT_SPEC_DIRS ] = thisDir + '/specs';
+        opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
         
         as
