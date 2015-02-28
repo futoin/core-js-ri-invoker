@@ -345,6 +345,14 @@ var spectools =
 
             if ( mnr < 2 )
             {
+                if ( 'MessageSignature' in info.constraints )
+                {
+                    as.error( FutoInError.InternalError, "Missing ftn3rev field when FTN3 v1.2 features are used" );
+                }
+            }
+
+            if ( mnr < 3 )
+            {
                 // TODO:
             }
 

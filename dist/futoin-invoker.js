@@ -644,6 +644,11 @@
                                 }
                             }
                             if (mnr < 2) {
+                                if ('MessageSignature' in info.constraints) {
+                                    as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.2 features are used');
+                                }
+                            }
+                            if (mnr < 3) {
                             }
                             if (!info._invoker_use && mnr > 1) {
                                 as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
