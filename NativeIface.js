@@ -306,21 +306,21 @@ module.exports = NativeIface;
 
 /**
  * Fired when interface establishes connection.
- * @event NativeIface#event:connect
+ * @event NativeIface#connect
  */
 
 /**
  * Fired when interface connection is closed.
- * @event NativeIface#event:disconnect
+ * @event NativeIface#disconnect
  */
 
 /**
  * Interface close event. Fired on interface unregistration.
- * @event NativeIface#event:close
+ * @event NativeIface#close
  */
 
 /**
  * Interface communication error. Fired during call processing.
  * ( error_info, rawreq )
- * @event NativeIface#event:commError
+ * @event NativeIface#commError
  */

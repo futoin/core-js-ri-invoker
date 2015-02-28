@@ -102,7 +102,7 @@ $ bower install futoin-invoker --save
 ```
 
 Please note that browser build is available under in dist/ folder in sources generated
-with [pure-sjc](https://github.com/RReverser/pure-cjs). It include modular parts of
+with [pure-sjc](https://github.com/RReverser/pure-cjs). It includes modular parts of
 [lodash](https://www.npmjs.com/package/lodash).
 
 *Note: there are the following globals available*:
@@ -252,9 +252,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
   * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
   * [advancedCCM.close()](#AdvancedCCM#close)
-  * [event: "event:register"](#AdvancedCCM#event_register)
-  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
-  * [event: "event:close"](#AdvancedCCM#event_close)
+  * [event: "register"](#AdvancedCCM#event_register)
+  * [event: "unregister"](#AdvancedCCM#event_unregister)
+  * [event: "close"](#AdvancedCCM#event_close)
 * [class: CacheFace](#CacheFace)
   * [new CacheFace()](#new_CacheFace)
   * [CacheFace.ifacespec](#CacheFace.ifacespec)
@@ -263,10 +263,10 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])](#CacheFace#call)
   * [cacheFace.ifaceInfo()](#CacheFace#ifaceInfo)
   * [cacheFace.bindDerivedKey()](#CacheFace#bindDerivedKey)
-  * [event: "event:connect"](#CacheFace#event_connect)
-  * [event: "event:disconnect"](#CacheFace#event_disconnect)
-  * [event: "event:close"](#CacheFace#event_close)
-  * [event: "event:commError"](#CacheFace#event_commError)
+  * [event: "connect"](#CacheFace#event_connect)
+  * [event: "disconnect"](#CacheFace#event_disconnect)
+  * [event: "close"](#CacheFace#event_close)
+  * [event: "commError"](#CacheFace#event_commError)
 * [class: InterfaceInfo](#InterfaceInfo)
   * [new InterfaceInfo()](#new_InterfaceInfo)
   * [interfaceInfo.name()](#InterfaceInfo#name)
@@ -293,19 +293,19 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
   * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
   * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
-  * [event: "event:connect"](#LogFace#event_connect)
-  * [event: "event:disconnect"](#LogFace#event_disconnect)
-  * [event: "event:close"](#LogFace#event_close)
-  * [event: "event:commError"](#LogFace#event_commError)
+  * [event: "connect"](#LogFace#event_connect)
+  * [event: "disconnect"](#LogFace#event_disconnect)
+  * [event: "close"](#LogFace#event_close)
+  * [event: "commError"](#LogFace#event_commError)
 * [class: NativeIface](#NativeIface)
   * [new NativeIface()](#new_NativeIface)
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
   * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
-  * [event: "event:connect"](#NativeIface#event_connect)
-  * [event: "event:disconnect"](#NativeIface#event_disconnect)
-  * [event: "event:close"](#NativeIface#event_close)
-  * [event: "event:commError"](#NativeIface#event_commError)
+  * [event: "connect"](#NativeIface#event_connect)
+  * [event: "disconnect"](#NativeIface#event_disconnect)
+  * [event: "close"](#NativeIface#event_close)
+  * [event: "commError"](#NativeIface#event_commError)
 * [class: SimpleCCM](#SimpleCCM)
   * [new SimpleCCM([options])](#new_SimpleCCM)
   * [simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM#register)
@@ -324,9 +324,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
-  * [event: "event:register"](#SimpleCCM#event_register)
-  * [event: "event:unregister"](#SimpleCCM#event_unregister)
-  * [event: "event:close"](#SimpleCCM#event_close)
+  * [event: "register"](#SimpleCCM#event_register)
+  * [event: "unregister"](#SimpleCCM#event_unregister)
+  * [event: "close"](#SimpleCCM#event_close)
 * [class: SpecTools](#SpecTools)
   * [new SpecTools()](#new_SpecTools)
   * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
@@ -372,9 +372,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
-  * [event: "event:register"](#SimpleCCM#event_register)
-  * [event: "event:unregister"](#SimpleCCM#event_unregister)
-  * [event: "event:close"](#SimpleCCM#event_close)
+  * [event: "register"](#SimpleCCM#event_register)
+  * [event: "unregister"](#SimpleCCM#event_unregister)
+  * [event: "close"](#SimpleCCM#event_close)
 * [AdvancedCCM](#AdvancedCCM)
   * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
   * [advancedCCM.iface(name)](#AdvancedCCM#iface)
@@ -385,9 +385,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
   * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
   * [advancedCCM.close()](#AdvancedCCM#close)
-  * [event: "event:register"](#AdvancedCCM#event_register)
-  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
-  * [event: "event:close"](#AdvancedCCM#event_close)
+  * [event: "register"](#AdvancedCCM#event_register)
+  * [event: "unregister"](#AdvancedCCM#event_unregister)
+  * [event: "close"](#AdvancedCCM#event_close)
 * [Invoker](#Invoker)
 * [FutoInInvoker](#FutoInInvoker)
 * [SimpleCCM](#SimpleCCM)
@@ -407,9 +407,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
-  * [event: "event:register"](#SimpleCCM#event_register)
-  * [event: "event:unregister"](#SimpleCCM#event_unregister)
-  * [event: "event:close"](#SimpleCCM#event_close)
+  * [event: "register"](#SimpleCCM#event_register)
+  * [event: "unregister"](#SimpleCCM#event_unregister)
+  * [event: "close"](#SimpleCCM#event_close)
  
 <a name="module_futoin-invoker"></a>
 #futoin-invoker
@@ -429,9 +429,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [advancedCCM.assertIface(name, ifacever)](#AdvancedCCM#assertIface)
   * [advancedCCM.alias(name, alias)](#AdvancedCCM#alias)
   * [advancedCCM.close()](#AdvancedCCM#close)
-  * [event: "event:register"](#AdvancedCCM#event_register)
-  * [event: "event:unregister"](#AdvancedCCM#event_unregister)
-  * [event: "event:close"](#AdvancedCCM#event_close)
+  * [event: "register"](#AdvancedCCM#event_register)
+  * [event: "unregister"](#AdvancedCCM#event_unregister)
+  * [event: "close"](#AdvancedCCM#event_close)
 
 <a name="new_AdvancedCCM"></a>
 ##new AdvancedCCM()
@@ -459,7 +459,7 @@ NOTE: some more reserved words and/or patterns can appear in the future
 
 **Fires**
 
-- [event:register](#SimpleCCM#event_register)
+- [register](#SimpleCCM#event_register)
 
 <a name="AdvancedCCM#iface"></a>
 ##advancedCCM.iface(name)
@@ -480,7 +480,7 @@ Unregister previously registered interface (should not be used, unless really ne
 
 **Fires**
 
-- [event:unregister](#SimpleCCM#event_unregister)
+- [unregister](#SimpleCCM#event_unregister)
 
 <a name="AdvancedCCM#defense"></a>
 ##advancedCCM.defense()
@@ -517,7 +517,7 @@ Alias interface name with another name
 
 **Fires**
 
-- [event:register](#SimpleCCM#event_register)
+- [register](#SimpleCCM#event_register)
 
 <a name="AdvancedCCM#close"></a>
 ##advancedCCM.close()
@@ -525,20 +525,20 @@ Shutdown CCM (close all active comms)
 
 **Fires**
 
-- [event:close](#SimpleCCM#event_close)
+- [close](#SimpleCCM#event_close)
 
 <a name="AdvancedCCM#event_register"></a>
-##event: "event:register"
+##event: "register"
 CCM regiser event. Fired on new interface registration.
 ( name, ifacever, info )
 
 <a name="AdvancedCCM#event_unregister"></a>
-##event: "event:unregister"
+##event: "unregister"
 CCM regiser event. Fired on interface unregistration.
 ( name, info )
 
 <a name="AdvancedCCM#event_close"></a>
-##event: "event:close"
+##event: "close"
 CCM close event. Fired on CCM shutdown.
 
 <a name="CacheFace"></a>
@@ -554,10 +554,10 @@ CCM close event. Fired on CCM shutdown.
   * [cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])](#CacheFace#call)
   * [cacheFace.ifaceInfo()](#CacheFace#ifaceInfo)
   * [cacheFace.bindDerivedKey()](#CacheFace#bindDerivedKey)
-  * [event: "event:connect"](#CacheFace#event_connect)
-  * [event: "event:disconnect"](#CacheFace#event_disconnect)
-  * [event: "event:close"](#CacheFace#event_close)
-  * [event: "event:commError"](#CacheFace#event_commError)
+  * [event: "connect"](#CacheFace#event_connect)
+  * [event: "disconnect"](#CacheFace#event_disconnect)
+  * [event: "close"](#CacheFace#event_close)
+  * [event: "commError"](#CacheFace#event_commError)
 
 <a name="new_CacheFace"></a>
 ##new CacheFace()
@@ -617,19 +617,19 @@ Get interface info
 Results with DerivedKeyAccessor through as.success()
 
 <a name="CacheFace#event_connect"></a>
-##event: "event:connect"
+##event: "connect"
 Fired when interface establishes connection.
 
 <a name="CacheFace#event_disconnect"></a>
-##event: "event:disconnect"
+##event: "disconnect"
 Fired when interface connection is closed.
 
 <a name="CacheFace#event_close"></a>
-##event: "event:close"
+##event: "close"
 Interface close event. Fired on interface unregistration.
 
 <a name="CacheFace#event_commError"></a>
-##event: "event:commError"
+##event: "commError"
 Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
@@ -698,10 +698,10 @@ Get list of interface constraints, may be null
   * [const: LogFace.LVL_WARN](#LogFace.LVL_WARN)
   * [const: LogFace.LVL_ERROR](#LogFace.LVL_ERROR)
   * [const: LogFace.LVL_SECURITY](#LogFace.LVL_SECURITY)
-  * [event: "event:connect"](#LogFace#event_connect)
-  * [event: "event:disconnect"](#LogFace#event_disconnect)
-  * [event: "event:close"](#LogFace#event_close)
-  * [event: "event:commError"](#LogFace#event_commError)
+  * [event: "connect"](#LogFace#event_connect)
+  * [event: "disconnect"](#LogFace#event_disconnect)
+  * [event: "close"](#LogFace#event_close)
+  * [event: "commError"](#LogFace#event_commError)
 
 <a name="new_LogFace"></a>
 ##new LogFace()
@@ -824,19 +824,19 @@ Error log level
 Security log level
 
 <a name="LogFace#event_connect"></a>
-##event: "event:connect"
+##event: "connect"
 Fired when interface establishes connection.
 
 <a name="LogFace#event_disconnect"></a>
-##event: "event:disconnect"
+##event: "disconnect"
 Fired when interface connection is closed.
 
 <a name="LogFace#event_close"></a>
-##event: "event:close"
+##event: "close"
 Interface close event. Fired on interface unregistration.
 
 <a name="LogFace#event_commError"></a>
-##event: "event:commError"
+##event: "commError"
 Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
@@ -849,10 +849,10 @@ Interface communication error. Fired during call processing.
   * [nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface#call)
   * [nativeIface.ifaceInfo()](#NativeIface#ifaceInfo)
   * [nativeIface.bindDerivedKey()](#NativeIface#bindDerivedKey)
-  * [event: "event:connect"](#NativeIface#event_connect)
-  * [event: "event:disconnect"](#NativeIface#event_disconnect)
-  * [event: "event:close"](#NativeIface#event_close)
-  * [event: "event:commError"](#NativeIface#event_commError)
+  * [event: "connect"](#NativeIface#event_connect)
+  * [event: "disconnect"](#NativeIface#event_disconnect)
+  * [event: "close"](#NativeIface#event_close)
+  * [event: "commError"](#NativeIface#event_commError)
 
 <a name="new_NativeIface"></a>
 ##new NativeIface()
@@ -882,19 +882,19 @@ Get interface info
 Results with DerivedKeyAccessor through as.success()
 
 <a name="NativeIface#event_connect"></a>
-##event: "event:connect"
+##event: "connect"
 Fired when interface establishes connection.
 
 <a name="NativeIface#event_disconnect"></a>
-##event: "event:disconnect"
+##event: "disconnect"
 Fired when interface connection is closed.
 
 <a name="NativeIface#event_close"></a>
-##event: "event:close"
+##event: "close"
 Interface close event. Fired on interface unregistration.
 
 <a name="NativeIface#event_commError"></a>
-##event: "event:commError"
+##event: "commError"
 Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
@@ -920,9 +920,9 @@ Interface communication error. Fired during call processing.
   * [const: SimpleCCM.SVC_ACL](#SimpleCCM.SVC_ACL)
   * [const: SimpleCCM.SVC_LOG](#SimpleCCM.SVC_LOG)
   * [const: SimpleCCM.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
-  * [event: "event:register"](#SimpleCCM#event_register)
-  * [event: "event:unregister"](#SimpleCCM#event_unregister)
-  * [event: "event:close"](#SimpleCCM#event_close)
+  * [event: "register"](#SimpleCCM#event_register)
+  * [event: "unregister"](#SimpleCCM#event_unregister)
+  * [event: "close"](#SimpleCCM#event_close)
 
 <a name="new_SimpleCCM"></a>
 ##new SimpleCCM([options])
@@ -955,7 +955,7 @@ NOTE: some more reserved words and/or patterns can appear in the future
 
 **Fires**
 
-- [event:register](#SimpleCCM#event_register)
+- [register](#SimpleCCM#event_register)
 
 <a name="SimpleCCM#iface"></a>
 ##simpleCCM.iface(name)
@@ -976,7 +976,7 @@ Unregister previously registered interface (should not be used, unless really ne
 
 **Fires**
 
-- [event:unregister](#SimpleCCM#event_unregister)
+- [unregister](#SimpleCCM#event_unregister)
 
 <a name="SimpleCCM#defense"></a>
 ##simpleCCM.defense()
@@ -1013,7 +1013,7 @@ Alias interface name with another name
 
 **Fires**
 
-- [event:register](#SimpleCCM#event_register)
+- [register](#SimpleCCM#event_register)
 
 <a name="SimpleCCM#close"></a>
 ##simpleCCM.close()
@@ -1021,7 +1021,7 @@ Shutdown CCM (close all active comms)
 
 **Fires**
 
-- [event:close](#SimpleCCM#event_close)
+- [close](#SimpleCCM#event_close)
 
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 ##const: SimpleCCM.SAFE_PAYLOAD_LIMIT
@@ -1053,17 +1053,17 @@ Audit Logging v1.x
 cache v1.x iface name prefix
 
 <a name="SimpleCCM#event_register"></a>
-##event: "event:register"
+##event: "register"
 CCM regiser event. Fired on new interface registration.
 ( name, ifacever, info )
 
 <a name="SimpleCCM#event_unregister"></a>
-##event: "event:unregister"
+##event: "unregister"
 CCM regiser event. Fired on interface unregistration.
 ( name, info )
 
 <a name="SimpleCCM#event_close"></a>
-##event: "event:close"
+##event: "close"
 CCM close event. Fired on CCM shutdown.
 
 <a name="SpecTools"></a>
