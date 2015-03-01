@@ -493,8 +493,8 @@
                     _ifacever_pattern: common._ifacever_pattern,
                     loadIface: function (as, info, specdirs) {
                         var raw_spec = null;
+                        var fn = info.iface + '-' + info.version + '-iface.json';
                         as.forEach(specdirs, function (as, k, v) {
-                            var fn = info.iface + '-' + info.version + '-iface.json';
                             as.add(function (read_as) {
                                 if (typeof v !== 'string' || !isNode) {
                                     return;

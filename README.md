@@ -113,7 +113,7 @@ with [pure-sjc](https://github.com/RReverser/pure-cjs). It includes modular part
 
 # Examples
 
-NOTE: more complex examples should be found in (futoin-executor)[https://github.com/futoin/core-js-ri-executor/]
+NOTE: more complex examples should be found in [futoin-executor](https://github.com/futoin/core-js-ri-executor/)
 
 ## Call remote function with SimpleCCM
 
@@ -268,7 +268,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 **Classes**
 
 * [class: AdvancedCCM](#AdvancedCCM)
-  * [new AdvancedCCM()](#new_AdvancedCCM)
+  * [new AdvancedCCM(options)](#new_AdvancedCCM)
   * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
   * [advancedCCM.iface(name)](#AdvancedCCM#iface)
   * [advancedCCM.unRegister(name)](#AdvancedCCM#unRegister)
@@ -445,7 +445,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 **Members**
 
 * [class: AdvancedCCM](#AdvancedCCM)
-  * [new AdvancedCCM()](#new_AdvancedCCM)
+  * [new AdvancedCCM(options)](#new_AdvancedCCM)
   * [advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])](#AdvancedCCM#register)
   * [advancedCCM.iface(name)](#AdvancedCCM#iface)
   * [advancedCCM.unRegister(name)](#AdvancedCCM#unRegister)
@@ -460,8 +460,12 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [event: "close"](#AdvancedCCM#event_close)
 
 <a name="new_AdvancedCCM"></a>
-##new AdvancedCCM()
+##new AdvancedCCM(options)
 Advanced CCM - Reference Implementation
+
+**Params**
+
+- options `object` - see AdvancedCCMOptions  
 
 **Extends**: `SimpleCCM`  
 <a name="AdvancedCCM#register"></a>
@@ -601,7 +605,7 @@ Embedded spec for FutoIn CacheFace
 
 <a name="CacheFace.register"></a>
 ##CacheFace.register()
-AuditLog Native interface registration helper
+Cache Native interface registration helper
 
 <a name="CacheFace#getOrSet"></a>
 ##cacheFace.getOrSet(as, key_prefix, callable, params, ttl_ms)

@@ -23,7 +23,7 @@ function CacheFace()
 }
 
 /**
- * AuditLog Native interface registration helper
+ * Cache Native interface registration helper
  * @alias CacheFace.register
  */
 CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
@@ -176,5 +176,5 @@ CacheFace.ifacespec =
             "requires" : [
                 "SecureChannel"
             ],
-            "desc" : "Audit Log interface"
+            "desc" : "Cache interface"
         };
