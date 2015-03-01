@@ -119,20 +119,29 @@ NOTE: more complex examples should be found in (futoin-executor)[https://github.
 
 ```javascript
 var async_steps = require( 'futoin-asyncsteps' );
-var invoker = require( 'futoin-invoker' );
+var SimpleCCM = require( 'futoin-invoker/SimpleCCM' );
 
-var ccm = new invoker.SimpleCCM();
+// Initalize CCM, no configuration is required
+var ccm = new SimpleCCM();
 
 async_steps()
 .add(
     function( as ){
-        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
-        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+        // Register interfaces without loading their specs
+        ccm.register( as, 'localone', 'some.iface:1.0',
+                      'https://localhost/some/path' );
+        ccm.register( as, 'localtwo', 'other.iface:1.0',
+                      'https://localhost/some/path',
+                      'user:pass' ); // optional credentials
 
         as.add( function( as ){
+            // Get NativeIface representation of remote interface
+            // after registration is complete
             var localone = ccm.iface( 'localone' );
             var localtwo = ccm.iface( 'localtwo' );
             
+            // SimpleCCM is not aware of available functions.
+            // It is the only way to perform a call.
             localone.call( as, 'somefunc', {
                 arg1 : 1,
                 arg2 : 'abc',
@@ -140,6 +149,10 @@ async_steps()
             } );
             
             as.add( function( as, res ){
+                // As function prototype is not know
+                // all invalid HTTP 200 responses may
+                // get returned as "raw data" in res
+                // parameter.
                 console.log( res.result1, res.result2 );
             } );
         } );
@@ -159,12 +172,15 @@ async_steps()
 var async_steps = require( 'futoin-asyncsteps' );
 var invoker = require( 'futoin-invoker' );
 
+// Define interface, which should normally be put into 
+// file named "some.iface-1.0-iface.json" and put into
+// a folder added to the "specDirs" option.
 var some_iface_v1_0 = {
     "iface" : "some.iface",
     "version" : "1.0",
     "ftn3rev" : "1.1",
     "funcs" : {
-        "get" : {
+        "somefunc" : {
             "params" : {
                 "arg1" : {
                     "type" : "integer"
@@ -195,25 +211,35 @@ var some_iface_v1_0 = {
     ]
 };
 
+var other_iface_v1_0 = {
+    "iface" : "other.iface",
+    "version" : "1.0",
+    "ftn3rev" : "1.1"
+}
+
+// Initialize CCM. We provide interface definitions directly
 var ccm = new invoker.AdvancedCCM({
-    specDirs : [ __dirname + '/specs', some_iface_v1_0 ]
+    specDirs : [ __dirname + '/specs', some_iface_v1_0, other_iface_v1_0 ]
 });
 
+// AsyncSteps processing is required
 async_steps()
 .add(
     function( as ){
-        ccm.register( as, 'localone', 'some.iface:1.0', 'https://localhost/some/path' );
-        ccm.register( as, 'localtwo', 'other.iface:1.0', 'https://localhost/some/path' );
+        // Register interfaces - it is done only once
+        ccm.register( as, 'localone',
+                      'some.iface:1.0', 'https://localhost/some/path' );
+        ccm.register( as, 'localtwo',
+                      'other.iface:1.0', 'https://localhost/some/path',
+                      'user:pass' ); // optional credentials
 
         as.add( function( as ){
+            // Get NativeIface representation of remote interface
+            // after registration is complete
             var localone = ccm.iface( 'localone' );
             var localtwo = ccm.iface( 'localtwo' );
             
-            localone.call( as, 'somefunc', {
-                arg1 : 1,
-                arg2 : 'abc',
-                arg3 : true,
-            } );
+            localone.somefunc( as, 1, 'abc', true );
             
             as.add( function( as, res ){
                 console.log( res.result1, res.result2 );
