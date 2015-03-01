@@ -56,11 +56,10 @@ var spectools =
     loadIface : function( as, info, specdirs )
     {
         var raw_spec = null;
+        var fn = info.iface + '-' + info.version + '-iface.json';
 
         as.forEach( specdirs, function( as, k, v )
         {
-            var fn = info.iface + '-' + info.version + '-iface.json';
-
             // Check Node.js fs
             as.add( function( read_as )
             {
