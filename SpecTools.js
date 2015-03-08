@@ -9,6 +9,7 @@ var isNode = require( 'detect-node' );
 var _cloneDeep = require( 'lodash/lang/cloneDeep' );
 var _zipObject = require( 'lodash/array/zipObject' );
 var _difference = require( 'lodash/array/difference' );
+var _extend = require( 'lodash/object/extend' );
 
 if ( isNode )
 {
@@ -44,6 +45,8 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
+    _max_supported_v1_minor : 2,
+
     /**
      * Load FutoIn iface definition.
      *
@@ -51,12 +54,33 @@ var spectools =
      * @param {AsyncSteps} as
      * @param {Object} info - destination object with "iface" and "version" fields already set
      * @param {Array} specdirs - each element - search path/url (string) or raw iface (object)
+     * @param {Object=} load_cache - arbitrary object to use for caching
      * @alias SpecTools.loadIface
      */
-    loadIface : function( as, info, specdirs )
+    loadIface : function( as, info, specdirs, load_cache )
     {
         var raw_spec = null;
         var fn = info.iface + '-' + info.version + '-iface.json';
+        var cached_info;
+
+        if ( load_cache )
+        {
+            cached_info = load_cache[ fn ];
+
+            if ( cached_info )
+            {
+                _extend( info, cached_info );
+                return;
+            }
+
+            cached_info = {
+                _invoker_use : info._invoker_use
+            };
+        }
+        else
+        {
+            cached_info = info;
+        }
 
         as.forEach( specdirs, function( as, k, v )
         {
@@ -195,8 +219,18 @@ var spectools =
                 );
             }
 
-            spectools.parseIface( as, info, specdirs, raw_spec );
+            spectools.parseIface( as, cached_info, specdirs, raw_spec );
         } );
+
+        if ( load_cache )
+        {
+            as.add( function( as )
+            {
+                void as;
+                load_cache[ fn ] = cached_info;
+                _extend( info, cached_info );
+            } );
+        }
     },
 
     /**
@@ -358,7 +392,7 @@ var spectools =
             // Executor is not allowed to support newer than implemented version (v1.1)
             // ---
             if ( !info._invoker_use &&
-                 ( mnr > 1 ) )
+                 ( mnr > spectools._max_supported_v1_minor ) )
             {
                 as.error( FutoInError.InternalError, "Not supported FTN3 revision for Executor" );
             }

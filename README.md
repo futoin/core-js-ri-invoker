@@ -355,7 +355,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [event: "close"](#SimpleCCM#event_close)
 * [class: SpecTools](#SpecTools)
   * [new SpecTools()](#new_SpecTools)
-  * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
+  * [SpecTools.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
   * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
   * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
@@ -1102,7 +1102,7 @@ CCM close event. Fired on CCM shutdown.
 
 * [class: SpecTools](#SpecTools)
   * [new SpecTools()](#new_SpecTools)
-  * [SpecTools.loadIface(as, info, specdirs)](#SpecTools.loadIface)
+  * [SpecTools.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
   * [SpecTools.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
   * [SpecTools.checkConsistency(as, info)](#SpecTools.checkConsistency)
   * [SpecTools.checkType(info, type, val)](#SpecTools.checkType)
@@ -1116,7 +1116,7 @@ CCM close event. Fired on CCM shutdown.
 SpecTools
 
 <a name="SpecTools.loadIface"></a>
-##SpecTools.loadIface(as, info, specdirs)
+##SpecTools.loadIface(as, info, specdirs, [load_cache])
 Load FutoIn iface definition.
 
 NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
@@ -1126,6 +1126,7 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 - as `AsyncSteps`  
 - info `Object` - destination object with "iface" and "version" fields already set  
 - specdirs `Array` - each element - search path/url (string) or raw iface (object)  
+- \[load_cache\] `Object` - arbitrary object to use for caching  
 
 <a name="SpecTools.parseIface"></a>
 ##SpecTools.parseIface(as, info, specdirs, raw_spec)

@@ -472,6 +472,7 @@
             var _cloneDeep = _require(60);
             var _zipObject = _require(29);
             var _difference = _require(28);
+            var _extend = _require(67);
             if (isNode) {
                 var hidereq = require;
                 fs = hidereq('fs');
@@ -491,9 +492,21 @@
                     },
                     _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
                     _ifacever_pattern: common._ifacever_pattern,
-                    loadIface: function (as, info, specdirs) {
+                    _max_supported_v1_minor: 2,
+                    loadIface: function (as, info, specdirs, load_cache) {
                         var raw_spec = null;
                         var fn = info.iface + '-' + info.version + '-iface.json';
+                        var cached_info;
+                        if (load_cache) {
+                            cached_info = load_cache[fn];
+                            if (cached_info) {
+                                _extend(info, cached_info);
+                                return;
+                            }
+                            cached_info = { _invoker_use: info._invoker_use };
+                        } else {
+                            cached_info = info;
+                        }
                         as.forEach(specdirs, function (as, k, v) {
                             as.add(function (read_as) {
                                 if (typeof v !== 'string' || !isNode) {
@@ -570,8 +583,15 @@
                             if (raw_spec === null) {
                                 as.error(FutoInError.InternalError, 'Failed to load valid spec for ' + info.iface + ':' + info.version);
                             }
-                            spectools.parseIface(as, info, specdirs, raw_spec);
+                            spectools.parseIface(as, cached_info, specdirs, raw_spec);
                         });
+                        if (load_cache) {
+                            as.add(function (as) {
+                                void as;
+                                load_cache[fn] = cached_info;
+                                _extend(info, cached_info);
+                            });
+                        }
                     },
                     parseIface: function (as, info, specdirs, raw_spec) {
                         if (raw_spec._just_loaded) {
@@ -650,7 +670,7 @@
                             }
                             if (mnr < 3) {
                             }
-                            if (!info._invoker_use && mnr > 1) {
+                            if (!info._invoker_use && mnr > spectools._max_supported_v1_minor) {
                                 as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
                             }
                         } else {
@@ -942,6 +962,7 @@
                 }
                 options.specDirs = spec_dirs;
                 SimpleCCMImpl.call(this, options);
+                this._load_cache = {};
             }
             var SCCMImpProto = SimpleCCMImpl.prototype;
             AdvancedCCMImpl.prototype = {
@@ -949,7 +970,7 @@
                     if ((info.creds_master || info.creds_hmac) && !SpecTools.checkHMAC) {
                         as.error(FutoInError.InvokerError, 'Master/HMAC is not supported in this environment yet');
                     }
-                    SpecTools.loadIface(as, info, info.options.specDirs);
+                    SpecTools.loadIface(as, info, info.options.specDirs, this._load_cache);
                     if (!info.options.prodMode) {
                         SpecTools.checkConsistency(as, info);
                     }

@@ -90,7 +90,7 @@ describe('SpecTools', function()
         {
             var info = {
                 iface : 'fileface.a',
-                version : '1.1'
+                version : '1.1',
             };
             
             as.add(
@@ -103,6 +103,7 @@ describe('SpecTools', function()
                 },
                 function( as, err )
                 {
+                    console.log( err + ': ' + as.state.error_info );
                     done( as.state.last_exception );
                 }
             ).
@@ -110,6 +111,60 @@ describe('SpecTools', function()
                 try
                 {
                     info.funcs.should.have.property( 'testFunc' );
+                    done();
+                }
+                catch ( e )
+                {
+                    done( e );
+                }
+            });
+            as.execute();
+        });
+        
+        it('should load spec from cache', function( done )
+        {
+            var info = {
+                iface : 'fileface.a',
+                version : '1.1',
+            };
+            
+            var load_cache = {};
+            
+            as.add(
+                function( as ){
+                    SpecTools.loadIface(
+                        as,
+                        info,
+                        [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                        load_cache
+                    );
+                },
+                function( as, err )
+                {
+                    console.log( err + ': ' + as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .add(
+                function( as ){
+                    load_cache[ 'fileface.a-1.1-iface.json' ].comes_from_cache = true;
+                    SpecTools.loadIface(
+                        as,
+                        info,
+                        [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                        load_cache
+                    );
+                },
+                function( as, err )
+                {
+                    console.log( err + ': ' + as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .add( function( as ){
+                try
+                {
+                    info.should.have.property( 'comes_from_cache' );
                     done();
                 }
                 catch ( e )
@@ -183,7 +238,7 @@ describe('SpecTools', function()
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        ftn3rev: '1.2'
+                        ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
@@ -207,7 +262,7 @@ describe('SpecTools', function()
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        ftn3rev: '1.2'
+                        ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
@@ -231,7 +286,7 @@ describe('SpecTools', function()
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        ftn3rev: '1.2'
+                        ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
                     info._invoker_use = true;
                     SpecTools.loadIface( as, info, [ iface ] );
