@@ -13,10 +13,10 @@
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.4
+    Version: 1.5
     
     FTN3: FutoIn Interface Definition
-    Version: 1.2
+    Version: 1.3
 
     FTN5: FutoIn HTTP integration
     Version: 1.2
@@ -368,6 +368,7 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
   * [AdvancedCCMOptions.specDirs](#AdvancedCCMOptions.specDirs)
   * [AdvancedCCMOptions.hmacKey](#AdvancedCCMOptions.hmacKey)
   * [AdvancedCCMOptions.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)
+  * [AdvancedCCMOptions.sendOnBehalfOf](#AdvancedCCMOptions.sendOnBehalfOf)
 * [class: SimpleCCMOptions](#SimpleCCMOptions)
   * [new SimpleCCMOptions()](#new_SimpleCCMOptions)
   * [SimpleCCMOptions.callTimeoutMS](#SimpleCCMOptions.callTimeoutMS)
@@ -1211,6 +1212,7 @@ Enumeration of standard errors
   * [AdvancedCCMOptions.specDirs](#AdvancedCCMOptions.specDirs)
   * [AdvancedCCMOptions.hmacKey](#AdvancedCCMOptions.hmacKey)
   * [AdvancedCCMOptions.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)
+  * [AdvancedCCMOptions.sendOnBehalfOf](#AdvancedCCMOptions.sendOnBehalfOf)
 
 <a name="new_AdvancedCCMOptions"></a>
 ##new AdvancedCCMOptions()
@@ -1236,6 +1238,12 @@ Hash algorithm for HMAC generation:
 MD5(default), SHA224, SHA256, SHA384, SHA256
 
 **Default**: `MD5`  
+<a name="AdvancedCCMOptions.sendOnBehalfOf"></a>
+##AdvancedCCMOptions.sendOnBehalfOf
+Send "obf" (On Behalf Of) user information as defined in FTN3 v1.3
+when invoked from Executor's request processing task
+
+**Default**: `true`  
 <a name="SimpleCCMOptions"></a>
 #class: SimpleCCMOptions
 **Members**

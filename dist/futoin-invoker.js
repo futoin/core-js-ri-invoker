@@ -492,13 +492,15 @@
                     },
                     _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
                     _ifacever_pattern: common._ifacever_pattern,
-                    _max_supported_v1_minor: 2,
+                    _max_supported_v1_minor: 3,
                     loadIface: function (as, info, specdirs, load_cache) {
                         var raw_spec = null;
                         var fn = info.iface + '-' + info.version + '-iface.json';
                         var cached_info;
+                        var cache_key;
                         if (load_cache) {
-                            cached_info = load_cache[fn];
+                            cache_key = info.iface + ':' + info.version + (info._invoker_use ? ':i' : ':e');
+                            cached_info = load_cache[cache_key];
                             if (cached_info) {
                                 _extend(info, cached_info);
                                 return;
@@ -588,7 +590,7 @@
                         if (load_cache) {
                             as.add(function (as) {
                                 void as;
-                                load_cache[fn] = cached_info;
+                                load_cache[cache_key] = cached_info;
                                 _extend(info, cached_info);
                             });
                         }
@@ -660,15 +662,22 @@
                         if (mjr === 1) {
                             if (mnr < 1) {
                                 if (raw_spec.imports || raw_spec.types || 'BiDirectChannel' in info.constraints) {
-                                    as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.1 features are used');
+                                    as.error(FutoInError.InternalError, 'Missing ftn3rev or wrong field for FTN3 v1.1 features');
                                 }
                             }
                             if (mnr < 2) {
                                 if ('MessageSignature' in info.constraints) {
-                                    as.error(FutoInError.InternalError, 'Missing ftn3rev field when FTN3 v1.2 features are used');
+                                    as.error(FutoInError.InternalError, 'Missing ftn3rev or wrong field for FTN3 v1.2 features');
                                 }
                             }
                             if (mnr < 3) {
+                                for (var f in info.funcs) {
+                                    if (info.funcs[f].seclvl) {
+                                        as.error(FutoInError.InternalError, 'Missing ftn3rev or wrong field for FTN3 v1.2 features');
+                                    }
+                                }
+                            }
+                            if (mnr < 4) {
                             }
                             if (!info._invoker_use && mnr > spectools._max_supported_v1_minor) {
                                 as.error(FutoInError.InternalError, 'Not supported FTN3 revision for Executor');
@@ -951,7 +960,8 @@
             var AdvancedCCMOptions = {
                     specDirs: [],
                     hmacKey: null,
-                    hmacAlgo: 'MD5'
+                    hmacAlgo: 'MD5',
+                    sendOnBehalfOf: true
                 };
             function AdvancedCCMImpl(options) {
                 options = options || {};
@@ -1013,6 +1023,22 @@
                             f: info.iface + ':' + info.version + ':' + ctx.name,
                             p: params
                         };
+                    if (options.sendOnBehalfOf) {
+                        var reqinfo = as.state.reqinfo;
+                        if (reqinfo) {
+                            var reqinfo_info = reqinfo.info;
+                            var user_info = reqinfo_info.USER_INFO;
+                            if (user_info) {
+                                req.obf = {
+                                    lid: user_info.localID(),
+                                    gid: user_info.globalID(),
+                                    slvl: reqinfo_info.SECURITY_LEVEL
+                                };
+                            } else {
+                                req.obf = { slvl: 'Anonymous' };
+                            }
+                        }
+                    }
                     ctx.expect_response = info.funcs[ctx.name].expect_result;
                     if (info.creds !== null) {
                         if (info.creds_master) {

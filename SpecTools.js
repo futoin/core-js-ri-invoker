@@ -45,7 +45,7 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 2,
+    _max_supported_v1_minor : 3,
 
     /**
      * Load FutoIn iface definition.
@@ -62,10 +62,13 @@ var spectools =
         var raw_spec = null;
         var fn = info.iface + '-' + info.version + '-iface.json';
         var cached_info;
+        var cache_key;
 
         if ( load_cache )
         {
-            cached_info = load_cache[ fn ];
+            cache_key = info.iface + ':' + info.version +
+                    ( info._invoker_use ? ':i' : ':e' );
+            cached_info = load_cache[ cache_key ];
 
             if ( cached_info )
             {
@@ -227,7 +230,7 @@ var spectools =
             as.add( function( as )
             {
                 void as;
-                load_cache[ fn ] = cached_info;
+                load_cache[ cache_key ] = cached_info;
                 _extend( info, cached_info );
             } );
         }
@@ -372,7 +375,8 @@ var spectools =
                      raw_spec.types ||
                      'BiDirectChannel' in info.constraints )
                 {
-                    as.error( FutoInError.InternalError, "Missing ftn3rev field when FTN3 v1.1 features are used" );
+                    as.error( FutoInError.InternalError,
+                              "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
                 }
             }
 
@@ -380,11 +384,24 @@ var spectools =
             {
                 if ( 'MessageSignature' in info.constraints )
                 {
-                    as.error( FutoInError.InternalError, "Missing ftn3rev field when FTN3 v1.2 features are used" );
+                    as.error( FutoInError.InternalError,
+                              "Missing ftn3rev or wrong field for FTN3 v1.2 features" );
                 }
             }
 
             if ( mnr < 3 )
+            {
+                for ( var f in info.funcs )
+                {
+                    if ( info.funcs[f].seclvl )
+                    {
+                        as.error( FutoInError.InternalError,
+                                  "Missing ftn3rev or wrong field for FTN3 v1.2 features" );
+                    }
+                }
+            }
+
+            if ( mnr < 4 )
             {
                 // TODO:
             }

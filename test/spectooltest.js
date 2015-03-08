@@ -147,7 +147,7 @@ describe('SpecTools', function()
             )
             .add(
                 function( as ){
-                    load_cache[ 'fileface.a-1.1-iface.json' ].comes_from_cache = true;
+                    load_cache[ 'fileface.a:1.1:e' ].comes_from_cache = true;
                     SpecTools.loadIface(
                         as,
                         info,
@@ -197,7 +197,7 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Missing ftn3rev field when FTN3 v1.1 features are used" );
+                        as.state.error_info.should.equal( "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
                         as.success('OK');
                     }
                     catch ( e )
@@ -222,7 +222,7 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Missing ftn3rev field when FTN3 v1.1 features are used" );
+                        as.state.error_info.should.equal( "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
                         as.success('OK');
                     }
                     catch ( e )
