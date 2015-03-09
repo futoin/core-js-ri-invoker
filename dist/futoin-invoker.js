@@ -673,7 +673,7 @@
                             if (mnr < 3) {
                                 for (var f in info.funcs) {
                                     if (info.funcs[f].seclvl) {
-                                        as.error(FutoInError.InternalError, 'Missing ftn3rev or wrong field for FTN3 v1.2 features');
+                                        as.error(FutoInError.InternalError, 'Missing ftn3rev or wrong field for FTN3 v1.3 features');
                                     }
                                 }
                             }
@@ -814,6 +814,9 @@
                             }
                             if (fdef.rawresult !== info.funcs[f].rawresult) {
                                 as.error(FutoInError.InternalError, '\'rawresult\' flag mismatch for \'' + f + '\'');
+                            }
+                            if (fdef.seclvl !== info.funcs[f].seclvl) {
+                                as.error(FutoInError.InternalError, '\'seclvl\' mismatch for \'' + f + '\'');
                             }
                             if (fdef.rawupload && !info.funcs[f].rawupload) {
                                 as.error(FutoInError.InternalError, '\'rawupload\' flag is missing for \'' + f + '\'');
