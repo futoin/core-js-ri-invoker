@@ -2,7 +2,7 @@
 
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
-var _zipObject = require( 'lodash/array/zipObject' );
+var _zipObject = require( 'lodash/zipObject' );
 var ee = require( 'event-emitter' );
 var async_steps = require( 'futoin-asyncsteps' );
 var InterfaceInfo = require( './InterfaceInfo' );

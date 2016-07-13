@@ -6,10 +6,10 @@ var FutoInError = common.FutoInError;
 var fs;
 var request;
 var isNode = require( 'detect-node' );
-var _cloneDeep = require( 'lodash/lang/cloneDeep' );
-var _zipObject = require( 'lodash/array/zipObject' );
-var _difference = require( 'lodash/array/difference' );
-var _extend = require( 'lodash/object/extend' );
+var _cloneDeep = require( 'lodash/cloneDeep' );
+var _zipObject = require( 'lodash/zipObject' );
+var _difference = require( 'lodash/difference' );
+var _extend = require( 'lodash/extend' );
 
 if ( isNode )
 {

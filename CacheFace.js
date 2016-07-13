@@ -1,7 +1,7 @@
 'use strict';
 
-var _clone = require( 'lodash/lang/clone' );
-var _extend = require( 'lodash/object/extend' );
+var _clone = require( 'lodash/clone' );
+var _extend = require( 'lodash/extend' );
 var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
 

@@ -1,6 +1,6 @@
 'use strict';
 
-var _clone = require( 'lodash/lang/clone' );
+var _clone = require( 'lodash/clone' );
 var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
 var async_steps = require( 'futoin-asyncsteps' );

@@ -3,8 +3,8 @@
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
 var NativeIface = require( './NativeIface' );
-var _extend = require( 'lodash/object/extend' );
-var _defaults = require( 'lodash/object/defaults' );
+var _extend = require( 'lodash/extend' );
+var _defaults = require( 'lodash/defaults' );
 var SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
 var ee = require( 'event-emitter' );
 

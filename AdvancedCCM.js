@@ -1,9 +1,9 @@
 "use strict";
 
-var _clone = require( 'lodash/lang/clone' );
+var _clone = require( 'lodash/clone' );
 var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
-var _extend = require( 'lodash/object/extend' );
+var _extend = require( 'lodash/extend' );
 var AdvancedCCMImpl = require( './lib/AdvancedCCMImpl' );
 var SimpleCCM = require( './SimpleCCM' );
 var ee = require( 'event-emitter' );

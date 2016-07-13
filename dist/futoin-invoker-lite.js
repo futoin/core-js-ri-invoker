@@ -50,8 +50,8 @@
             'use strict';
             var common = _require(6);
             var futoin_error = common.FutoInError;
-            var _zipObject = _require(24);
-            var ee = _require(8);
+            var _zipObject = _require(62);
+            var ee = _require(22);
             var async_steps = _require(23);
             var InterfaceInfo = _require(0);
             var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
@@ -202,10 +202,10 @@
             var common = _require(6);
             var futoin_error = common.FutoInError;
             var NativeIface = _require(1);
-            var _extend = _require(43);
-            var _defaults = _require(42);
+            var _extend = _require(46);
+            var _defaults = _require(44);
             var SimpleCCMImpl = _require(3);
-            var ee = _require(8);
+            var ee = _require(22);
             var SimpleCCMPublic = common.Options;
             function SimpleCCM(options) {
                 ee(this);
@@ -438,8 +438,8 @@
             'use strict';
             var common = _require(6);
             var FutoInError = common.FutoInError;
-            var isNode = _require(7);
-            var _defaults = _require(42);
+            var isNode = _require(8);
+            var _defaults = _require(44);
             var comms_impl;
             if (isNode) {
                 var hidereq = require;
@@ -565,7 +565,7 @@
         },
         function (module, exports) {
             'use strict';
-            var ee = _require(8);
+            var ee = _require(22);
             var common = _require(6);
             var FutoInError = common.FutoInError;
             var MyWebSocket = WebSocket;
@@ -902,6 +902,71 @@
             exports._ifacever_pattern = /^(([a-z][a-z0-9]*)(\.[a-z][a-z0-9]*)*):(([0-9]+)\.([0-9]+))$/;
         },
         function (module, exports) {
+            'use strict';
+            var assign = _require(9), normalizeOpts = _require(16), isCallable = _require(12), contains = _require(19), d;
+            d = module.exports = function (dscr, value) {
+                var c, e, w, options, desc;
+                if (arguments.length < 2 || typeof dscr !== 'string') {
+                    options = value;
+                    value = dscr;
+                    dscr = null;
+                } else {
+                    options = arguments[2];
+                }
+                if (dscr == null) {
+                    c = w = true;
+                    e = false;
+                } else {
+                    c = contains.call(dscr, 'c');
+                    e = contains.call(dscr, 'e');
+                    w = contains.call(dscr, 'w');
+                }
+                desc = {
+                    value: value,
+                    configurable: c,
+                    enumerable: e,
+                    writable: w
+                };
+                return !options ? desc : assign(normalizeOpts(options), desc);
+            };
+            d.gs = function (dscr, get, set) {
+                var c, e, options, desc;
+                if (typeof dscr !== 'string') {
+                    options = set;
+                    set = get;
+                    get = dscr;
+                    dscr = null;
+                } else {
+                    options = arguments[3];
+                }
+                if (get == null) {
+                    get = undefined;
+                } else if (!isCallable(get)) {
+                    options = get;
+                    get = set = undefined;
+                } else if (set == null) {
+                    set = undefined;
+                } else if (!isCallable(set)) {
+                    options = set;
+                    set = undefined;
+                }
+                if (dscr == null) {
+                    c = true;
+                    e = false;
+                } else {
+                    c = contains.call(dscr, 'c');
+                    e = contains.call(dscr, 'e');
+                }
+                desc = {
+                    get: get,
+                    set: set,
+                    configurable: c,
+                    enumerable: e
+                };
+                return !options ? desc : assign(normalizeOpts(options), desc);
+            };
+        },
+        function (module, exports) {
             module.exports = false;
             try {
                 module.exports = Object.prototype.toString.call(global.process) === '[object process]';
@@ -910,7 +975,127 @@
         },
         function (module, exports) {
             'use strict';
-            var d = _require(9), callable = _require(18), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
+            module.exports = _require(10)() ? Object.assign : _require(11);
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function () {
+                var assign = Object.assign, obj;
+                if (typeof assign !== 'function')
+                    return false;
+                obj = { foo: 'raz' };
+                assign(obj, { bar: 'dwa' }, { trzy: 'trzy' });
+                return obj.foo + obj.bar + obj.trzy === 'razdwatrzy';
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var keys = _require(13), value = _require(18), max = Math.max;
+            module.exports = function (dest, src) {
+                var error, i, l = max(arguments.length, 2), assign;
+                dest = Object(value(dest));
+                assign = function (key) {
+                    try {
+                        dest[key] = src[key];
+                    } catch (e) {
+                        if (!error)
+                            error = e;
+                    }
+                };
+                for (i = 1; i < l; ++i) {
+                    src = arguments[i];
+                    keys(src).forEach(assign);
+                }
+                if (error !== undefined)
+                    throw error;
+                return dest;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (obj) {
+                return typeof obj === 'function';
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = _require(14)() ? Object.keys : _require(15);
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function () {
+                try {
+                    Object.keys('primitive');
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var keys = Object.keys;
+            module.exports = function (object) {
+                return keys(object == null ? object : Object(object));
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var forEach = Array.prototype.forEach, create = Object.create;
+            var process = function (src, obj) {
+                var key;
+                for (key in src)
+                    obj[key] = src[key];
+            };
+            module.exports = function (options) {
+                var result = create(null);
+                forEach.call(arguments, function (options) {
+                    if (options == null)
+                        return;
+                    process(Object(options), result);
+                });
+                return result;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (fn) {
+                if (typeof fn !== 'function')
+                    throw new TypeError(fn + ' is not a function');
+                return fn;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = function (value) {
+                if (value == null)
+                    throw new TypeError('Cannot use null or undefined');
+                return value;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            module.exports = _require(20)() ? String.prototype.contains : _require(21);
+        },
+        function (module, exports) {
+            'use strict';
+            var str = 'razdwatrzy';
+            module.exports = function () {
+                if (typeof str.contains !== 'function')
+                    return false;
+                return str.contains('dwa') === true && str.contains('foo') === false;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var indexOf = String.prototype.indexOf;
+            module.exports = function (searchString) {
+                return indexOf.call(this, searchString, arguments[1]) > -1;
+            };
+        },
+        function (module, exports) {
+            'use strict';
+            var d = _require(7), callable = _require(17), apply = Function.prototype.apply, call = Function.prototype.call, create = Object.create, defineProperty = Object.defineProperty, defineProperties = Object.defineProperties, hasOwnProperty = Object.prototype.hasOwnProperty, descriptor = {
                     configurable: true,
                     enumerable: false,
                     writable: true
@@ -1028,490 +1213,339 @@
             exports.methods = methods;
         },
         function (module, exports) {
-            'use strict';
-            var assign = _require(10), normalizeOpts = _require(17), isCallable = _require(13), contains = _require(20), d;
-            d = module.exports = function (dscr, value) {
-                var c, e, w, options, desc;
-                if (arguments.length < 2 || typeof dscr !== 'string') {
-                    options = value;
-                    value = dscr;
-                    dscr = null;
-                } else {
-                    options = arguments[2];
-                }
-                if (dscr == null) {
-                    c = w = true;
-                    e = false;
-                } else {
-                    c = contains.call(dscr, 'c');
-                    e = contains.call(dscr, 'e');
-                    w = contains.call(dscr, 'w');
-                }
-                desc = {
-                    value: value,
-                    configurable: c,
-                    enumerable: e,
-                    writable: w
-                };
-                return !options ? desc : assign(normalizeOpts(options), desc);
-            };
-            d.gs = function (dscr, get, set) {
-                var c, e, options, desc;
-                if (typeof dscr !== 'string') {
-                    options = set;
-                    set = get;
-                    get = dscr;
-                    dscr = null;
-                } else {
-                    options = arguments[3];
-                }
-                if (get == null) {
-                    get = undefined;
-                } else if (!isCallable(get)) {
-                    options = get;
-                    get = set = undefined;
-                } else if (set == null) {
-                    set = undefined;
-                } else if (!isCallable(set)) {
-                    options = set;
-                    set = undefined;
-                }
-                if (dscr == null) {
-                    c = true;
-                    e = false;
-                } else {
-                    c = contains.call(dscr, 'c');
-                    e = contains.call(dscr, 'e');
-                }
-                desc = {
-                    get: get,
-                    set: set,
-                    configurable: c,
-                    enumerable: e
-                };
-                return !options ? desc : assign(normalizeOpts(options), desc);
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = _require(11)() ? Object.assign : _require(12);
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = function () {
-                var assign = Object.assign, obj;
-                if (typeof assign !== 'function')
-                    return false;
-                obj = { foo: 'raz' };
-                assign(obj, { bar: 'dwa' }, { trzy: 'trzy' });
-                return obj.foo + obj.bar + obj.trzy === 'razdwatrzy';
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            var keys = _require(14), value = _require(19), max = Math.max;
-            module.exports = function (dest, src) {
-                var error, i, l = max(arguments.length, 2), assign;
-                dest = Object(value(dest));
-                assign = function (key) {
-                    try {
-                        dest[key] = src[key];
-                    } catch (e) {
-                        if (!error)
-                            error = e;
-                    }
-                };
-                for (i = 1; i < l; ++i) {
-                    src = arguments[i];
-                    keys(src).forEach(assign);
-                }
-                if (error !== undefined)
-                    throw error;
-                return dest;
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = function (obj) {
-                return typeof obj === 'function';
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = _require(15)() ? Object.keys : _require(16);
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = function () {
-                try {
-                    Object.keys('primitive');
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            var keys = Object.keys;
-            module.exports = function (object) {
-                return keys(object == null ? object : Object(object));
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            var forEach = Array.prototype.forEach, create = Object.create;
-            var process = function (src, obj) {
-                var key;
-                for (key in src)
-                    obj[key] = src[key];
-            };
-            module.exports = function (options) {
-                var result = create(null);
-                forEach.call(arguments, function (options) {
-                    if (options == null)
-                        return;
-                    process(Object(options), result);
-                });
-                return result;
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = function (fn) {
-                if (typeof fn !== 'function')
-                    throw new TypeError(fn + ' is not a function');
-                return fn;
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = function (value) {
-                if (value == null)
-                    throw new TypeError('Cannot use null or undefined');
-                return value;
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            module.exports = _require(21)() ? String.prototype.contains : _require(22);
-        },
-        function (module, exports) {
-            'use strict';
-            var str = 'razdwatrzy';
-            module.exports = function () {
-                if (typeof str.contains !== 'function')
-                    return false;
-                return str.contains('dwa') === true && str.contains('foo') === false;
-            };
-        },
-        function (module, exports) {
-            'use strict';
-            var indexOf = String.prototype.indexOf;
-            module.exports = function (searchString) {
-                return indexOf.call(this, searchString, arguments[1]) > -1;
-            };
-        },
-        function (module, exports) {
             module.exports = __external_$as;
         },
         function (module, exports) {
-            var isArray = _require(38);
-            function zipObject(props, values) {
-                var index = -1, length = props ? props.length : 0, result = {};
-                if (length && !values && !isArray(props[0])) {
-                    values = [];
+            var root = _require(41);
+            var Reflect = root.Reflect;
+            module.exports = Reflect;
+        },
+        function (module, exports) {
+            function apply(func, thisArg, args) {
+                var length = args.length;
+                switch (length) {
+                case 0:
+                    return func.call(thisArg);
+                case 1:
+                    return func.call(thisArg, args[0]);
+                case 2:
+                    return func.call(thisArg, args[0], args[1]);
+                case 3:
+                    return func.call(thisArg, args[0], args[1], args[2]);
                 }
-                while (++index < length) {
-                    var key = props[index];
-                    if (values) {
-                        result[key] = values[index];
-                    } else if (key) {
-                        result[key[0]] = key[1];
-                    }
+                return func.apply(thisArg, args);
+            }
+            module.exports = apply;
+        },
+        function (module, exports) {
+            var eq = _require(45);
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            function assignInDefaults(objValue, srcValue, key, object) {
+                if (objValue === undefined || eq(objValue, objectProto[key]) && !hasOwnProperty.call(object, key)) {
+                    return srcValue;
+                }
+                return objValue;
+            }
+            module.exports = assignInDefaults;
+        },
+        function (module, exports) {
+            var eq = _require(45);
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            function assignValue(object, key, value) {
+                var objValue = object[key];
+                if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) || value === undefined && !(key in object)) {
+                    object[key] = value;
+                }
+            }
+            module.exports = assignValue;
+        },
+        function (module, exports) {
+            var Reflect = _require(24), iteratorToArray = _require(40);
+            var objectProto = Object.prototype;
+            var enumerate = Reflect ? Reflect.enumerate : undefined, propertyIsEnumerable = objectProto.propertyIsEnumerable;
+            function baseKeysIn(object) {
+                object = object == null ? object : Object(object);
+                var result = [];
+                for (var key in object) {
+                    result.push(key);
                 }
                 return result;
             }
-            module.exports = zipObject;
+            if (enumerate && !propertyIsEnumerable.call({ 'valueOf': 1 }, 'valueOf')) {
+                baseKeysIn = function (object) {
+                    return iteratorToArray(enumerate(object));
+                };
+            }
+            module.exports = baseKeysIn;
         },
         function (module, exports) {
-            function arrayCopy(source, array) {
-                var index = -1, length = source.length;
-                array || (array = Array(length));
+            function baseProperty(key) {
+                return function (object) {
+                    return object == null ? undefined : object[key];
+                };
+            }
+            module.exports = baseProperty;
+        },
+        function (module, exports) {
+            function baseTimes(n, iteratee) {
+                var index = -1, result = Array(n);
+                while (++index < n) {
+                    result[index] = iteratee(index);
+                }
+                return result;
+            }
+            module.exports = baseTimes;
+        },
+        function (module, exports) {
+            function baseZipObject(props, values, assignFunc) {
+                var index = -1, length = props.length, valsLength = values.length, result = {};
                 while (++index < length) {
-                    array[index] = source[index];
+                    var value = index < valsLength ? values[index] : undefined;
+                    assignFunc(result, props[index], value);
                 }
-                return array;
+                return result;
             }
-            module.exports = arrayCopy;
+            module.exports = baseZipObject;
         },
         function (module, exports) {
-            function assignDefaults(objectValue, sourceValue) {
-                return typeof objectValue == 'undefined' ? sourceValue : objectValue;
+            function checkGlobal(value) {
+                return value && value.Object === Object ? value : null;
             }
-            module.exports = assignDefaults;
+            module.exports = checkGlobal;
         },
         function (module, exports) {
-            var baseCopy = _require(28), keys = _require(44);
-            function baseAssign(object, source, customizer) {
-                var props = keys(source);
-                if (!customizer) {
-                    return baseCopy(source, object, props);
-                }
-                var index = -1, length = props.length;
-                while (++index < length) {
-                    var key = props[index], value = object[key], result = customizer(value, source[key], key, object, source);
-                    if ((result === result ? result !== value : value === value) || typeof value == 'undefined' && !(key in object)) {
-                        object[key] = result;
-                    }
-                }
-                return object;
-            }
-            module.exports = baseAssign;
-        },
-        function (module, exports) {
-            function baseCopy(source, object, props) {
-                if (!props) {
-                    props = object;
-                    object = {};
-                }
+            var assignValue = _require(27);
+            function copyObject(source, props, object, customizer) {
+                object || (object = {});
                 var index = -1, length = props.length;
                 while (++index < length) {
                     var key = props[index];
-                    object[key] = source[key];
+                    var newValue = customizer ? customizer(object[key], source[key], key, object, source) : source[key];
+                    assignValue(object, key, newValue);
                 }
                 return object;
             }
-            module.exports = baseCopy;
+            module.exports = copyObject;
         },
         function (module, exports) {
-            function baseToString(value) {
-                if (typeof value == 'string') {
-                    return value;
-                }
-                return value == null ? '' : value + '';
-            }
-            module.exports = baseToString;
-        },
-        function (module, exports) {
-            var identity = _require(48);
-            function bindCallback(func, thisArg, argCount) {
-                if (typeof func != 'function') {
-                    return identity;
-                }
-                if (typeof thisArg == 'undefined') {
-                    return func;
-                }
-                switch (argCount) {
-                case 1:
-                    return function (value) {
-                        return func.call(thisArg, value);
-                    };
-                case 3:
-                    return function (value, index, collection) {
-                        return func.call(thisArg, value, index, collection);
-                    };
-                case 4:
-                    return function (accumulator, value, index, collection) {
-                        return func.call(thisArg, accumulator, value, index, collection);
-                    };
-                case 5:
-                    return function (value, other, key, object, source) {
-                        return func.call(thisArg, value, other, key, object, source);
-                    };
-                }
-                return function () {
-                    return func.apply(thisArg, arguments);
-                };
-            }
-            module.exports = bindCallback;
-        },
-        function (module, exports) {
-            var bindCallback = _require(30), isIterateeCall = _require(33);
+            var isIterateeCall = _require(38), rest = _require(58);
             function createAssigner(assigner) {
-                return function () {
-                    var length = arguments.length, object = arguments[0];
-                    if (length < 2 || object == null) {
-                        return object;
+                return rest(function (object, sources) {
+                    var index = -1, length = sources.length, customizer = length > 1 ? sources[length - 1] : undefined, guard = length > 2 ? sources[2] : undefined;
+                    customizer = assigner.length > 3 && typeof customizer == 'function' ? (length--, customizer) : undefined;
+                    if (guard && isIterateeCall(sources[0], sources[1], guard)) {
+                        customizer = length < 3 ? undefined : customizer;
+                        length = 1;
                     }
-                    if (length > 3 && isIterateeCall(arguments[1], arguments[2], arguments[3])) {
-                        length = 2;
-                    }
-                    if (length > 3 && typeof arguments[length - 2] == 'function') {
-                        var customizer = bindCallback(arguments[--length - 1], arguments[length--], 5);
-                    } else if (length > 2 && typeof arguments[length - 1] == 'function') {
-                        customizer = arguments[--length];
-                    }
-                    var index = 0;
+                    object = Object(object);
                     while (++index < length) {
-                        var source = arguments[index];
+                        var source = sources[index];
                         if (source) {
-                            assigner(object, source, customizer);
+                            assigner(object, source, index, customizer);
                         }
                     }
                     return object;
-                };
+                });
             }
             module.exports = createAssigner;
         },
         function (module, exports) {
-            var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+            var baseProperty = _require(29);
+            var getLength = baseProperty('length');
+            module.exports = getLength;
+        },
+        function (module, exports) {
+            var baseTimes = _require(30), isArguments = _require(47), isArray = _require(48), isLength = _require(52), isString = _require(55);
+            function indexKeys(object) {
+                var length = object ? object.length : undefined;
+                if (isLength(length) && (isArray(object) || isString(object) || isArguments(object))) {
+                    return baseTimes(length, String);
+                }
+                return null;
+            }
+            module.exports = indexKeys;
+        },
+        function (module, exports) {
+            var MAX_SAFE_INTEGER = 9007199254740991;
+            var reIsUint = /^(?:0|[1-9]\d*)$/;
             function isIndex(value, length) {
-                value = +value;
                 length = length == null ? MAX_SAFE_INTEGER : length;
-                return value > -1 && value % 1 == 0 && value < length;
+                return !!length && (typeof value == 'number' || reIsUint.test(value)) && (value > -1 && value % 1 == 0 && value < length);
             }
             module.exports = isIndex;
         },
         function (module, exports) {
-            var isIndex = _require(32), isLength = _require(34), isObject = _require(40);
+            var eq = _require(45), isArrayLike = _require(49), isIndex = _require(37), isObject = _require(53);
             function isIterateeCall(value, index, object) {
                 if (!isObject(object)) {
                     return false;
                 }
                 var type = typeof index;
-                if (type == 'number') {
-                    var length = object.length, prereq = isLength(length) && isIndex(index, length);
-                } else {
-                    prereq = type == 'string' && index in object;
+                if (type == 'number' ? isArrayLike(object) && isIndex(index, object.length) : type == 'string' && index in object) {
+                    return eq(object[index], value);
                 }
-                var other = object[index];
-                return prereq && (value === value ? value === other : other !== other);
+                return false;
             }
             module.exports = isIterateeCall;
         },
         function (module, exports) {
-            var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+            var objectProto = Object.prototype;
+            function isPrototype(value) {
+                var Ctor = value && value.constructor, proto = typeof Ctor == 'function' && Ctor.prototype || objectProto;
+                return value === proto;
+            }
+            module.exports = isPrototype;
+        },
+        function (module, exports) {
+            function iteratorToArray(iterator) {
+                var data, result = [];
+                while (!(data = iterator.next()).done) {
+                    result.push(data.value);
+                }
+                return result;
+            }
+            module.exports = iteratorToArray;
+        },
+        function (module, exports) {
+            var checkGlobal = _require(32);
+            var freeGlobal = checkGlobal(typeof global == 'object' && global);
+            var freeSelf = checkGlobal(typeof self == 'object' && self);
+            var thisGlobal = checkGlobal(typeof this == 'object' && this);
+            var root = freeGlobal || freeSelf || thisGlobal || Function('return this')();
+            module.exports = root;
+        },
+        function (module, exports) {
+            var assignValue = _require(27), copyObject = _require(33), createAssigner = _require(34), isArrayLike = _require(49), isPrototype = _require(39), keysIn = _require(57);
+            var objectProto = Object.prototype;
+            var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+            var nonEnumShadows = !propertyIsEnumerable.call({ 'valueOf': 1 }, 'valueOf');
+            var assignIn = createAssigner(function (object, source) {
+                    if (nonEnumShadows || isPrototype(source) || isArrayLike(source)) {
+                        copyObject(source, keysIn(source), object);
+                        return;
+                    }
+                    for (var key in source) {
+                        assignValue(object, key, source[key]);
+                    }
+                });
+            module.exports = assignIn;
+        },
+        function (module, exports) {
+            var copyObject = _require(33), createAssigner = _require(34), keysIn = _require(57);
+            var assignInWith = createAssigner(function (object, source, srcIndex, customizer) {
+                    copyObject(source, keysIn(source), object, customizer);
+                });
+            module.exports = assignInWith;
+        },
+        function (module, exports) {
+            var apply = _require(25), assignInDefaults = _require(26), assignInWith = _require(43), rest = _require(58);
+            var defaults = rest(function (args) {
+                    args.push(undefined, assignInDefaults);
+                    return apply(assignInWith, undefined, args);
+                });
+            module.exports = defaults;
+        },
+        function (module, exports) {
+            function eq(value, other) {
+                return value === other || value !== value && other !== other;
+            }
+            module.exports = eq;
+        },
+        function (module, exports) {
+            module.exports = _require(42);
+        },
+        function (module, exports) {
+            var isArrayLikeObject = _require(50);
+            var argsTag = '[object Arguments]';
+            var objectProto = Object.prototype;
+            var hasOwnProperty = objectProto.hasOwnProperty;
+            var objectToString = objectProto.toString;
+            var propertyIsEnumerable = objectProto.propertyIsEnumerable;
+            function isArguments(value) {
+                return isArrayLikeObject(value) && hasOwnProperty.call(value, 'callee') && (!propertyIsEnumerable.call(value, 'callee') || objectToString.call(value) == argsTag);
+            }
+            module.exports = isArguments;
+        },
+        function (module, exports) {
+            var isArray = Array.isArray;
+            module.exports = isArray;
+        },
+        function (module, exports) {
+            var getLength = _require(35), isFunction = _require(51), isLength = _require(52);
+            function isArrayLike(value) {
+                return value != null && isLength(getLength(value)) && !isFunction(value);
+            }
+            module.exports = isArrayLike;
+        },
+        function (module, exports) {
+            var isArrayLike = _require(49), isObjectLike = _require(54);
+            function isArrayLikeObject(value) {
+                return isObjectLike(value) && isArrayLike(value);
+            }
+            module.exports = isArrayLikeObject;
+        },
+        function (module, exports) {
+            var isObject = _require(53);
+            var funcTag = '[object Function]', genTag = '[object GeneratorFunction]';
+            var objectProto = Object.prototype;
+            var objectToString = objectProto.toString;
+            function isFunction(value) {
+                var tag = isObject(value) ? objectToString.call(value) : '';
+                return tag == funcTag || tag == genTag;
+            }
+            module.exports = isFunction;
+        },
+        function (module, exports) {
+            var MAX_SAFE_INTEGER = 9007199254740991;
             function isLength(value) {
                 return typeof value == 'number' && value > -1 && value % 1 == 0 && value <= MAX_SAFE_INTEGER;
             }
             module.exports = isLength;
         },
         function (module, exports) {
-            function isObjectLike(value) {
-                return value && typeof value == 'object' || false;
-            }
-            module.exports = isObjectLike;
-        },
-        function (module, exports) {
-            var isArguments = _require(37), isArray = _require(38), isIndex = _require(32), isLength = _require(34), keysIn = _require(45), support = _require(47);
-            var objectProto = Object.prototype;
-            var hasOwnProperty = objectProto.hasOwnProperty;
-            function shimKeys(object) {
-                var props = keysIn(object), propsLength = props.length, length = propsLength && object.length;
-                var allowIndexes = length && isLength(length) && (isArray(object) || support.nonEnumArgs && isArguments(object));
-                var index = -1, result = [];
-                while (++index < propsLength) {
-                    var key = props[index];
-                    if (allowIndexes && isIndex(key, length) || hasOwnProperty.call(object, key)) {
-                        result.push(key);
-                    }
-                }
-                return result;
-            }
-            module.exports = shimKeys;
-        },
-        function (module, exports) {
-            var isLength = _require(34), isObjectLike = _require(35);
-            var argsTag = '[object Arguments]';
-            var objectProto = Object.prototype;
-            var objToString = objectProto.toString;
-            function isArguments(value) {
-                var length = isObjectLike(value) ? value.length : undefined;
-                return isLength(length) && objToString.call(value) == argsTag || false;
-            }
-            module.exports = isArguments;
-        },
-        function (module, exports) {
-            var isLength = _require(34), isNative = _require(39), isObjectLike = _require(35);
-            var arrayTag = '[object Array]';
-            var objectProto = Object.prototype;
-            var objToString = objectProto.toString;
-            var nativeIsArray = isNative(nativeIsArray = Array.isArray) && nativeIsArray;
-            var isArray = nativeIsArray || function (value) {
-                    return isObjectLike(value) && isLength(value.length) && objToString.call(value) == arrayTag || false;
-                };
-            module.exports = isArray;
-        },
-        function (module, exports) {
-            var escapeRegExp = _require(46), isObjectLike = _require(35);
-            var funcTag = '[object Function]';
-            var reHostCtor = /^\[object .+?Constructor\]$/;
-            var objectProto = Object.prototype;
-            var fnToString = Function.prototype.toString;
-            var objToString = objectProto.toString;
-            var reNative = RegExp('^' + escapeRegExp(objToString).replace(/toString|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$');
-            function isNative(value) {
-                if (value == null) {
-                    return false;
-                }
-                if (objToString.call(value) == funcTag) {
-                    return reNative.test(fnToString.call(value));
-                }
-                return isObjectLike(value) && reHostCtor.test(value) || false;
-            }
-            module.exports = isNative;
-        },
-        function (module, exports) {
             function isObject(value) {
                 var type = typeof value;
-                return type == 'function' || value && type == 'object' || false;
+                return !!value && (type == 'object' || type == 'function');
             }
             module.exports = isObject;
         },
         function (module, exports) {
-            var baseAssign = _require(27), createAssigner = _require(31);
-            var assign = createAssigner(baseAssign);
-            module.exports = assign;
-        },
-        function (module, exports) {
-            var arrayCopy = _require(25), assign = _require(41), assignDefaults = _require(26);
-            function defaults(object) {
-                if (object == null) {
-                    return object;
-                }
-                var args = arrayCopy(arguments);
-                args.push(assignDefaults);
-                return assign.apply(undefined, args);
+            function isObjectLike(value) {
+                return !!value && typeof value == 'object';
             }
-            module.exports = defaults;
+            module.exports = isObjectLike;
         },
         function (module, exports) {
-            module.exports = _require(41);
+            var isArray = _require(48), isObjectLike = _require(54);
+            var stringTag = '[object String]';
+            var objectProto = Object.prototype;
+            var objectToString = objectProto.toString;
+            function isString(value) {
+                return typeof value == 'string' || !isArray(value) && isObjectLike(value) && objectToString.call(value) == stringTag;
+            }
+            module.exports = isString;
         },
         function (module, exports) {
-            var isLength = _require(34), isNative = _require(39), isObject = _require(40), shimKeys = _require(36);
-            var nativeKeys = isNative(nativeKeys = Object.keys) && nativeKeys;
-            var keys = !nativeKeys ? shimKeys : function (object) {
-                    if (object) {
-                        var Ctor = object.constructor, length = object.length;
-                    }
-                    if (typeof Ctor == 'function' && Ctor.prototype === object || typeof object != 'function' && (length && isLength(length))) {
-                        return shimKeys(object);
-                    }
-                    return isObject(object) ? nativeKeys(object) : [];
-                };
-            module.exports = keys;
+            var isObjectLike = _require(54);
+            var symbolTag = '[object Symbol]';
+            var objectProto = Object.prototype;
+            var objectToString = objectProto.toString;
+            function isSymbol(value) {
+                return typeof value == 'symbol' || isObjectLike(value) && objectToString.call(value) == symbolTag;
+            }
+            module.exports = isSymbol;
         },
         function (module, exports) {
-            var isArguments = _require(37), isArray = _require(38), isIndex = _require(32), isLength = _require(34), isObject = _require(40), support = _require(47);
+            var baseKeysIn = _require(28), indexKeys = _require(36), isIndex = _require(37), isPrototype = _require(39);
             var objectProto = Object.prototype;
             var hasOwnProperty = objectProto.hasOwnProperty;
             function keysIn(object) {
-                if (object == null) {
-                    return [];
-                }
-                if (!isObject(object)) {
-                    object = Object(object);
-                }
-                var length = object.length;
-                length = length && isLength(length) && (isArray(object) || support.nonEnumArgs && isArguments(object)) && length || 0;
-                var Ctor = object.constructor, index = -1, isProto = typeof Ctor == 'function' && Ctor.prototype === object, result = Array(length), skipIndexes = length > 0;
-                while (++index < length) {
-                    result[index] = index + '';
-                }
-                for (var key in object) {
-                    if (!(skipIndexes && isIndex(key, length)) && !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
+                var index = -1, isProto = isPrototype(object), props = baseKeysIn(object), propsLength = props.length, indexes = indexKeys(object), skipIndexes = !!indexes, result = indexes || [], length = result.length;
+                while (++index < propsLength) {
+                    var key = props[index];
+                    if (!(skipIndexes && (key == 'length' || isIndex(key, length))) && !(key == 'constructor' && (isProto || !hasOwnProperty.call(object, key)))) {
                         result.push(key);
                     }
                 }
@@ -1520,44 +1554,96 @@
             module.exports = keysIn;
         },
         function (module, exports) {
-            var baseToString = _require(29);
-            var reRegExpChars = /[.*+?^${}()|[\]\/\\]/g, reHasRegExpChars = RegExp(reRegExpChars.source);
-            function escapeRegExp(string) {
-                string = baseToString(string);
-                return string && reHasRegExpChars.test(string) ? string.replace(reRegExpChars, '\\$&') : string;
+            var apply = _require(25), toInteger = _require(60);
+            var FUNC_ERROR_TEXT = 'Expected a function';
+            var nativeMax = Math.max;
+            function rest(func, start) {
+                if (typeof func != 'function') {
+                    throw new TypeError(FUNC_ERROR_TEXT);
+                }
+                start = nativeMax(start === undefined ? func.length - 1 : toInteger(start), 0);
+                return function () {
+                    var args = arguments, index = -1, length = nativeMax(args.length - start, 0), array = Array(length);
+                    while (++index < length) {
+                        array[index] = args[start + index];
+                    }
+                    switch (start) {
+                    case 0:
+                        return func.call(this, array);
+                    case 1:
+                        return func.call(this, args[0], array);
+                    case 2:
+                        return func.call(this, args[0], args[1], array);
+                    }
+                    var otherArgs = Array(start + 1);
+                    index = -1;
+                    while (++index < start) {
+                        otherArgs[index] = args[index];
+                    }
+                    otherArgs[start] = array;
+                    return apply(func, this, otherArgs);
+                };
             }
-            module.exports = escapeRegExp;
+            module.exports = rest;
         },
         function (module, exports) {
-            var isNative = _require(39);
-            var reThis = /\bthis\b/;
-            var objectProto = Object.prototype;
-            var document = (document = global.window) && document.document;
-            var propertyIsEnumerable = objectProto.propertyIsEnumerable;
-            var support = {};
-            (function (x) {
-                support.funcDecomp = !isNative(global.WinRTError) && reThis.test(function () {
-                    return this;
-                });
-                support.funcNames = typeof Function.name == 'string';
-                try {
-                    support.dom = document.createDocumentFragment().nodeType === 11;
-                } catch (e) {
-                    support.dom = false;
+            var toNumber = _require(61);
+            var INFINITY = 1 / 0, MAX_INTEGER = 1.7976931348623157e+308;
+            function toFinite(value) {
+                if (!value) {
+                    return value === 0 ? value : 0;
                 }
-                try {
-                    support.nonEnumArgs = !propertyIsEnumerable.call(arguments, 1);
-                } catch (e) {
-                    support.nonEnumArgs = true;
+                value = toNumber(value);
+                if (value === INFINITY || value === -INFINITY) {
+                    var sign = value < 0 ? -1 : 1;
+                    return sign * MAX_INTEGER;
                 }
-            }(0, 0));
-            module.exports = support;
+                return value === value ? value : 0;
+            }
+            module.exports = toFinite;
         },
         function (module, exports) {
-            function identity(value) {
-                return value;
+            var toFinite = _require(59);
+            function toInteger(value) {
+                var result = toFinite(value), remainder = result % 1;
+                return result === result ? remainder ? result - remainder : result : 0;
             }
-            module.exports = identity;
+            module.exports = toInteger;
+        },
+        function (module, exports) {
+            var isFunction = _require(51), isObject = _require(53), isSymbol = _require(56);
+            var NAN = 0 / 0;
+            var reTrim = /^\s+|\s+$/g;
+            var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+            var reIsBinary = /^0b[01]+$/i;
+            var reIsOctal = /^0o[0-7]+$/i;
+            var freeParseInt = parseInt;
+            function toNumber(value) {
+                if (typeof value == 'number') {
+                    return value;
+                }
+                if (isSymbol(value)) {
+                    return NAN;
+                }
+                if (isObject(value)) {
+                    var other = isFunction(value.valueOf) ? value.valueOf() : value;
+                    value = isObject(other) ? other + '' : other;
+                }
+                if (typeof value != 'string') {
+                    return value === 0 ? value : +value;
+                }
+                value = value.replace(reTrim, '');
+                var isBinary = reIsBinary.test(value);
+                return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
+            }
+            module.exports = toNumber;
+        },
+        function (module, exports) {
+            var assignValue = _require(27), baseZipObject = _require(31);
+            function zipObject(props, values) {
+                return baseZipObject(props || [], values || [], assignValue);
+            }
+            module.exports = zipObject;
         }
     ];
     return _require(5);
