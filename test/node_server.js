@@ -2,8 +2,10 @@ var http = require('http');
 var url = require( 'url' );
 var WebSocket = require('faye-websocket');
 var processServerRequest = require( './server_func' )
-var httpsrv;
-var wssrv;
+var httpsrv = null;
+var wssrv = null;
+
+require( 'chai' ).should();
 
 function processTestServerRequest( request, data )
 {
@@ -56,7 +58,22 @@ function createTestHttpServer( cb )
             freq.push( chunk );
         } );
         request.on( "end",function(){
-            freq = Buffer.concat( freq ).toString( 'utf8' );
+            if ( freq.length )
+            {
+                if ( freq.length > 1 )
+                {
+                    freq = Buffer.concat( freq ).toString( 'utf8' );
+                }
+                else
+                {
+                    freq = freq[0].toString( 'utf8' );
+                }
+            }
+            else
+            {
+                freq = '';
+            }
+            
             var frsp;
             
             if ( request.method !== 'OPTIONS' )
@@ -106,6 +123,11 @@ function createTestHttpServer( cb )
 
     httpsrv.on( 'upgrade', function( req, sock, body )
     {
+        if ( !httpsrv )
+        {
+            return;
+        }
+        
         if ( !req.url.match( /^\/ftn/ ) )
         {
             return;
@@ -159,7 +181,7 @@ function createTestHttpServer( cb )
 
 function closeTestHttpServer( done )
 {
-     if ( httpsrv )
+    if ( httpsrv )
     {
         try
         {

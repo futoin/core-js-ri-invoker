@@ -1,4 +1,13 @@
 
+var expect;
+
+if ( typeof chai !== 'undefined' ) {
+    expect = chai.expect;
+} else {
+    expect = require('chai').expect;
+}
+
+
 var fail_next = false;
 var log_count = 0;
 var cached_value;
@@ -96,7 +105,7 @@ function processServerRequest( freq, data )
             return {};
             
         case "rawUploadFunc" :
-            freq.p.should.be.empty;
+            expect(freq.p).to.be.empty;
             data.should.equal( "MY_UPLOAD" );
             return { ok : "OK" };
 
@@ -107,17 +116,17 @@ function processServerRequest( freq, data )
             return { ok : "OK" };
             
         case "rawDownload" :
-            freq.p.should.be.empty;
+            expect(freq.p).to.be.empty;
             return "MY_DOWNLOAD";
             
         case "wrongDataResult":
-            freq.p.should.be.empty;
+            expect(freq.p).to.be.empty;
             return "MY_DOWNLOAD";
             
         case "missingResultVar":
         case "rawResultExpected":
         case "unexpectedUpload":
-            freq.p.should.be.empty;
+            expect(freq.p).to.be.empty;
             return { ok : "OK" };
             
         case "unknownParam":

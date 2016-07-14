@@ -1,6 +1,6 @@
 
 var spectools = {};
-require( '../../lib/spectools_node' )( spectools );
+require( '../../lib/node/spectools_hmac' )( spectools );
 
 var performance_now = require( "performance-now" );
 
