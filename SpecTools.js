@@ -741,20 +741,21 @@ var spectools =
             {
                 if ( console )
                 {
-                    console.log( "[ERROR] Custom type recursion: " + tdef );
+                    console.log( "[ERROR] Custom type recursion: " + tdef.type );
                 }
 
                 throw new Error( FutoInError.InternalError );
             }
 
             _type_stack[ type ] = true;
+            _type_stack[ '#last_base' ] = base_type;
 
             if ( !this.checkType( info, base_type, val, _type_stack ) )
             {
                 return false;
             }
 
-            switch ( base_type )
+            switch ( _type_stack[ '#last_base' ] )
             {
                 case 'integer':
                 case 'number':
@@ -819,7 +820,7 @@ var spectools =
                         for ( var i = 0; i < val_len; ++i )
                         {
                             // Note, new type stack
-                            if ( !this.checkType( info, elemtype, val[ i ], [] ) )
+                            if ( !this.checkType( info, elemtype, val[ i ], null ) )
                             {
                                 return false;
                             }
@@ -829,6 +830,11 @@ var spectools =
                     return true;
 
                 case 'map':
+                    if ( !( 'fields' in tdef ) )
+                    {
+                        return true;
+                    }
+
                     var fields = tdef.fields;
 
                     for ( var f in fields )
@@ -848,7 +854,7 @@ var spectools =
                         }
 
                         // Note, new type stack
-                        if ( !this.checkType( info, field_def.type, val[ f ], [] ) )
+                        if ( !this.checkType( info, field_def.type, val[ f ], null ) )
                         {
                             return false;
                         }

@@ -1039,7 +1039,11 @@ describe('SpecTools', function()
                                 optional: true
                             }
                         }
-                    }
+                    },
+                    'DerivedIntMinMax' : {
+                        type: 'IntMinMax',
+                        min: -2,
+                    },
                 }
             };
 
@@ -1080,7 +1084,11 @@ describe('SpecTools', function()
                 'Map' : {
                     ok: [ { 'int':1 }, { 'int':3, 'string':'abcde' } ],
                     fail: [ { 'int':5, 'string':'abcde' }, { 'string':'abcde' }, { 'int':3, 'string':'abcdE' } ]
-                }
+                },
+                'DerivedIntMinMax' : {
+                    ok : [ -2, 1, 3 ],
+                    fail : [ -4, -3, 1.1, 4 ],
+                },
             };
             
             as.add(
