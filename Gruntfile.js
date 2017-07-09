@@ -157,5 +157,5 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks( 'grunt-text-replace' );
     grunt.registerTask( 'doc', [ 'jsdoc2md:README', 'replace:README' ] );
 
-    grunt.registerTask( 'default', ['test','doc'] );
+    grunt.registerTask( 'default', ['check'] );
 };
