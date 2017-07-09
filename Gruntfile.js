@@ -149,9 +149,9 @@ module.exports = function (grunt) {
     grunt.registerTask( 'build-browser', ['pure_cjs', 'uglify'] );
     grunt.registerTask( 'test-browser', ['connect','external_daemon:unittest','mocha_phantomjs'] );
     
-    grunt.registerTask( 'node', [ 'check', 'connect', 'mocha_istanbul', 'mocha_istanbul:coverage' ] );
-    grunt.registerTask( 'browser', ['check', 'build-browser','test-browser'] );
-    grunt.registerTask( 'test', [ 'node', 'browser' ] );
+    grunt.registerTask( 'node', [ 'connect', 'mocha_istanbul', 'mocha_istanbul:coverage' ] );
+    grunt.registerTask( 'browser', ['build-browser','test-browser'] );
+    grunt.registerTask( 'test', [ 'check', 'node', 'browser' ] );
     
     grunt.loadNpmTasks( 'grunt-jsdoc-to-markdown' );
     grunt.loadNpmTasks( 'grunt-text-replace' );
