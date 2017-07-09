@@ -116,7 +116,7 @@ module.exports = function (grunt) {
         },
         jsdoc2md: {
             README: {
-                src: [ '*.js', 'lib/*.js', 'lib/**/*.js' ],
+                src: [ '*.js', 'lib/**/*.js' ],
                 dest: "README.md",
                 options: {
                     template: fs.readFileSync('misc/README.hbs','utf8'),
