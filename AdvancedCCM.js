@@ -17,7 +17,7 @@ var AdvancedCCMPublic = common.Options;
 /**
  * Advanced CCM - Reference Implementation
  * @param {object} options - see AdvancedCCMOptions
- * @link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html
+ * @see {@link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html FTN7: FutoIn Invoker Concept}
  * @alias AdvancedCCM
  * @class
  * @extends SimpleCCM

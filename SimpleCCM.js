@@ -18,7 +18,7 @@ var SimpleCCMPublic = common.Options;
  * Simple CCM - Reference Implementation
  *
  * Base Connection and Credentials Manager with limited error control
- * @link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html
+ * @see {@link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html FTN7: FutoIn Invoker Concept}
  * @alias SimpleCCM
  * @class
  * @param {object=} options - map of options
