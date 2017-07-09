@@ -1,7 +1,8 @@
 var http = require('http');
 var url = require( 'url' );
 var WebSocket = require('faye-websocket');
-var processServerRequest = require( './server_func' )
+var processServerRequest = require( './server_func' );
+var enableDestroy = require('server-destroy');
 var httpsrv = null;
 var wssrv = null;
 
@@ -177,6 +178,8 @@ function createTestHttpServer( cb )
             ws.send( frsp );
         });
     } );
+    
+    enableDestroy(httpsrv);
 }
 
 function closeTestHttpServer( done )
@@ -187,6 +190,7 @@ function closeTestHttpServer( done )
         {
             httpsrv.emit( 'preclose' );
             httpsrv.close( function(){ done(); } );
+            httpsrv.destroy();
             httpsrv = null;
         }
         catch ( e )
