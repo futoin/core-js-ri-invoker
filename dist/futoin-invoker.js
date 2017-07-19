@@ -933,6 +933,9 @@
                         return false;
                     },
                     checkParameterType: function (info, funcname, varname, value) {
+                        if (value === null && info.funcs[funcname].params[varname].default === null) {
+                            return true;
+                        }
                         return spectools.checkType(info, info.funcs[funcname].params[varname].type, value);
                     },
                     checkResultType: function (as, info, funcname, varname, value) {

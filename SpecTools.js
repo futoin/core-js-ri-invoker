@@ -877,6 +877,12 @@ var spectools =
      */
     checkParameterType : function( info, funcname, varname, value )
     {
+        if ( value === null &&
+            info.funcs[ funcname ].params[ varname ].default === null )
+        {
+            return true;
+        }
+
         return spectools.checkType(
                 info,
                 info.funcs[ funcname ].params[ varname ].type,

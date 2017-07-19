@@ -1132,6 +1132,55 @@ describe('SpecTools', function()
         });
     });
     
+    
+        it ('should allow null for default null parameter', function( done )
+        {
+            this.timeout( 5e3 );
+            var iface = {
+                iface: 'some.face',
+                version: '1.0',
+                ftn3rev: '1.4',
+                funcs: {
+                    test: {
+                        params: {
+                            required : {
+                                type: "string"
+                            },
+                            nullable: {
+                                type: "string",
+                                "default": null
+                            }
+                        }
+                    }
+                }
+            };
+
+            var info = {
+                iface: iface.iface,
+                version: iface.version
+            };
+            
+            as.add(
+                function( as ){
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err ){
+                    done( as.state.last_exception );
+                }
+            ).add(
+                function( as ){
+                    SpecTools.checkParameterType(info, "test", "nullable", "abc").should.be.true;
+                    SpecTools.checkParameterType(info, "test", "nullable", null).should.be.true;
+                    SpecTools.checkParameterType(info, "test", "required", "abc").should.be.true;
+                    SpecTools.checkParameterType(info, "test", "required", null).should.be.false;
+                    done();
+                },
+                function( as, err ){
+                    done( as.state.last_exception );
+                }
+            ).execute();
+        });
+        
 if ( isNode )
 {
     describe('#genHMAC', function(){
