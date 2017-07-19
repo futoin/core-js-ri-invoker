@@ -1,6 +1,11 @@
+
+=== (next) ===
+NEW: FTN3: v1.4 support
+CHANGED: to accept null values for default "null" params
+
 === 1.5.8 (2017-07-09) ===
 FIXED: re-publish with proper npm packaging
 
 === 0.8.4 (2017-07-09) ===
 CHANGED: to use FutoIn CID tool for development
-- Revised development tools
+NEW: Revised development tools
