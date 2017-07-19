@@ -492,7 +492,7 @@
                     },
                     _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
                     _ifacever_pattern: common._ifacever_pattern,
-                    _max_supported_v1_minor: 3,
+                    _max_supported_v1_minor: 4,
                     loadIface: function (as, info, specdirs, load_cache) {
                         var raw_spec = null;
                         var fn = info.iface + '-' + info.version + '-iface.json';
@@ -699,14 +699,18 @@
                                 }
                                 for (pn in fparams) {
                                     var pinfo = fparams[pn];
-                                    if (typeof pinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid param object');
-                                    }
-                                    if (!('type' in pinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for params');
-                                    }
-                                    if (!('default' in pinfo)) {
+                                    if (typeof pinfo === 'string') {
                                         finfo.min_args += 1;
+                                    } else {
+                                        if (typeof pinfo !== 'object') {
+                                            as.error(FutoInError.InternalError, 'Invalid param object');
+                                        }
+                                        if (!('type' in pinfo)) {
+                                            as.error(FutoInError.InternalError, 'Missing type for params');
+                                        }
+                                        if (!('default' in pinfo)) {
+                                            finfo.min_args += 1;
+                                        }
                                     }
                                 }
                             } else {
@@ -720,11 +724,13 @@
                                 }
                                 for (var rn in fresult) {
                                     var rinfo = fresult[rn];
-                                    if (typeof rinfo !== 'object') {
-                                        as.error(FutoInError.InternalError, 'Invalid resultvar object');
-                                    }
-                                    if (!('type' in rinfo)) {
-                                        as.error(FutoInError.InternalError, 'Missing type for result');
+                                    if (typeof rinfo !== 'string') {
+                                        if (typeof rinfo !== 'object') {
+                                            as.error(FutoInError.InternalError, 'Invalid resultvar object');
+                                        }
+                                        if (!('type' in rinfo)) {
+                                            as.error(FutoInError.InternalError, 'Missing type for result');
+                                        }
                                     }
                                     finfo.expect_result = true;
                                 }
@@ -758,6 +764,9 @@
                         var tinfo;
                         for (var t in info.types) {
                             tinfo = info.types[t];
+                            if (typeof tinfo === 'string') {
+                                continue;
+                            }
                             if (!('type' in tinfo)) {
                                 as.error(FutoInError.InternalError, 'Missing "type" for custom type');
                             }
@@ -767,7 +776,8 @@
                                     continue;
                                 }
                                 for (var f in tinfo.fields) {
-                                    if (!('type' in tinfo.fields[f])) {
+                                    var fdef = tinfo.fields[f];
+                                    if (typeof fdef !== 'string' && !('type' in fdef)) {
                                         as.error(FutoInError.InternalError, 'Missing "type" for custom type field');
                                     }
                                 }
@@ -854,6 +864,9 @@
                         }
                         if (type in info.types) {
                             var tdef = info.types[type];
+                            if (typeof tdef === 'string') {
+                                tdef = { 'type': tdef };
+                            }
                             _type_stack = _type_stack || {};
                             var base_type = tdef.type;
                             if (base_type in _type_stack) {
@@ -916,6 +929,9 @@
                                 var fields = tdef.fields;
                                 for (var f in fields) {
                                     var field_def = fields[f];
+                                    if (typeof field_def === 'string') {
+                                        field_def = { 'type': field_def };
+                                    }
                                     if (!(f in val) || val[f] === null) {
                                         if (field_def.optional) {
                                             val[f] = null;
@@ -933,13 +949,17 @@
                         return false;
                     },
                     checkParameterType: function (info, funcname, varname, value) {
-                        if (value === null && info.funcs[funcname].params[varname].default === null) {
+                        var vardef = info.funcs[funcname].params[varname];
+                        if (value === null && vardef.default === null) {
                             return true;
                         }
-                        return spectools.checkType(info, info.funcs[funcname].params[varname].type, value);
+                        var vartype = typeof vardef === 'string' ? vardef : vardef.type;
+                        return spectools.checkType(info, vartype, value);
                     },
                     checkResultType: function (as, info, funcname, varname, value) {
-                        if (!spectools.checkType(info, info.funcs[funcname].result[varname].type, value)) {
+                        var vardef = info.funcs[funcname].result[varname];
+                        var vartype = typeof vardef === 'string' ? vardef : vardef.type;
+                        if (!spectools.checkType(info, vartype, value)) {
                             as.error(FutoInError.InvalidRequest, 'Type mismatch for result: ' + varname);
                         }
                     },
