@@ -1,7 +1,8 @@
 
 === (next) ===
-NEW: FTN3: v1.4 support
 CHANGED: to accept null values for default "null" params
+CHANGED: changed to allow type definition shortcut as per FTN3 v1.4
+NEW: FTN3 v1.4 support
 
 === 1.5.8 (2017-07-09) ===
 FIXED: re-publish with proper npm packaging
