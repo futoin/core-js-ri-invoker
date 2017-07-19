@@ -66,8 +66,21 @@ var spectools =
 
         if ( load_cache )
         {
-            cache_key = info.iface + ':' + info.version +
-                    ( info._invoker_use ? ':i' : ':e' );
+            cache_key = info.iface + ':' + info.version;
+
+            if ( info._import_use )
+            {
+                cache_key += ':r';
+            }
+            else if ( info._invoker_use )
+            {
+                cache_key += ':i';
+            }
+            else
+            {
+                cache_key += ':e';
+            }
+
             cached_info = load_cache[ cache_key ];
 
             if ( cached_info )
@@ -77,7 +90,8 @@ var spectools =
             }
 
             cached_info = {
-                _invoker_use : info._invoker_use
+                _import_use : info._import_use,
+                _invoker_use : info._invoker_use,
             };
         }
         else
@@ -222,7 +236,7 @@ var spectools =
                 );
             }
 
-            spectools.parseIface( as, cached_info, specdirs, raw_spec );
+            spectools.parseIface( as, cached_info, specdirs, raw_spec, load_cache );
         } );
 
         if ( load_cache )
@@ -244,7 +258,7 @@ var spectools =
      * @param {Object} raw_spec - iface definition object
      * @alias SpecTools.parseIface
      */
-    parseIface : function( as, info, specdirs, raw_spec )
+    parseIface : function( as, info, specdirs, raw_spec, load_cache )
     {
         // Do not damage FutoIn specs passed by value
         // ---
@@ -305,7 +319,8 @@ var spectools =
             var sup_info = {};
             sup_info.iface = m[ 1 ];
             sup_info.version = m[ 4 ];
-            spectools.loadIface( as, sup_info, specdirs );
+            sup_info._invoker_use = info._invoker_use;
+            spectools.loadIface( as, sup_info, specdirs, load_cache );
 
             as.add( function( as )
             {
@@ -320,11 +335,13 @@ var spectools =
         // ---
         if ( 'imports' in raw_spec )
         {
+            var iface_pattern = common._ifacever_pattern;
+            var imp_load_cache = load_cache || {}; // make sure we always use cache here
             info.imports = raw_spec.imports.slice();
 
             as.forEach( raw_spec.imports, function( as, k, v )
             {
-                var m = v.match( common._ifacever_pattern );
+                var m = v.match( iface_pattern );
 
                 if ( m === null )
                 {
@@ -334,14 +351,75 @@ var spectools =
                 var imp_info = {};
                 imp_info.iface = m[ 1 ];
                 imp_info.version = m[ 4 ];
-                spectools.loadIface( as, imp_info, specdirs );
+                imp_info._import_use = true;
+                spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
                 as.add( function( as )
                 {
-                    spectools._parseImportInherit( as, info, specdirs, raw_spec, imp_info );
+                    void as;
                     info.imports = info.imports.concat( imp_info.imports );
                 } );
             } );
+
+            if ( !info._import_use )
+            {
+                as.add( function( as )
+                {
+                    // 1. Use each imported interface only once
+                    // 2. Merge compatible interface versions
+                    var import_candidates = {};
+
+                    for ( var i = info.imports.length - 1; i >= 0; --i )
+                    {
+                        var imp_ifacever = info.imports[i];
+                        var m = imp_ifacever.match( iface_pattern );
+                        var iface = m[1];
+                        var ver = m[4];
+                        var curr_ver = import_candidates[iface];
+
+                        if ( curr_ver )
+                        {
+                            curr_ver = curr_ver.split( '.' );
+                            var new_ver = ver.split( '.' );
+
+                            if ( curr_ver[0] !== new_ver[0] )
+                            {
+                                as.error( FutoInError.InvokerError,
+                                          "Incompatible iface versions: " +
+                                          iface + " " +
+                                          ver + "/" + import_candidates[iface] );
+                            }
+
+                            if ( parseInt( curr_ver[1] ) < parseInt( new_ver[1] ) )
+                            {
+                                import_candidates[iface] = ver;
+                            }
+                        }
+                        else
+                        {
+                            import_candidates[iface] = ver;
+                        }
+                    }
+
+                    info.imports = [];
+
+                    as.forEach( import_candidates, function( as, iface, ver )
+                    {
+                        info.imports.push( iface + ':' + ver );
+
+                        var imp_info = {};
+                        imp_info.iface = iface;
+                        imp_info.version = ver;
+                        imp_info._import_use = true;
+                        spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
+
+                        as.add( function( as )
+                        {
+                            spectools._parseImportInherit( as, info, specdirs, raw_spec, imp_info );
+                        } );
+                    } );
+                } );
+            }
         }
         else
         {
@@ -490,7 +568,7 @@ var spectools =
                     var rinfo = fresult[ rn ];
 
                     if ( typeof rinfo !== 'string' )
- {
+                    {
                         if ( typeof rinfo !== 'object' )
                         {
                             as.error( FutoInError.InternalError, "Invalid resultvar object" );
@@ -753,7 +831,7 @@ var spectools =
             var tdef = info.types[ type ];
 
             if ( typeof tdef === 'string' )
- {
+            {
                 tdef = { 'type' : tdef };
             }
 

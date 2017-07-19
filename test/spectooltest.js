@@ -24,7 +24,7 @@ else
     chai_module.should();
     assert = chai_module.assert;
     
-    thisDir = __dirname;
+        thisDir = __dirname;
     
     var hidereq = require;
     invoker = hidereq('../lib/invoker.js');
@@ -902,6 +902,130 @@ describe('SpecTools', function()
                     load_info.funcs.should.have.property( 'FirstFunc' );
                     load_info.funcs.should.have.property( 'SecondFunc' );
                     load_info.imports[0].should.equal( 'base.face:2.1' );
+                    done();
+                } catch ( e ) {
+                    done( e );
+                }
+            } ).execute();
+        });
+        
+        it ('should correctly process diamond import', function( done )
+        {
+            var baseface = {
+                iface: 'base.face',
+                version: '2.1',
+                ftn3rev: '1.4',
+                types: {
+                    'MyString' : {
+                        type: 'string'
+                    }
+                },
+                funcs: {
+                    'FirstFunc' : {
+                        rawresult : true
+                    }
+                }
+            };
+
+            var newer_baseface = {
+                iface: 'base.face',
+                version: '2.2',
+                ftn3rev: '1.4',
+                types: {
+                    'MyString' : {
+                        type: 'string'
+                    },
+                    'MyString2' : {
+                        type: 'string'
+                    }
+                },
+                funcs: {
+                    'FirstFunc' : {
+                        rawresult : true
+                    }
+                }
+            };
+            
+            var derivedface1 = {
+                iface: 'derived.face1',
+                version: '1.0',
+                ftn3rev: '1.4',
+                imports: [
+                    'base.face:2.2'
+                ],
+                types: {
+                    'MyInt' : {
+                        type: 'integer'
+                    }
+                },
+                funcs: {
+                    'SecondFunc' : {
+                        rawresult : true
+                    }
+                }
+            };
+
+            var derivedface2 = {
+                iface: 'derived.face2',
+                version: '1.0',
+                ftn3rev: '1.4',
+                imports: [
+                    'base.face:2.1'
+                ],
+                types: {
+                    'MyInt2' : {
+                        type: 'integer'
+                    }
+                },
+                funcs: {
+                    'ThirdFunc' : {
+                        rawresult : true
+                    }
+                }
+            };
+
+            var topface = {
+                iface: 'top.face',
+                version: '1.0',
+                ftn3rev: '1.4',
+                imports: [
+                    'derived.face1:1.0',
+                    'derived.face2:1.0',
+                ],
+            };
+            
+            var load_info = {
+                iface : 'top.face',
+                version : '1.0'
+            };
+            
+            as.add(
+                function( as ) {
+                    SpecTools.loadIface(
+                        as,
+                        load_info,
+                        [ baseface, newer_baseface, derivedface1, derivedface2, topface ] );
+                },
+                function( as, err )
+                {
+                    console.log(as.state.error_info);
+                    done( as.state.last_exception );
+                }
+            ).add( function( as ) {
+                try {
+                    load_info.types.should.have.property( 'MyString' );
+                    load_info.types.should.have.property( 'MyString2' );
+                    load_info.types.should.have.property( 'MyInt' );
+                    load_info.types.should.have.property( 'MyInt2' );
+                    load_info.inherits.should.be.empty;
+                    load_info.funcs.should.have.property( 'FirstFunc' );
+                    load_info.funcs.should.have.property( 'SecondFunc' );
+                    load_info.funcs.should.have.property( 'ThirdFunc' );
+                    load_info.imports.should.be.eql([
+                        'base.face:2.2',
+                        'derived.face2:1.0',
+                        'derived.face1:1.0',
+                    ]);
                     done();
                 } catch ( e ) {
                     done( e );

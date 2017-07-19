@@ -95,7 +95,7 @@ or included modular way, e.g.:
 var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 ```
 
-# Installation for Browser
+# Installation for Browser (deprecated)
 
 ```sh
 $ bower install futoin-invoker --save
