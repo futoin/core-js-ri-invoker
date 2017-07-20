@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: readme file
+
 === 0.9.0 (2017-07-19) ===
 CHANGED: to accept null values for default "null" params
 CHANGED: changed to allow type definition shortcut as per FTN3 v1.4

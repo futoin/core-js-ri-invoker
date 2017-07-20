@@ -151,7 +151,7 @@ module.exports = function (grunt) {
     
     grunt.registerTask( 'node', [ 'connect', 'mocha_istanbul', 'mocha_istanbul:coverage' ] );
     grunt.registerTask( 'browser', ['build-browser','test-browser'] );
-    grunt.registerTask( 'test', [ 'check', 'node', 'browser' ] );
+    grunt.registerTask( 'test', [ 'check', 'node', 'browser', 'doc' ] );
     
     grunt.loadNpmTasks( 'grunt-jsdoc-to-markdown' );
     grunt.loadNpmTasks( 'grunt-text-replace' );
