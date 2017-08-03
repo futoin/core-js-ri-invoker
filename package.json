@@ -55,7 +55,7 @@
     "grunt-pure-cjs": "^1.4.0",
     "grunt-text-replace": "^0.4.0",
     "istanbul": "^0.4.5",
-    "mocha": "^3.4.2",
+    "mocha": "^3.5.0",
     "server-destroy": "^1.0.1"
   }
 }
