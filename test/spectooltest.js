@@ -1146,6 +1146,11 @@ describe('SpecTools', function()
                         type: 'string',
                         regex: /^[a-z]{5}$/
                     },
+                    'StringMinMax' : {
+                        type: 'string',
+                        minlen: 1,
+                        maxlen: 3
+                    },
                     'ArrayMinMax' : {
                         type: 'array',
                         minlen: 1,
@@ -1200,6 +1205,10 @@ describe('SpecTools', function()
                 'StringRegex' : {
                     ok : [ 'strin' ],
                     fail : [ 'Some', 'Strin', 1, false, null ]
+                },
+                'StringMinMax' : {
+                    ok : [ 'a', 'abc' ],
+                    fail : [ '', 'abcd' ]
                 },
                 'ArrayMinMax' : {
                     ok : [ [ 1, 1, 1 ],  [ -3, 0, 3 ] ],

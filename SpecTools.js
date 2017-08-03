@@ -897,6 +897,18 @@ var spectools =
                         return ( val.match( comp_regex[ type ] ) !== null );
                     }
 
+                    if ( ( 'minlen' in tdef ) &&
+                         ( val.length < tdef.minlen ) )
+                    {
+                        return false;
+                    }
+
+                    if ( ( 'maxlen' in tdef ) &&
+                         ( val.length > tdef.maxlen ) )
+                    {
+                        return false;
+                    }
+
                     return true;
 
                 case 'array':
