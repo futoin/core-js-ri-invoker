@@ -1,4 +1,7 @@
 
+=== (next) ===
+BREAKING: removed bower support
+
 === 0.9.1 (2017-07-20) ===
 FIXED: readme file
 
