@@ -1148,6 +1148,10 @@ describe('SpecTools', function()
                             }
                         }
                     },
+                    'MapElemType' : {
+                        type: 'map',
+                        elemtype: 'IntMinMax',
+                    },
                     'DerivedIntMinMax' : {
                         type: 'IntMinMax',
                         min: -2,
@@ -1204,6 +1208,10 @@ describe('SpecTools', function()
                 'Map' : {
                     ok: [ { 'int':1 }, { 'int':3, 'string':'abcde' } ],
                     fail: [ { 'int':5, 'string':'abcde' }, { 'string':'abcde' }, { 'int':3, 'string':'abcdE' } ]
+                },
+                'MapElemType' : {
+                    ok: [ { 'int':1 }, { 'int':3 } ],
+                    fail: [ { 'int':5, 'string':'abcde' }, { 'int': 4 }  ]
                 },
                 'DerivedIntMinMax' : {
                     ok : [ -2, 1, 3 ],

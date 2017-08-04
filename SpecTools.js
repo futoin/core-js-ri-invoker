@@ -874,6 +874,7 @@ var spectools =
             }
 
             base_type = _type_stack[ '#last_base' ];
+            var elemtype;
 
             switch ( base_type )
             {
@@ -950,7 +951,7 @@ var spectools =
 
                     if ( 'elemtype' in tdef )
                     {
-                        var elemtype = tdef.elemtype;
+                        elemtype = tdef.elemtype;
 
                         for ( var i = 0; i < val_len; ++i )
                         {
@@ -993,10 +994,22 @@ var spectools =
                             return false;
                         }
 
-                        // Note, new type stack
                         if ( !this.checkType( info, field_def.type, val[ f ], null ) )
                         {
                             return false;
+                        }
+                    }
+
+                    if ( 'elemtype' in tdef )
+                    {
+                        elemtype = tdef.elemtype;
+
+                        for ( var ft in val )
+                        {
+                            if ( !this.checkType( info, elemtype, val[ ft ], null ) )
+                            {
+                                return false;
+                            }
                         }
                     }
 
