@@ -45,7 +45,7 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 4,
+    _max_supported_v1_minor : 5,
 
     /**
      * Load FutoIn iface definition.
