@@ -913,7 +913,10 @@ var spectools =
                             comp_regex[ type ] = new RegExp( tdef.regex );
                         }
 
-                        return ( val.match( comp_regex[ type ] ) !== null );
+                        if ( val.match( comp_regex[ type ] ) === null )
+                        {
+                            return false;
+                        }
                     }
 
                     if ( ( 'minlen' in tdef ) &&

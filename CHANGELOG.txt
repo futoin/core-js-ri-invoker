@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: string minlen/maxlen processing, even if regex is set
+NEW: FTN3 v1.6 support
+
 === 1.0.1 (2017-08-04) ===
 FIXED: to formally support FTN3 v1.5 for executor
 
