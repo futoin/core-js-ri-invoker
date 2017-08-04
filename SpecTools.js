@@ -642,6 +642,11 @@ var spectools =
                 continue;
             }
 
+            if ( tinfo instanceof Array )
+            {
+                continue;
+            }
+
             if ( !( 'type' in tinfo ) )
             {
                 as.error( FutoInError.InternalError, 'Missing "type" for custom type' );
@@ -660,6 +665,7 @@ var spectools =
                     var fdef = tinfo.fields[ f ];
 
                     if ( ( typeof fdef !== 'string' ) &&
+                         !( fdef instanceof Array ) &&
                          !( 'type' in fdef ) )
                     {
                         as.error( FutoInError.InternalError, 'Missing "type" for custom type field' );
@@ -847,16 +853,17 @@ var spectools =
         {
             var tdef = info.types[ type ];
 
-            if ( typeof tdef === 'string' )
+            if ( ( typeof tdef === 'string' ) ||
+                 ( tdef instanceof Array ) )
             {
                 tdef = { 'type' : tdef };
             }
 
             var topmost = !_type_stack;
             _type_stack = _type_stack || {};
-            var base_type = tdef.type;
 
-            if ( base_type in _type_stack )
+            // ---
+            if ( type in _type_stack )
             {
                 if ( console )
                 {
@@ -867,11 +874,41 @@ var spectools =
             }
 
             _type_stack[ type ] = true;
-            _type_stack[ '#last_base' ] = base_type;
 
-            if ( !this.checkType( info, base_type, val, _type_stack ) )
+            // ---
+            var base_type = tdef.type;
+
+            if ( base_type instanceof Array )
             {
-                return false;
+                _type_stack[ '#last_base' ] = null;
+                console.log( base_type );
+
+                for ( var vti = base_type.length - 1; vti >= 0; --vti )
+                {
+                    var vtype = base_type[vti];
+                    var new_type_stack = Object.create( _type_stack );
+                    new_type_stack['#last_base'] = vtype;
+
+                    if ( this.checkType( info, vtype, val, new_type_stack ) )
+                    {
+                        _extend( _type_stack, new_type_stack );
+                        break;
+                    }
+                }
+
+                if ( !_type_stack[ '#last_base' ] )
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                _type_stack[ '#last_base' ] = base_type;
+
+                if ( !this.checkType( info, base_type, val, _type_stack ) )
+                {
+                    return false;
+                }
             }
 
             base_type = _type_stack[ '#last_base' ];

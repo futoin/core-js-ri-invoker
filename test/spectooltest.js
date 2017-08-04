@@ -1163,6 +1163,11 @@ describe('SpecTools', function()
                     'Enum' : {
                         type: 'enum',
                         items: [ 'one', 'two', 'three', 10, 20 ]
+                    },
+                    'Variant' : [  'IntMinMax', 'StringRegex' ],
+                    'DerivedVariant' : {
+                        type: 'Variant',
+                        min: 2,
                     }
                 }
             };
@@ -1236,6 +1241,10 @@ describe('SpecTools', function()
                     ok : [ 'one', 20, 'three'],
                     fail : [ [ 'one' ], false, null, 1 ],
                 },
+                'DerivedVariant' : {
+                    ok : [ 2, 3, 'abcde'],
+                    fail : [ 1, 4, 'abcdE', 'abc', false, null, {}, [] ],
+                }
             };
             
             as.add(
