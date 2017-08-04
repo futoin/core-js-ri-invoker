@@ -45,7 +45,7 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 5,
+    _max_supported_v1_minor : 6,
 
     /**
      * Load FutoIn iface definition.
@@ -815,6 +815,23 @@ var spectools =
             case 'array':
                 return ( val instanceof Array );
 
+            case 'enum':
+            case 'set':
+                if ( _type_stack )
+                {
+                    if ( type === 'enum' )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return ( val instanceof Array );
+                    }
+                }
+
+                console.log( "[ERROR] enum and set are allowed only in custom types" );
+                return false;
+
             default:
                 if ( !( 'types' in info ) ||
                      !( type in info.types ) )
@@ -856,7 +873,9 @@ var spectools =
                 return false;
             }
 
-            switch ( _type_stack[ '#last_base' ] )
+            base_type = _type_stack[ '#last_base' ];
+
+            switch ( base_type )
             {
                 case 'integer':
                 case 'number':
@@ -955,7 +974,7 @@ var spectools =
                         var field_def = fields[ f ];
 
                         if ( typeof field_def === 'string' )
- {
+                        {
                             field_def = { 'type' : field_def };
                         }
 
@@ -973,6 +992,57 @@ var spectools =
 
                         // Note, new type stack
                         if ( !this.checkType( info, field_def.type, val[ f ], null ) )
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+
+                case 'enum':
+                case 'set':
+                    var comp_set;
+                    var set_items;
+
+                    if ( '_comp_set' in info )
+                    {
+                        comp_set = info._comp_set;
+                    }
+                    else
+                    {
+                        comp_set = {};
+                        info._comp_set = comp_set;
+                    }
+
+                    if ( !( type in comp_set ) )
+                    {
+                        set_items = tdef.items;
+
+                        if ( typeof set_items === 'undefined' )
+                        {
+                            return false;
+                        }
+
+                        set_items = _zipObject( set_items, set_items );
+                        comp_set[ type ] = set_items;
+                    }
+                    else
+                    {
+                        set_items = comp_set[ type ];
+                    }
+
+                    if ( base_type === 'enum' )
+                    {
+                        val = [ val ];
+                    }
+
+                    for ( var ii = val.length - 1; ii >= 0; --ii )
+                    {
+                        var iv = val[ii];
+
+                        if ( ( !this.checkType( info, 'string', iv ) &&
+                               !this.checkType( info, 'integer', iv ) ) ||
+                             !set_items.hasOwnProperty( val[ii] ) )
                         {
                             return false;
                         }

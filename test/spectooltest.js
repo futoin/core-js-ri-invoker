@@ -1068,48 +1068,27 @@ describe('SpecTools', function()
             };
             
             as.forEach( tests, function( as, type, v ){
-                try
-                {
+                as.add(function(as) {
                     as.forEach( v.ok,function( as, i, t ){
                         SpecTools.checkFutoInType( as, type, type + ':ok', t );
-                    }, function( as, err ){
-                        done( as.state.last_exception );
-                    } );
+                    });
                     as.forEach( v.fail, function( as, i, t ){
-                        try {
                         as.add(
                             function( as ){
                                 SpecTools.checkFutoInType( as, type, type + ':fail', t );
                             },
                             function( as, err ){
-                                try
-                                {
-                                    as.state.error_info.should.match( /^Type mismatch for parameter/ );
-                                    as.success( 'OK' );
-                                }
-                                catch ( e )
-                                {
-                                    done( e );
-                                }
+                                as.state.error_info.should.match( /^Type mismatch for parameter/ );
+                                as.success( 'OK' );
                             }
                         ).add( function( as, ok ){
-                            try
-                            {
-                                ok.should.equal( 'OK' );
-                            }
-                            catch ( e )
-                            {
-                                console.log( type + ':fail' + t );
-                                done( e );
-                            }
+                            ok.should.equal( 'OK' );
                         });
-                        } catch ( e ){ done( e ) };
                     });
-                }
-                catch ( e )
-                {
-                    done( e );
-                }
+                },
+                function(as, err){
+                    done(as.state.last_exception);
+                });
             }).add(function(as){
                 done();
             }).execute();
@@ -1173,6 +1152,14 @@ describe('SpecTools', function()
                         type: 'IntMinMax',
                         min: -2,
                     },
+                    'Set' : {
+                        type: 'set',
+                        items: [ 'one', 'two', 'three', 10, 20 ]
+                    },
+                    'Enum' : {
+                        type: 'enum',
+                        items: [ 'one', 'two', 'three', 10, 20 ]
+                    }
                 }
             };
 
@@ -1222,6 +1209,25 @@ describe('SpecTools', function()
                     ok : [ -2, 1, 3 ],
                     fail : [ -4, -3, 1.1, 4 ],
                 },
+                'Set' : {
+                    ok : [
+                        [],
+                        [ 'one' ],
+                        [ 20, 'one' ],
+                        [ 'one', 'two', 'three', 10, 20 ],
+                    ],
+                    fail : [
+                        [ 1 ],
+                        [ 'one', 'two', 'three', 10, 20, 30 ],
+                        false,
+                        null,
+                        1
+                    ]
+                },
+                'Enum' : {
+                    ok : [ 'one', 20, 'three'],
+                    fail : [ [ 'one' ], false, null, 1 ],
+                },
             };
             
             as.add(
@@ -1232,33 +1238,23 @@ describe('SpecTools', function()
                     done( as.state.last_exception );
                 }
             ).forEach( tests, function( as, type, v ){
-                try
-                {
+                as.add(function(as) {
                     as.forEach( v.ok,function( as, i, t ){
-                        try{
-                            if ( !SpecTools.checkType( info, type, t ) )
-                            {
-                                done( new Error( 'Failed at ' + type + " " + t ) );
-                            }
-                        }
-                        catch( e )
+                        if ( !SpecTools.checkType( info, type, t ) )
                         {
-                            done( e );
+                            throw new Error( 'Failed at ' + type + " " + t );
                         }
                     } );
                     as.forEach( v.fail, function( as, i, t ){
-                        try{
                         if ( SpecTools.checkType( info, type, t ) )
                         {
-                            done( new Error( 'Failed at ' + type + " " + t ) );
+                            throw new Error( 'Failed at ' + type + " " + t );
                         }
-                        }catch(e){done(e)};
                     });
-                }
-                catch ( e )
-                {
-                    done( e );
-                }
+                },
+                function( as, err ){
+                    done( as.state.last_exception );
+                });
         }).add(function(as){
                 done();
             }).execute();
