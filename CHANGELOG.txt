@@ -1,6 +1,7 @@
 
 === (next) ===
 FIXED: string minlen/maxlen processing, even if regex is set
+CHANGED: to check type contraints only on top type level
 NEW: FTN3 v1.6 support
 
 === 1.0.1 (2017-08-04) ===

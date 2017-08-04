@@ -852,6 +852,7 @@ var spectools =
                 tdef = { 'type' : tdef };
             }
 
+            var topmost = !_type_stack;
             _type_stack = _type_stack || {};
             var base_type = tdef.type;
 
@@ -874,6 +875,14 @@ var spectools =
             }
 
             base_type = _type_stack[ '#last_base' ];
+            tdef = _extend( _type_stack[ '#tdef' ] || {}, tdef );
+
+            if ( !topmost )
+            {
+                _type_stack[ '#tdef' ] = tdef;
+                return true;
+            }
+
             var elemtype;
 
             switch ( base_type )
