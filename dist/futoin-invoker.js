@@ -492,7 +492,7 @@
                     },
                     _ver_pattern: /^([0-9]+)\.([0-9]+)$/,
                     _ifacever_pattern: common._ifacever_pattern,
-                    _max_supported_v1_minor: 4,
+                    _max_supported_v1_minor: 6,
                     loadIface: function (as, info, specdirs, load_cache) {
                         var raw_spec = null;
                         var fn = info.iface + '-' + info.version + '-iface.json';
@@ -817,6 +817,9 @@
                             if (typeof tinfo === 'string') {
                                 continue;
                             }
+                            if (tinfo instanceof Array) {
+                                continue;
+                            }
                             if (!('type' in tinfo)) {
                                 as.error(FutoInError.InternalError, 'Missing "type" for custom type');
                             }
@@ -827,7 +830,7 @@
                                 }
                                 for (var f in tinfo.fields) {
                                     var fdef = tinfo.fields[f];
-                                    if (typeof fdef !== 'string' && !('type' in fdef)) {
+                                    if (typeof fdef !== 'string' && !(fdef instanceof Array) && !('type' in fdef)) {
                                         as.error(FutoInError.InternalError, 'Missing "type" for custom type field');
                                     }
                                 }
@@ -907,6 +910,17 @@
                             return typeof val === 'number' && (val | 0) === val;
                         case 'array':
                             return val instanceof Array;
+                        case 'enum':
+                        case 'set':
+                            if (_type_stack) {
+                                if (type === 'enum') {
+                                    return true;
+                                } else {
+                                    return val instanceof Array;
+                                }
+                            }
+                            console.log('[ERROR] enum and set are allowed only in custom types');
+                            return false;
                         default:
                             if (!('types' in info) || !(type in info.types)) {
                                 return false;
@@ -914,23 +928,48 @@
                         }
                         if (type in info.types) {
                             var tdef = info.types[type];
-                            if (typeof tdef === 'string') {
+                            if (typeof tdef === 'string' || tdef instanceof Array) {
                                 tdef = { 'type': tdef };
                             }
+                            var topmost = !_type_stack;
                             _type_stack = _type_stack || {};
-                            var base_type = tdef.type;
-                            if (base_type in _type_stack) {
+                            if (type in _type_stack) {
                                 if (console) {
                                     console.log('[ERROR] Custom type recursion: ' + tdef.type);
                                 }
                                 throw new Error(FutoInError.InternalError);
                             }
                             _type_stack[type] = true;
-                            _type_stack['#last_base'] = base_type;
-                            if (!this.checkType(info, base_type, val, _type_stack)) {
-                                return false;
+                            var base_type = tdef.type;
+                            if (base_type instanceof Array) {
+                                _type_stack['#last_base'] = null;
+                                console.log(base_type);
+                                for (var vti = base_type.length - 1; vti >= 0; --vti) {
+                                    var vtype = base_type[vti];
+                                    var new_type_stack = Object.create(_type_stack);
+                                    new_type_stack['#last_base'] = vtype;
+                                    if (this.checkType(info, vtype, val, new_type_stack)) {
+                                        _extend(_type_stack, new_type_stack);
+                                        break;
+                                    }
+                                }
+                                if (!_type_stack['#last_base']) {
+                                    return false;
+                                }
+                            } else {
+                                _type_stack['#last_base'] = base_type;
+                                if (!this.checkType(info, base_type, val, _type_stack)) {
+                                    return false;
+                                }
                             }
-                            switch (_type_stack['#last_base']) {
+                            base_type = _type_stack['#last_base'];
+                            tdef = _extend(_type_stack['#tdef'] || {}, tdef);
+                            if (!topmost) {
+                                _type_stack['#tdef'] = tdef;
+                                return true;
+                            }
+                            var elemtype;
+                            switch (base_type) {
                             case 'integer':
                             case 'number':
                                 if ('min' in tdef && val < tdef.min) {
@@ -952,7 +991,9 @@
                                     if (!(type in comp_regex)) {
                                         comp_regex[type] = new RegExp(tdef.regex);
                                     }
-                                    return val.match(comp_regex[type]) !== null;
+                                    if (val.match(comp_regex[type]) === null) {
+                                        return false;
+                                    }
                                 }
                                 if ('minlen' in tdef && val.length < tdef.minlen) {
                                     return false;
@@ -970,7 +1011,7 @@
                                     return false;
                                 }
                                 if ('elemtype' in tdef) {
-                                    var elemtype = tdef.elemtype;
+                                    elemtype = tdef.elemtype;
                                     for (var i = 0; i < val_len; ++i) {
                                         if (!this.checkType(info, elemtype, val[i], null)) {
                                             return false;
@@ -996,6 +1037,44 @@
                                         return false;
                                     }
                                     if (!this.checkType(info, field_def.type, val[f], null)) {
+                                        return false;
+                                    }
+                                }
+                                if ('elemtype' in tdef) {
+                                    elemtype = tdef.elemtype;
+                                    for (var ft in val) {
+                                        if (!this.checkType(info, elemtype, val[ft], null)) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return true;
+                            case 'enum':
+                            case 'set':
+                                var comp_set;
+                                var set_items;
+                                if ('_comp_set' in info) {
+                                    comp_set = info._comp_set;
+                                } else {
+                                    comp_set = {};
+                                    info._comp_set = comp_set;
+                                }
+                                if (!(type in comp_set)) {
+                                    set_items = tdef.items;
+                                    if (typeof set_items === 'undefined') {
+                                        return false;
+                                    }
+                                    set_items = _zipObject(set_items, set_items);
+                                    comp_set[type] = set_items;
+                                } else {
+                                    set_items = comp_set[type];
+                                }
+                                if (base_type === 'enum') {
+                                    val = [val];
+                                }
+                                for (var ii = val.length - 1; ii >= 0; --ii) {
+                                    var iv = val[ii];
+                                    if (!this.checkType(info, 'string', iv) && !this.checkType(info, 'integer', iv) || !set_items.hasOwnProperty(val[ii])) {
                                         return false;
                                     }
                                 }
