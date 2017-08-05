@@ -70,6 +70,18 @@ function processServerRequest( freq, data )
                 }
         }
     }
+    else if ( func[0] === 'futoin.ping' &&
+            func[1] === '1.0' )
+    {
+        switch ( func[2] ) {
+            case "ping":
+                freq.p.echo.should.equal(123);
+                return { echo : freq.p.echo };
+                
+            default:
+                return { e : 'UnknownInterface' };
+        }
+    }
     else if ( func[0] !== 'fileface.a' )
     {
         return { e : 'UnknownInterface' };

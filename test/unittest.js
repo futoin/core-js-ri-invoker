@@ -1,4 +1,5 @@
 var _ = require( 'lodash' );
+var isNode = require( 'detect-node' );
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var logface = require( '../LogFace' );
@@ -1499,6 +1500,69 @@ describe( 'CacheFace', function()
                 as.add( function( as, value ){
                     value.should.equal( 3 );
                     call_count.should.equal( 1 );
+                });
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .add( function( as, res )
+        {
+            done();
+        } )
+        .execute();
+    });
+} );
+
+
+//============================================================================
+if (isNode) describe( 'PingFace', function()
+{
+    var hidereq = require;
+    var PingFace = hidereq( '../PingFace' );
+    
+    before(function( done ){
+        as = async_steps();
+        
+        var opts = {};
+        opts.specDirs = thisDir + '/specs';
+        ccm = new invoker.AdvancedCCM( opts );
+        
+        as
+        .add(
+            function( as ) {
+                PingFace.register( as, ccm, 'ping', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                as.add( function( as ){
+                    createTestHttpServer( function(){ done(); } );
+                } );
+            },
+            function( as, err )
+            {
+                console.log( as.state.error_info );
+                done( as.state.last_exception );
+            }
+        )
+        .execute();
+    });
+    
+    after(function( done ){
+        closeTestHttpServer( done );
+    });
+
+    it( 'should call futoin.ping through native interface', function( done )
+    {
+        as
+        .add(
+            function( as ){
+                var pface = ccm.iface( 'ping' );
+                pface.ping(as, 123);
+                
+                as.add( function( as, echo ){
+                    echo.should.equal( 123 );
                 });
             },
             function( as, err )

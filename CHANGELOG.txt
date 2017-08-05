@@ -3,6 +3,7 @@
 BREAKING: removed AMD/minified dist files
 FIXED: debug console.log() when Variant types are used
 NEW: NativeIface.spec() API
+NEW: FTN4 Ping-Pong client iface support
 
 === 1.1.0 (2017-08-04) ===
 FIXED: string minlen/maxlen processing, even if regex is set
