@@ -1,4 +1,8 @@
 
+=== (next) ===
+BREAKING: removed AMD/minified dist files
+NEW: NativeIface.spec() API
+
 === 1.1.0 (2017-08-04) ===
 FIXED: string minlen/maxlen processing, even if regex is set
 CHANGED: to check type contraints only on top type level

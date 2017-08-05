@@ -33,7 +33,7 @@ function LogFace()
  */
 LogFace.register = function( as, ccm, endpoint, credentials, options )
 {
-    var iface = LogFace.ifacespec;
+    var iface = LogFace.spec( '1.0' );
 
     options = options || {};
     options.nativeImpl = this;
@@ -55,6 +55,7 @@ LogFace.register = function( as, ccm, endpoint, credentials, options )
  */
 var LogFaceProto = _clone( NativeIface.prototype );
 LogFace.prototype = LogFaceProto;
+LogFace.spec = NativeIface.spec;
 
 /**
  * Debug log level
@@ -221,11 +222,14 @@ LogFaceProto.security = function( txt )
 
 module.exports = LogFace;
 
+var specs = {};
+LogFace._specs = specs;
+
 /**
  * Embedded spec for FutoIn LogFace
  * @alias LogFace.ifacespec
  */
-LogFace.ifacespec =
+specs['1.0'] =
         {
             "iface" : "futoin.log",
             "version" : "1.0",

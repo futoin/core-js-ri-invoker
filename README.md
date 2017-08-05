@@ -832,13 +832,18 @@ AuditLog Native interface registration helper
 
 * [NativeIface](#NativeIface)
     * [new NativeIface()](#new_NativeIface_new)
-    * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
-    * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ <code>object</code>
-    * [.bindDerivedKey()](#NativeIface+bindDerivedKey)
-    * ["connect"](#NativeIface+event_connect)
-    * ["disconnect"](#NativeIface+event_disconnect)
-    * ["close"](#NativeIface+event_close)
-    * ["commError"](#NativeIface+event_commError)
+    * _instance_
+        * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
+        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ <code>object</code>
+        * [.bindDerivedKey()](#NativeIface+bindDerivedKey)
+        * ["connect"](#NativeIface+event_connect)
+        * ["disconnect"](#NativeIface+event_disconnect)
+        * ["close"](#NativeIface+event_close)
+        * ["commError"](#NativeIface+event_commError)
+    * _static_
+        * [._specs](#NativeIface._specs)
+        * [._specs_module_prefix](#NativeIface._specs_module_prefix)
+        * [.call(version)](#NativeIface.call)
 
 <a name="new_NativeIface_new"></a>
 
@@ -899,6 +904,32 @@ Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
 **Kind**: event emitted by [<code>NativeIface</code>](#NativeIface)  
+<a name="NativeIface._specs"></a>
+
+### NativeIface._specs
+Must object with version => spec pairs in child class, if set.
+
+**Kind**: static property of [<code>NativeIface</code>](#NativeIface)  
+<a name="NativeIface._specs_module_prefix"></a>
+
+### NativeIface._specs_module_prefix
+Must be module name prefix, example: 'MyModule/specs/name_'.
+
+If version 1.0 is requested then spec is loaded from
+'MyModule/specs/name_1_0'
+
+**Kind**: static property of [<code>NativeIface</code>](#NativeIface)  
+<a name="NativeIface.call"></a>
+
+### NativeIface.call(version)
+Get hardcoded iface definition, if available.
+
+**Kind**: static method of [<code>NativeIface</code>](#NativeIface)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| version | <code>string</code> | iface version |
+
 <a name="SimpleCCM"></a>
 
 ## SimpleCCM

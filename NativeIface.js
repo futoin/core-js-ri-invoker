@@ -41,6 +41,42 @@ function NativeIface( ccmimpl, info )
     }
 }
 
+/**
+ * Must be object with version => spec pairs in child class, if set.
+ */
+NativeIface._specs = null;
+
+/**
+ * Must be module name prefix, example: 'MyModule/specs/name_'.
+ *
+ * If version 1.0 is requested then spec is loaded from
+ * 'MyModule/specs/name_1_0'
+ */
+NativeIface._specs_module_prefix = null;
+
+/**
+ * Get hardcoded iface definition, if available.
+ * @param {string} version - iface version
+ * @alias NativeIface.call
+ */
+NativeIface.spec = function( version )
+{
+    var iface;
+
+    if ( this._specs )
+    {
+        iface = this._specs[version];
+    }
+
+    if ( !iface && this._specs_module_prefix )
+    {
+        var mod = this._specs_module_prefix + version.replace( '.', '_' );
+        iface = require( mod );
+    }
+
+    return iface;
+};
+
 var NativeIfaceProto = {};
 NativeIface.prototype = NativeIfaceProto;
 
