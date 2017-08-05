@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
-  "browser": "dist/invoker-amd.js",
+  "browser": "lib/browser.js",
   "scripts": {
     "test": "grunt test"
   },
