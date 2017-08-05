@@ -1,6 +1,7 @@
 
 === (next) ===
 BREAKING: removed AMD/minified dist files
+FIXED: debug console.log() when Variant types are used
 NEW: NativeIface.spec() API
 
 === 1.1.0 (2017-08-04) ===

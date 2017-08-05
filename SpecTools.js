@@ -881,7 +881,6 @@ var spectools =
             if ( base_type instanceof Array )
             {
                 _type_stack[ '#last_base' ] = null;
-                console.log( base_type );
 
                 for ( var vti = base_type.length - 1; vti >= 0; --vti )
                 {
