@@ -11,6 +11,7 @@ function InterfaceInfo( raw_info )
 }
 
 var InterfaceInfoProto = {};
+
 InterfaceInfo.prototype = InterfaceInfoProto;
 
 /**

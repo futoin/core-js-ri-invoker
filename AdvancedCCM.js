@@ -38,6 +38,7 @@ _extend( AdvancedCCM, AdvancedCCMPublic );
  * @ignore
  */
 var AdvancedCCMProto = _clone( SimpleCCM.prototype );
+
 AdvancedCCM.prototype = AdvancedCCMProto;
 
 /**

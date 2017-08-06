@@ -71,6 +71,7 @@ NativeIface.spec = function( version )
     if ( !iface && this._specs_module_prefix )
     {
         var mod = this._specs_module_prefix + version.replace( '.', '_' );
+
         iface = require( mod );
     }
 
@@ -78,6 +79,7 @@ NativeIface.spec = function( version )
 };
 
 var NativeIfaceProto = {};
+
 NativeIface.prototype = NativeIfaceProto;
 
 /**
@@ -271,6 +273,7 @@ NativeIfaceProto._member_call_intercept = function( as, name, finfo, args )
     }
 
     var params = _zipObject( keys, args );
+
     this.call( as, name, params );
 };
 

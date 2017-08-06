@@ -35,12 +35,12 @@ CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
     options.specDirs = [ iface ];
 
     ccm.register(
-            as,
-            common.Options.SVC_CACHE_ + name,
-            iface.iface + ':' + iface.version,
-            endpoint,
-            credentials,
-            options
+        as,
+        common.Options.SVC_CACHE_ + name,
+        iface.iface + ':' + iface.version,
+        endpoint,
+        credentials,
+        options
     );
 };
 
@@ -49,6 +49,7 @@ CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
  * @ignore
  */
 var CacheFaceProto = _clone( NativeIface.prototype );
+
 CacheFace.prototype = CacheFaceProto;
 
 /**
@@ -97,11 +98,16 @@ CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
             {
                 // TODO: implement cache hammering protection
                 var p = [ as ].concat( params ); // avoid side-effect
+
                 callable.apply( null, p );
 
                 as.add( function( as, value )
                 {
-                    _this.call( as, 'set', { key : key, value : value, ttl : ttl_ms } );
+                    _this.call( as, 'set', {
+                        key : key,
+                        value : value,
+                        ttl : ttl_ms,
+                    } );
 
                     as.add( function( as )
                     {
@@ -129,52 +135,48 @@ CacheFace.ifacespec =
                     "params" : {
                         "key" : {
                             "type" : "string",
-                            "desc" : "Unique cache key"
-                        }
+                            "desc" : "Unique cache key",
+                        },
                     },
                     "result" : {
                         "value" : {
                             "type" : "any",
-                            "desc" : "Any previously cached value"
-                        }
+                            "desc" : "Any previously cached value",
+                        },
                     },
-                    "throws" : [
-                        "CacheMiss"
-                    ],
-                    "desc" : "Trivial cached value retrieval"
+                    "throws" : [ "CacheMiss" ],
+                    "desc" : "Trivial cached value retrieval",
                 },
                 "set" : {
                     "params" : {
                         "key" : {
                             "type" : "string",
-                            "desc" : "Unique cache key"
+                            "desc" : "Unique cache key",
                         },
                         "value" : {
                             "type" : "any",
-                            "desc" : "arbitrary value to cache"
+                            "desc" : "arbitrary value to cache",
                         },
                         "ttl" : {
                             "type" : "integer",
-                            "desc" : "Time to live in milliseconds"
-                        }
+                            "desc" : "Time to live in milliseconds",
+                        },
                     },
-                    "desc" : "Trivial cached value storing"
+                    "desc" : "Trivial cached value storing",
                 },
                 "custom" : {
                     "params" : {
                         "cmd" : {
                             "type" : "string",
-                            "desc" : "Implementation-defined custom command"
+                            "desc" : "Implementation-defined custom command",
                         },
                         "prm" : {
                             "type" : "any",
-                            "desc" : "Implementation-defined custom command parameters"
-                        }
-                    }
-                }
+                            "desc" : "Implementation-defined custom command parameters",
+                        },
+                    },
+                },
             },
-            "requires" : [
-                "SecureChannel"
-            ],
-            "desc" : "Cache interface"
+            "requires" : [ "SecureChannel" ],
+            "desc" : "Cache interface",
         };

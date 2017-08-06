@@ -5,11 +5,11 @@ var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
 var async_steps = require( 'futoin-asyncsteps' );
 
-var btoa = ( typeof window !== 'undefined' ) ? window.btoa : // jshint ignore:line
-function( str )
-{
-    return new Buffer( str ).toString( 'base64' );
-};
+var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
+    function( str )
+    {
+        return new Buffer( str ).toString( 'base64' );
+    };
 
 /**
  * AuditLog Native interface
@@ -40,12 +40,12 @@ LogFace.register = function( as, ccm, endpoint, credentials, options )
     options.specDirs = [ iface ];
 
     ccm.register(
-            as,
-            common.Options.SVC_LOG,
-            iface.iface + ':' + iface.version,
-            endpoint,
-            credentials,
-            options
+        as,
+        common.Options.SVC_LOG,
+        iface.iface + ':' + iface.version,
+        endpoint,
+        credentials,
+        options
     );
 };
 
@@ -54,6 +54,7 @@ LogFace.register = function( as, ccm, endpoint, credentials, options )
  * @ignore
  */
 var LogFaceProto = _clone( NativeIface.prototype );
+
 LogFace.prototype = LogFaceProto;
 LogFace.spec = NativeIface.spec;
 
@@ -99,6 +100,7 @@ LogFaceProto.LVL_SECURITY = 'security';
 LogFaceProto._ts = function()
 {
     var d = new Date();
+
     return d.getUTCFullYear().toString() +
         ( '0' + ( d.getUTCMonth() + 1 ).toString() ).slice( -2 ) +
         ( '0' + d.getUTCDate().toString() ).slice( -2 ) +
@@ -119,23 +121,23 @@ LogFaceProto.msg = function( lvl, txt )
     var _this = this;
 
     async_steps()
-    .add(
-        function( as )
-        {
-            _this.call( as, 'msg', {
-                lvl : lvl,
-                txt : txt,
-                ts : _this._ts()
-            } );
-        },
-        function( as, err )
-        {
-            console.log( 'LOGFAIL:' + lvl + ':' + txt );
-            console.log( 'ERROR:' + err + ':' + as.state.error_info );
-            console.log( as.state.last_exception.stack );
-        }
-    )
-    .execute();
+        .add(
+            function( as )
+            {
+                _this.call( as, 'msg', {
+                    lvl : lvl,
+                    txt : txt,
+                    ts : _this._ts(),
+                } );
+            },
+            function( as, err )
+            {
+                console.log( 'LOGFAIL:' + lvl + ':' + txt );
+                console.log( 'ERROR:' + err + ':' + as.state.error_info );
+                console.log( as.state.last_exception.stack );
+            }
+        )
+        .execute();
 };
 
 /**
@@ -150,24 +152,24 @@ LogFaceProto.hexdump = function( lvl, txt, data )
     var _this = this;
 
     async_steps()
-    .add(
-        function( as )
-        {
-            _this.call( as, 'hexdump', {
-                lvl : lvl,
-                txt : txt,
-                ts : _this._ts(),
-                data : btoa( data )
-            } );
-        },
-        function( as, err )
-        {
-            console.log( 'LOGFAIL:' + lvl + ':' + txt );
-            console.log( 'ERROR:' + err + ':' + as.state.error_info );
-            console.log( as.state.last_exception.stack );
-        }
-    )
-    .execute();
+        .add(
+            function( as )
+            {
+                _this.call( as, 'hexdump', {
+                    lvl : lvl,
+                    txt : txt,
+                    ts : _this._ts(),
+                    data : btoa( data ),
+                } );
+            },
+            function( as, err )
+            {
+                console.log( 'LOGFAIL:' + lvl + ':' + txt );
+                console.log( 'ERROR:' + err + ':' + as.state.error_info );
+                console.log( as.state.last_exception.stack );
+            }
+        )
+        .execute();
 };
 
 /**
@@ -223,6 +225,7 @@ LogFaceProto.security = function( txt )
 module.exports = LogFace;
 
 var specs = {};
+
 LogFace._specs = specs;
 
 /**
@@ -238,53 +241,42 @@ specs['1.0'] =
                 "LogLevel" : {
                     "type" : "string",
                     "regex" : "^(debug|info|warn|error|security)$",
-                    "desc" : "Severity level"
+                    "desc" : "Severity level",
                 },
                 "LogTimeStamp" : {
                     "type" : "string",
                     "regex" : "^[0-9]{14}(\\.[0-9]+)?$",
-                    "desc" : "Original timestamp in YYYYMMDDhhmmss.frac format"
-                }
+                    "desc" : "Original timestamp in YYYYMMDDhhmmss.frac format",
+                },
             },
             "funcs" : {
                 "msg" : {
                     "params" : {
-                        "lvl" : {
-                            "type" : "LogLevel"
-                        },
+                        "lvl" : { "type" : "LogLevel" },
                         "txt" : {
                             "type" : "string",
-                            "desc" : "Text message, may include new lines"
+                            "desc" : "Text message, may include new lines",
                         },
-                        "ts" : {
-                            "type" : "LogTimeStamp"
-                        }
+                        "ts" : { "type" : "LogTimeStamp" },
                     },
-                    "desc" : "Trivial log message"
+                    "desc" : "Trivial log message",
                 },
                 "hexdump" : {
                     "params" : {
-                        "lvl" : {
-                            "type" : "LogLevel"
-                        },
+                        "lvl" : { "type" : "LogLevel" },
                         "txt" : {
                             "type" : "string",
-                            "desc" : "Text message, may include new lines"
+                            "desc" : "Text message, may include new lines",
                         },
-                        "ts" : {
-                            "type" : "LogTimeStamp"
-                        },
+                        "ts" : { "type" : "LogTimeStamp" },
                         "data" : {
                             "type" : "string",
-                            "desc" : "Base64 encoded binary data"
-                        }
+                            "desc" : "Base64 encoded binary data",
+                        },
                     },
-                    "desc" : "Trivial log message"
-                }
+                    "desc" : "Trivial log message",
+                },
             },
-            "requires" : [
-                "AllowAnonymous",
-                "SecureChannel"
-            ],
-            "desc" : "Audit Log interface"
+            "requires" : [ "AllowAnonymous", "SecureChannel" ],
+            "desc" : "Audit Log interface",
         };

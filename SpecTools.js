@@ -14,6 +14,7 @@ var _extend = require( 'lodash/extend' );
 if ( isNode )
 {
     var hidereq = require;
+
     fs = hidereq( 'fs' );
     request = hidereq( 'request' );
 }
@@ -39,7 +40,7 @@ var spectools =
         InvalidRequest : true,
         DefenseRejected : true,
         PleaseReauth : true,
-        SecurityError : true
+        SecurityError : true,
     },
 
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
@@ -127,14 +128,18 @@ var spectools =
                         return;
                     }
                     catch ( e )
-                    {}
+                    {
+                        // ignore
+                    }
 
                     try
                     {
                         read_as.continue();
                     }
                     catch ( e )
-                    {}
+                    {
+                        // ignore
+                    }
                 };
 
                 if ( uri.substr( 0, 4 ) === 'http' )
@@ -163,81 +168,85 @@ var spectools =
                 } );
             } )
             // Check remote URL in browser
-            .add( function( as )
-            {
-                if ( ( typeof v !== 'string' ) ||
+                .add( function( as )
+                {
+                    if ( ( typeof v !== 'string' ) ||
                      isNode )
-                {
-                    return;
-                }
-
-                var uri = v + '/' + fn;
-
-                var httpreq = new XMLHttpRequest(); // jshint ignore:line
-
-                httpreq.onreadystatechange = function()
-                {
-                    if ( this.readyState !== this.DONE )
                     {
                         return;
                     }
 
-                    var response = this.responseText;
+                    var uri = v + '/' + fn;
 
-                    if ( response )
+                    var httpreq = new XMLHttpRequest(); // jshint ignore:line
+
+                    httpreq.onreadystatechange = function()
                     {
-                        try
+                        if ( this.readyState !== this.DONE )
                         {
-                            v = JSON.parse( response );
-                            v._just_loaded = true;
-                            as.success();
                             return;
                         }
-                        catch ( e )
-                        {}
-                    }
 
-                    try
+                        var response = this.responseText;
+
+                        if ( response )
+                        {
+                            try
+                            {
+                                v = JSON.parse( response );
+                                v._just_loaded = true;
+                                as.success();
+                                return;
+                            }
+                            catch ( e )
+                            {
+                                // ignore
+                            }
+                        }
+
+                        try
+                        {
+                            as.continue();
+                        }
+                        catch ( ex )
+                        {
+                            // ignore
+                        }
+                    };
+
+                    httpreq.open( "GET", uri, true );
+                    httpreq.send();
+
+                    as.setCancel( function( as )
                     {
-                        as.continue();
-                    }
-                    catch ( ex )
-                    {}
-                };
-
-                httpreq.open( "GET", uri, true );
-                httpreq.send();
-
-                as.setCancel( function( as )
-                {
-                    void as;
-                    httpreq.abort();
-                } );
-            } )
+                        void as;
+                        httpreq.abort();
+                    } );
+                } )
             // Check object spec
-            .add( function( as )
-            {
-                if ( ( typeof v === 'object' ) &&
+                .add( function( as )
+                {
+                    if ( ( typeof v === 'object' ) &&
                     ( v.iface === info.iface ) &&
                     ( v.version === info.version ) )
-                {
-                    raw_spec = v;
-                    as.break();
-                }
-            } );
+                    {
+                        raw_spec = v;
+                        as.break();
+                    }
+                } );
         } )
-        .add( function( as )
-        {
-            if ( raw_spec === null )
+            .add( function( as )
             {
-                as.error(
-                    FutoInError.InternalError,
-                    "Failed to load valid spec for " + info.iface + ":" + info.version
-                );
-            }
+                if ( raw_spec === null )
+                {
+                    as.error(
+                        FutoInError.InternalError,
+                        "Failed to load valid spec for " + info.iface + ":" + info.version
+                    );
+                }
 
-            spectools.parseIface( as, cached_info, specdirs, raw_spec, load_cache );
-        } );
+                spectools.parseIface( as, cached_info, specdirs, raw_spec, load_cache );
+            } );
 
         if ( load_cache )
         {
@@ -317,6 +326,7 @@ var spectools =
             }
 
             var sup_info = {};
+
             sup_info.iface = m[ 1 ];
             sup_info.version = m[ 4 ];
             sup_info._invoker_use = info._invoker_use;
@@ -337,6 +347,7 @@ var spectools =
         {
             var iface_pattern = common._ifacever_pattern;
             var imp_load_cache = load_cache || {}; // make sure we always use cache here
+
             info.imports = raw_spec.imports.slice();
 
             as.forEach( raw_spec.imports, function( as, k, v )
@@ -349,6 +360,7 @@ var spectools =
                 }
 
                 var imp_info = {};
+
                 imp_info.iface = m[ 1 ];
                 imp_info.version = m[ 4 ];
                 imp_info._import_use = true;
@@ -385,7 +397,7 @@ var spectools =
                             if ( curr_ver[0] !== new_ver[0] )
                             {
                                 as.error( FutoInError.InvokerError,
-                                          "Incompatible iface versions: " +
+                                    "Incompatible iface versions: " +
                                           iface + " " +
                                           ver + "/" + import_candidates[iface] );
                             }
@@ -408,6 +420,7 @@ var spectools =
                         info.imports.push( iface + ':' + ver );
 
                         var imp_info = {};
+
                         imp_info.iface = iface;
                         imp_info.version = ver;
                         imp_info._import_use = true;
@@ -454,7 +467,7 @@ var spectools =
                      'BiDirectChannel' in info.constraints )
                 {
                     as.error( FutoInError.InternalError,
-                              "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
+                        "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
                 }
             }
 
@@ -463,7 +476,7 @@ var spectools =
                 if ( 'MessageSignature' in info.constraints )
                 {
                     as.error( FutoInError.InternalError,
-                              "Missing ftn3rev or wrong field for FTN3 v1.2 features" );
+                        "Missing ftn3rev or wrong field for FTN3 v1.2 features" );
                 }
             }
 
@@ -474,7 +487,7 @@ var spectools =
                     if ( info.funcs[f].seclvl )
                     {
                         as.error( FutoInError.InternalError,
-                                  "Missing ftn3rev or wrong field for FTN3 v1.3 features" );
+                            "Missing ftn3rev or wrong field for FTN3 v1.3 features" );
                     }
                 }
             }
@@ -762,8 +775,8 @@ var spectools =
         }
 
         if ( _difference(
-                Object.keys( sup_info.constraints ),
-                raw_spec.requires ).length )
+            Object.keys( sup_info.constraints ),
+            raw_spec.requires ).length )
         {
             as.error( FutoInError.InternalError, "Missing constraints from inherited" );
         }
@@ -802,48 +815,48 @@ var spectools =
         // ---
         switch ( type )
         {
-            case 'any':
-                return true;
+        case 'any':
+            return true;
 
-            case 'boolean':
-            case 'string':
-            case 'number':
-                return ( typeof val === type );
+        case 'boolean':
+        case 'string':
+        case 'number':
+            return ( typeof val === type );
 
-            case 'map':
-                return ( typeof val === 'object' ) &&
+        case 'map':
+            return ( typeof val === 'object' ) &&
                        !( val instanceof Array );
 
-            case 'integer':
-                return ( typeof val === "number" ) &&
+        case 'integer':
+            return ( typeof val === "number" ) &&
                        ( ( val | 0 ) === val );
 
-            case 'array':
-                return ( val instanceof Array );
+        case 'array':
+            return ( val instanceof Array );
 
-            case 'enum':
-            case 'set':
-                if ( _type_stack )
+        case 'enum':
+        case 'set':
+            if ( _type_stack )
+            {
+                if ( type === 'enum' )
                 {
-                    if ( type === 'enum' )
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return ( val instanceof Array );
-                    }
+                    return true;
                 }
+                else
+                {
+                    return ( val instanceof Array );
+                }
+            }
 
-                console.log( "[ERROR] enum and set are allowed only in custom types" );
-                return false;
+            console.log( "[ERROR] enum and set are allowed only in custom types" );
+            return false;
 
-            default:
-                if ( !( 'types' in info ) ||
+        default:
+            if ( !( 'types' in info ) ||
                      !( type in info.types ) )
-                {
-                    return false;
-                }
+            {
+                return false;
+            }
                 // continue;
         }
 
@@ -860,6 +873,7 @@ var spectools =
             }
 
             var topmost = !_type_stack;
+
             _type_stack = _type_stack || {};
 
             // ---
@@ -886,6 +900,7 @@ var spectools =
                 {
                     var vtype = base_type[vti];
                     var new_type_stack = Object.create( _type_stack );
+
                     new_type_stack['#last_base'] = vtype;
 
                     if ( this.checkType( info, vtype, val, new_type_stack ) )
@@ -923,193 +938,193 @@ var spectools =
 
             switch ( base_type )
             {
-                case 'integer':
-                case 'number':
-                    if ( ( 'min' in tdef ) &&
+            case 'integer':
+            case 'number':
+                if ( ( 'min' in tdef ) &&
                          ( val < tdef.min ) )
-                    {
-                        return false;
-                    }
+                {
+                    return false;
+                }
 
-                    if ( ( 'max' in tdef ) &&
+                if ( ( 'max' in tdef ) &&
                          ( val > tdef.max ) )
+                {
+                    return false;
+                }
+
+                return true;
+
+            case 'string':
+                if ( 'regex' in tdef )
+                {
+                    var comp_regex;
+
+                    if ( '_comp_regex' in info )
+                    {
+                        comp_regex = info._comp_regex;
+                    }
+                    else
+                    {
+                        comp_regex = {};
+                        info._comp_regex = comp_regex;
+                    }
+
+                    if ( !( type in comp_regex ) )
+                    {
+                        comp_regex[ type ] = new RegExp( tdef.regex );
+                    }
+
+                    if ( val.match( comp_regex[ type ] ) === null )
                     {
                         return false;
                     }
+                }
 
-                    return true;
-
-                case 'string':
-                    if ( 'regex' in tdef )
-                    {
-                        var comp_regex;
-
-                        if ( '_comp_regex' in info )
-                        {
-                            comp_regex = info._comp_regex;
-                        }
-                        else
-                        {
-                            comp_regex = {};
-                            info._comp_regex = comp_regex;
-                        }
-
-                        if ( !( type in comp_regex ) )
-                        {
-                            comp_regex[ type ] = new RegExp( tdef.regex );
-                        }
-
-                        if ( val.match( comp_regex[ type ] ) === null )
-                        {
-                            return false;
-                        }
-                    }
-
-                    if ( ( 'minlen' in tdef ) &&
+                if ( ( 'minlen' in tdef ) &&
                          ( val.length < tdef.minlen ) )
-                    {
-                        return false;
-                    }
+                {
+                    return false;
+                }
 
-                    if ( ( 'maxlen' in tdef ) &&
+                if ( ( 'maxlen' in tdef ) &&
                          ( val.length > tdef.maxlen ) )
-                    {
-                        return false;
-                    }
+                {
+                    return false;
+                }
 
-                    return true;
+                return true;
 
-                case 'array':
-                    var val_len = val.length;
+            case 'array':
+                var val_len = val.length;
 
-                    if ( ( 'minlen' in tdef ) &&
+                if ( ( 'minlen' in tdef ) &&
                          ( val_len < tdef.minlen ) )
-                    {
-                        return false;
-                    }
+                {
+                    return false;
+                }
 
-                    if ( ( 'maxlen' in tdef ) &&
+                if ( ( 'maxlen' in tdef ) &&
                          ( val_len > tdef.maxlen ) )
+                {
+                    return false;
+                }
+
+                if ( 'elemtype' in tdef )
+                {
+                    elemtype = tdef.elemtype;
+
+                    for ( var i = 0; i < val_len; ++i )
+                    {
+                        // Note, new type stack
+                        if ( !this.checkType( info, elemtype, val[ i ], null ) )
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+
+            case 'map':
+                if ( !( 'fields' in tdef ) )
+                {
+                    return true;
+                }
+
+                var fields = tdef.fields;
+
+                for ( var f in fields )
+                {
+                    var field_def = fields[ f ];
+
+                    if ( typeof field_def === 'string' )
+                    {
+                        field_def = { 'type' : field_def };
+                    }
+
+                    if ( !( f in val ) ||
+                             ( val[ f ] === null ) )
+                    {
+                        if ( field_def.optional )
+                        {
+                            val[ f ] = null;
+                            return true;
+                        }
+
+                        return false;
+                    }
+
+                    if ( !this.checkType( info, field_def.type, val[ f ], null ) )
+                    {
+                        return false;
+                    }
+                }
+
+                if ( 'elemtype' in tdef )
+                {
+                    elemtype = tdef.elemtype;
+
+                    for ( var ft in val )
+                    {
+                        if ( !this.checkType( info, elemtype, val[ ft ], null ) )
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+
+            case 'enum':
+            case 'set':
+                var comp_set;
+                var set_items;
+
+                if ( '_comp_set' in info )
+                {
+                    comp_set = info._comp_set;
+                }
+                else
+                {
+                    comp_set = {};
+                    info._comp_set = comp_set;
+                }
+
+                if ( !( type in comp_set ) )
+                {
+                    set_items = tdef.items;
+
+                    if ( typeof set_items === 'undefined' )
                     {
                         return false;
                     }
 
-                    if ( 'elemtype' in tdef )
-                    {
-                        elemtype = tdef.elemtype;
+                    set_items = _zipObject( set_items, set_items );
+                    comp_set[ type ] = set_items;
+                }
+                else
+                {
+                    set_items = comp_set[ type ];
+                }
 
-                        for ( var i = 0; i < val_len; ++i )
-                        {
-                            // Note, new type stack
-                            if ( !this.checkType( info, elemtype, val[ i ], null ) )
-                            {
-                                return false;
-                            }
-                        }
-                    }
+                if ( base_type === 'enum' )
+                {
+                    val = [ val ];
+                }
 
-                    return true;
+                for ( var ii = val.length - 1; ii >= 0; --ii )
+                {
+                    var iv = val[ii];
 
-                case 'map':
-                    if ( !( 'fields' in tdef ) )
-                    {
-                        return true;
-                    }
-
-                    var fields = tdef.fields;
-
-                    for ( var f in fields )
-                    {
-                        var field_def = fields[ f ];
-
-                        if ( typeof field_def === 'string' )
-                        {
-                            field_def = { 'type' : field_def };
-                        }
-
-                        if ( !( f in val ) ||
-                             ( val[ f ] === null ) )
-                        {
-                            if ( field_def.optional )
-                            {
-                                val[ f ] = null;
-                                return true;
-                            }
-
-                            return false;
-                        }
-
-                        if ( !this.checkType( info, field_def.type, val[ f ], null ) )
-                        {
-                            return false;
-                        }
-                    }
-
-                    if ( 'elemtype' in tdef )
-                    {
-                        elemtype = tdef.elemtype;
-
-                        for ( var ft in val )
-                        {
-                            if ( !this.checkType( info, elemtype, val[ ft ], null ) )
-                            {
-                                return false;
-                            }
-                        }
-                    }
-
-                    return true;
-
-                case 'enum':
-                case 'set':
-                    var comp_set;
-                    var set_items;
-
-                    if ( '_comp_set' in info )
-                    {
-                        comp_set = info._comp_set;
-                    }
-                    else
-                    {
-                        comp_set = {};
-                        info._comp_set = comp_set;
-                    }
-
-                    if ( !( type in comp_set ) )
-                    {
-                        set_items = tdef.items;
-
-                        if ( typeof set_items === 'undefined' )
-                        {
-                            return false;
-                        }
-
-                        set_items = _zipObject( set_items, set_items );
-                        comp_set[ type ] = set_items;
-                    }
-                    else
-                    {
-                        set_items = comp_set[ type ];
-                    }
-
-                    if ( base_type === 'enum' )
-                    {
-                        val = [ val ];
-                    }
-
-                    for ( var ii = val.length - 1; ii >= 0; --ii )
-                    {
-                        var iv = val[ii];
-
-                        if ( ( !this.checkType( info, 'string', iv ) &&
+                    if ( ( !this.checkType( info, 'string', iv ) &&
                                !this.checkType( info, 'integer', iv ) ) ||
                              !set_items.hasOwnProperty( val[ii] ) )
-                        {
-                            return false;
-                        }
+                    {
+                        return false;
                     }
+                }
 
-                    return true;
+                return true;
             }
         }
 
@@ -1185,7 +1200,7 @@ var spectools =
         void info;
         void ftnreq;
         as.error( FutoInError.InvalidRequest, "HMAC generation is supported only for server environment" );
-    }
+    },
 };
 
 if ( isNode )

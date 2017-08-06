@@ -1,9 +1,9 @@
-
-/* jshint esversion:6 */
+'use strict';
 
 const NativeFace = require( './NativeIface' );
 
-class PingFace extends NativeFace {
+class PingFace extends NativeFace
+{
     ping( as, echo )
     {
         this.call( as, 'ping', { echo } );
@@ -25,12 +25,12 @@ class PingFace extends NativeFace {
         options.specDirs = [ iface ];
 
         ccm.register(
-                as,
-                name,
-                iface.iface + ':' + ifacever,
-                endpoint,
-                credentials,
-                options
+            as,
+            name,
+            iface.iface + ':' + ifacever,
+            endpoint,
+            credentials,
+            options
         );
     }
 }
@@ -41,25 +41,25 @@ const specs = {};
 PingFace._specs = specs;
 
 PingFace._specs['1.0'] = {
-  "iface" : "futoin.ping",
-  "version" : "1.0",
-  "ftn3rev" : "1.1",
-  "funcs" : {
-    "ping" : {
-      "params" : {
-        "echo" : {
-          "type" : "integer",
-          "desc" : "Arbitrary integer"
-        }
-      },
-      "result" : {
-        "echo" : {
-          "type" : "integer",
-          "desc" : "See params"
-        }
-      },
-      "desc" : "Check if peer is accessible"
-    }
-  },
-  "desc" : "Ping-pong interface"
+    "iface" : "futoin.ping",
+    "version" : "1.0",
+    "ftn3rev" : "1.1",
+    "funcs" : {
+        "ping" : {
+            "params" : {
+                "echo" : {
+                    "type" : "integer",
+                    "desc" : "Arbitrary integer",
+                },
+            },
+            "result" : {
+                "echo" : {
+                    "type" : "integer",
+                    "desc" : "See params",
+                },
+            },
+            "desc" : "Check if peer is accessible",
+        },
+    },
+    "desc" : "Ping-pong interface",
 };

@@ -42,13 +42,13 @@
     "request": "^2.81.0"
   },
   "devDependencies": {
-    "chai": "^4.1.0",
+    "chai": "^4.1.1",
+    "eslint": "^4.4.0",
     "grunt": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
-    "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-uglify": "^3.0.1",
+    "grunt-eslint": "^20.0.0",
     "grunt-external-daemon": "^1.1.0",
-    "grunt-jscs": "^3.0.1",
     "grunt-jsdoc-to-markdown": "^3.0.0",
     "grunt-mocha-istanbul": "^5.0.2",
     "grunt-mocha-phantomjs": "^4.0.0",
@@ -57,5 +57,9 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
     "server-destroy": "^1.0.1"
-  }
+  },
+  "eslintIgnore": [
+    "Gruntfile.js",
+    "test/**"
+  ]
 }

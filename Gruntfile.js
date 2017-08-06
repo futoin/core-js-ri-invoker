@@ -7,18 +7,9 @@ module.exports = function (grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON( 'package.json' ),
                      
-        jshint: {
-            options: {
-                jshintrc : true,
-            },
-            all: ['*.js', 'lib/**/*.js'],
-        },
-        jscs: {
-            options : {
-                config: ".jscsrc",
-                fix: true,
-            },
-            all: ['*.js', 'lib/**/*.js'],
+        eslint: {
+            options: { fix: true },
+            target: ['*.js', 'lib/**/*.js'],
         },
         mocha_istanbul: {
             coverage: {
@@ -134,8 +125,7 @@ module.exports = function (grunt) {
         }
     });
     
-    grunt.loadNpmTasks( 'grunt-contrib-jshint' );
-    grunt.loadNpmTasks( 'grunt-jscs' );
+    grunt.loadNpmTasks( 'grunt-eslint' );
     grunt.loadNpmTasks( 'grunt-pure-cjs' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
     grunt.loadNpmTasks( 'grunt-contrib-connect' );
@@ -143,7 +133,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks( 'grunt-mocha-phantomjs' );
     grunt.loadNpmTasks( 'grunt-mocha-istanbul' );
     
-    grunt.registerTask( 'check', [ 'jshint', 'jscs' ] );
+    grunt.registerTask( 'check', [ 'eslint' ] );
 
     grunt.registerTask( 'build-browser', ['pure_cjs', 'uglify'] );
     grunt.registerTask( 'test-browser', ['connect','external_daemon:unittest','mocha_phantomjs'] );

@@ -39,6 +39,7 @@ _extend( SimpleCCM, SimpleCCMPublic );
  * @ignore
  */
 var SimpleCCMProto = {};
+
 SimpleCCM.prototype = SimpleCCMProto;
 _extend( SimpleCCMProto, SimpleCCMPublic );
 
@@ -125,26 +126,27 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
 
         switch ( endpoint_scheme )
         {
-            case 'http':
-            case 'https':
-                break;
+        case 'http':
+        case 'https':
+            break;
 
-            case 'ws':
-            case 'wss':
-            case 'unix':
-                is_bidirect = true;
-                break;
+        case 'ws':
+        case 'wss':
+        case 'unix':
+            is_bidirect = true;
+            break;
 
-            case 'browser':
-                if ( options && options.targetOrigin )
-                {
-                    secure_channel = true;
-                }
-                is_bidirect = true;
-                break;
+        case 'browser':
+            if ( options && options.targetOrigin )
+            {
+                secure_channel = true;
+            }
 
-            default:
-                as.error( futoin_error.InvokerError, "Unknown endpoint schema" );
+            is_bidirect = true;
+            break;
+
+        default:
+            as.error( futoin_error.InvokerError, "Unknown endpoint schema" );
         }
     }
     else if ( 'onInternalRequest' in endpoint )
@@ -185,7 +187,7 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
         constraints : null,
         options : options,
         _invoker_use : true,
-        _user_info : null
+        _user_info : null,
     };
 
     if ( info.creds_hmac &&
