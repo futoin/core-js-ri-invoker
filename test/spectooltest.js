@@ -21,14 +21,14 @@ if ( !isNode )
 else
 {
     // Node test
-    var chai_module = common._nodeRequire( 'chai' );
+    var chai_module = module.require( 'chai' );
     chai_module.should();
     assert = chai_module.assert;
     
     thisDir = __dirname;
     
-    invoker = common._nodeRequire('./invoker.js');
-    var crypto = common._nodeRequire( 'crypto' );
+    invoker = module.require('../lib/invoker.js');
+    var crypto = module.require( 'crypto' );
 }
 
 var SpecTools = invoker.SpecTools;

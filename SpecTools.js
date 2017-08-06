@@ -13,8 +13,8 @@ var _extend = require( 'lodash/extend' );
 
 if ( isNode )
 {
-    fs = common._nodeRequire( 'fs' );
-    request = common._nodeRequire( 'request' );
+    fs = module.require( 'fs' );
+    request = module.require( 'request' );
 }
 
 /**
@@ -1238,7 +1238,7 @@ var spectools =
 
 if ( isNode )
 {
-    common._nodeRequire( './node/spectools_hmac' )( spectools );
+    module.require( './lib/node/spectools_hmac' )( spectools );
 }
 
 module.exports = spectools;

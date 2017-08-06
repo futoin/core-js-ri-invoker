@@ -81,7 +81,7 @@ NativeIface.spec = function( version )
     {
         var mod = this._specs_module_prefix + version.replace( '.', '_' );
 
-        iface = common._nodeRequire( mod );
+        iface = module.require( mod );
     }
 
     return iface;

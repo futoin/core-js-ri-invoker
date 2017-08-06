@@ -34,17 +34,17 @@ if ( !isNode )
 else
 {
     // Node test
-    var chai_module = common._nodeRequire( 'chai' );
+    var chai_module = module.require( 'chai' );
     chai_module.should();
     assert = chai_module.assert;
     
-    var node_server = common._nodeRequire('../test/node_server.js');
+    var node_server = module.require('./node_server.js');
     createTestHttpServer = node_server.createTestHttpServer;
     closeTestHttpServer = node_server.closeTestHttpServer;
     
     thisDir = __dirname;
     
-    invoker = common._nodeRequire('./invoker.js');
+    invoker = module.require('../lib/invoker.js');
 }
 
 describe( 'Invoker Basic', function()
@@ -1520,7 +1520,7 @@ describe( 'CacheFace', function()
 //============================================================================
 if (isNode) describe( 'PingFace', function()
 {
-    var PingFace = common._nodeRequire( '../PingFace' );
+    var PingFace = module.require( '../PingFace' );
     
     before(function( done ){
         as = async_steps();
