@@ -35,7 +35,7 @@ Reference implementation of:
 * Spec: [FTN5: FutoIn HTTP integration v1.x](http://specs.futoin.org/final/preview/ftn5_iface_http_integration.html)
 * Spec: [FTN9: FutoIn Interface - AuditLog v1.x](http://specs.futoin.org/final/preview/ftn9_if_auditlog.html)
 * Spec: [FTN14: FutoIn Cache v1.x](http://specs.futoin.org/final/preview/ftn14_cache.html)
-* Spec: [FTN14: FutoIn Interface - Ping-Pong v1.x](http://specs.futoin.org/final/preview/ftn4_if_ping.html)
+* Spec: [FTN4: FutoIn Interface - Ping-Pong v1.x](http://specs.futoin.org/final/preview/ftn4_if_ping.html)
 
 [Web Site](http://futoin.org/)
 
