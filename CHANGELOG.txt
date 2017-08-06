@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.2.0 (2017-08-06) ===
 BREAKING: removed AMD/minified dist files
 FIXED: debug console.log() when Variant types are used
 CHANGED: to use eslint & webpack for testing
