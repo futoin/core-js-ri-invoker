@@ -99,6 +99,17 @@ or included modular way, e.g.:
 var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 ```
 
+# Browser installation
+
+The module can be used with `webpack` or any other CommonJS packer.
+
+*Note: there are the following globals available*:
+
+* SimpleCCM - global reference to futoin-invoker.SimpleCCM class
+* AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
+* futoin.Invoker - global reference to futoin-invoker module
+
+
 # Examples
 
 NOTE: more complex examples should be found in [futoin-executor](https://github.com/futoin/core-js-ri-executor/)

@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: not populated module.exports in repeated browser require()
+FIXED: returned browser globals documentation
+
 === 1.2.1 (2017-08-06) ===
 FIXED: not to show webpack warning on node require
 FIXED: cosmetic doc & code fixes
