@@ -1,13 +1,14 @@
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var _ = require( 'lodash' );
-var isNode = require( 'detect-node' );
+var common = require( '../lib/common' );
+var isNode = common._isNode;
 var invoker;
 var as;
 
 var thisDir;
 
-if ( typeof chai !== 'undefined' )
+if ( !isNode )
 {
     // Browser test
     chai.should();
@@ -20,15 +21,14 @@ if ( typeof chai !== 'undefined' )
 else
 {
     // Node test
-    var chai_module = require( 'chai' );
+    var chai_module = common._nodeRequire( 'chai' );
     chai_module.should();
     assert = chai_module.assert;
     
-        thisDir = __dirname;
+    thisDir = __dirname;
     
-    var hidereq = require;
-    invoker = hidereq('../lib/invoker.js');
-    var crypto = hidereq( 'crypto' );
+    invoker = common._nodeRequire('./invoker.js');
+    var crypto = common._nodeRequire( 'crypto' );
 }
 
 var SpecTools = invoker.SpecTools;

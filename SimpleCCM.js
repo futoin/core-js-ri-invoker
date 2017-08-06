@@ -49,7 +49,12 @@ SimpleCCMProto._secure_replace = /^secure\+/;
 /** @ignore */
 SimpleCCMProto._secure_test = /^(https|wss|unix):\/\//;
 
-/** @ignore */
+/**
+ * @ignore
+ * @param {SimpleCCMImpl} ccmimpl - _
+ * @param {InterfaceInfo} info - interface info
+ * @returns {NativeIface} new instance of native face
+ */
 SimpleCCMProto._native_iface_builder = function( ccmimpl, info )
 {
     return new NativeIface( ccmimpl, info );
@@ -349,6 +354,7 @@ SimpleCCMProto.unRegister = function( name )
 
 /**
  * Shortcut to iface( "#defense" )
+ * @returns {object} native defense interface
  * @alias SimpleCCM#defense
  */
 SimpleCCMProto.defense = function()
@@ -358,7 +364,7 @@ SimpleCCMProto.defense = function()
 
 /**
  * Returns extended API interface as defined in FTN9 IF AuditLogService
- * @returns {object}
+ * @returns {object} FTN9 native face
  * @alias SimpleCCM#log
  */
 SimpleCCMProto.log = function()
@@ -368,7 +374,8 @@ SimpleCCMProto.log = function()
 
 /**
  * Returns extended API interface as defined in [FTN14 Cache][]
- * @returns {object}
+ * @param {string} [bucket=default] - cache bucket name
+ * @returns {object} FTN14 native face
  * @alias SimpleCCM#cache
  */
 SimpleCCMProto.cache = function( bucket )

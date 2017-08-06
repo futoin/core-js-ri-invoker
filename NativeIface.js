@@ -11,6 +11,8 @@ var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
 /**
  * Native Interface for FutoIn ifaces
  * @class
+ * @param {AdvancedCCMImpl} ccmimpl - CCM instance
+ * @param {InterfaceInfo} info - interface info
  * @alias NativeIface
  */
 function NativeIface( ccmimpl, info )
@@ -43,6 +45,8 @@ function NativeIface( ccmimpl, info )
 
 /**
  * Must be object with version => spec pairs in child class, if set.
+ * 
+ * @alias NativeIface._specs
  */
 NativeIface._specs = null;
 
@@ -51,13 +55,18 @@ NativeIface._specs = null;
  *
  * If version 1.0 is requested then spec is loaded from
  * 'MyModule/specs/name_1_0'
+ * 
+ * @alias NativeIface._specs_module_prefix
  */
 NativeIface._specs_module_prefix = null;
 
 /**
  * Get hardcoded iface definition, if available.
  * @param {string} version - iface version
- * @alias NativeIface.call
+ * @returns {object} interface spec of required version
+ * @alias NativeIface.spec
+ * @note this helper is designed for derived native interfaces
+ *      which define _specs or _specs_module_prefix static members.
  */
 NativeIface.spec = function( version )
 {
@@ -72,7 +81,7 @@ NativeIface.spec = function( version )
     {
         var mod = this._specs_module_prefix + version.replace( '.', '_' );
 
-        iface = require( mod );
+        iface = common._nodeRequire( mod );
     }
 
     return iface;
@@ -253,6 +262,10 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
 
 /**
  * @ignore
+ * @param {AsyncSteps} as - _
+ * @param {string} name - _
+ * @param {object} finfo - _
+ * @param {array} args - _
  */
 NativeIfaceProto._member_call_intercept = function( as, name, finfo, args )
 {
@@ -279,6 +292,9 @@ NativeIfaceProto._member_call_intercept = function( as, name, finfo, args )
 
 /**
  * @ignore
+ * @param {string} name - member name
+ * @param {InterfaceInfo} finfo - interface info
+ * @returns {function} call generator with bound parameters
  */
 NativeIfaceProto._member_call_generate = function( name, finfo )
 {
@@ -295,7 +311,7 @@ NativeIfaceProto._member_call_generate = function( name, finfo )
 
 /**
  * Get interface info
- * @returns {object}
+ * @returns {InterfaceInfo} - interface info
  * @alias NativeIface#ifaceInfo
  */
 NativeIfaceProto.ifaceInfo = function()
@@ -310,6 +326,7 @@ NativeIfaceProto.ifaceInfo = function()
 
 /**
  * Results with DerivedKeyAccessor through as.success()
+ * @param {AsyncSteps} as - step interface
  * @alias NativeIface#bindDerivedKey
  */
 NativeIfaceProto.bindDerivedKey = function( as )

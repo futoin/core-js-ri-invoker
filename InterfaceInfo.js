@@ -3,6 +3,7 @@
 /**
  * FutoIn interface info
  * @alias InterfaceInfo
+ * @param {object} raw_info - futoin spec as is
  * @class
  */
 function InterfaceInfo( raw_info )
@@ -15,8 +16,8 @@ var InterfaceInfoProto = {};
 InterfaceInfo.prototype = InterfaceInfoProto;
 
 /**
- * Get FutoIn interface type
- * @returns {string}
+ * Get FutoIn interface name
+ * @returns {string} name
  * @alias InterfaceInfo#name
  */
 InterfaceInfoProto.name = function()
@@ -26,7 +27,7 @@ InterfaceInfoProto.name = function()
 
 /**
  * Get FutoIn interface version
- * @returns {string}
+ * @returns {string} version
  * @alias InterfaceInfo#version
  */
 InterfaceInfoProto.version = function()
@@ -36,7 +37,7 @@ InterfaceInfoProto.version = function()
 
 /**
  * Get list of inherited interfaces starting from the most derived, may be null
- * @returns {object}
+ * @returns {string} inherited interface name-ver
  * @alias InterfaceInfo#inherits
  */
 InterfaceInfoProto.inherits = function()
@@ -46,7 +47,7 @@ InterfaceInfoProto.inherits = function()
 
 /**
  * Get list of available functions, may be null
- * @returns {object}
+ * @returns {object} list of functions
  * @alias InterfaceInfo#funcs
  */
 InterfaceInfoProto.funcs = function()
@@ -56,7 +57,7 @@ InterfaceInfoProto.funcs = function()
 
 /**
  * Get list of interface constraints, may be null
- * @returns {object}
+ * @returns {array} list of constraints
  * @alias InterfaceInfo#constraints
  */
 InterfaceInfoProto.constraints = function()

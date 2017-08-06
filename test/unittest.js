@@ -1,5 +1,6 @@
 var _ = require( 'lodash' );
-var isNode = require( 'detect-node' );
+var common = require( '../lib/common' );
+var isNode = common._isNode;
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var logface = require( '../LogFace' );
@@ -12,7 +13,7 @@ var createTestHttpServer;
 var closeTestHttpServer;
 var thisDir;
 
-if ( typeof chai !== 'undefined' )
+if ( !isNode )
 {
     // Browser test
     chai.should();
@@ -33,18 +34,17 @@ if ( typeof chai !== 'undefined' )
 else
 {
     // Node test
-    var chai_module = require( 'chai' );
+    var chai_module = common._nodeRequire( 'chai' );
     chai_module.should();
     assert = chai_module.assert;
     
-    var hidereq = require;
-    var node_server = hidereq('./node_server.js');
+    var node_server = common._nodeRequire('../test/node_server.js');
     createTestHttpServer = node_server.createTestHttpServer;
     closeTestHttpServer = node_server.closeTestHttpServer;
     
     thisDir = __dirname;
     
-    invoker = hidereq('../lib/invoker.js');
+    invoker = common._nodeRequire('./invoker.js');
 }
 
 describe( 'Invoker Basic', function()
@@ -1520,8 +1520,7 @@ describe( 'CacheFace', function()
 //============================================================================
 if (isNode) describe( 'PingFace', function()
 {
-    var hidereq = require;
-    var PingFace = hidereq( '../PingFace' );
+    var PingFace = common._nodeRequire( '../PingFace' );
     
     before(function( done ){
         as = async_steps();

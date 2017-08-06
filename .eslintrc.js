@@ -20,7 +20,8 @@ module.exports = {
         "comma-dangle": ["error", "always-multiline"],
         "comma-spacing": ["error", { "before": false, "after": true }],
         "comma-style": ["error", "last"],
-        //"valid-jsdoc": ["warn"],
+        "valid-jsdoc": ["error", { requireReturn: false } ],
+        "require-jsdoc": "error",
         "no-template-curly-in-string": ["error"],
         "curly": ["error", "multi-line"],
         "no-multi-spaces": ["error"],
@@ -30,6 +31,9 @@ module.exports = {
         "block-spacing": ["error"],
         "brace-style": ["error", "allman"],
         "no-trailing-spaces": "error",
+        "no-useless-concat": "error",
+        "no-useless-return": "error",
+        "no-useless-escape": "error",
         "object-curly-newline": ["error", { "multiline": true }],
         "object-curly-spacing": ["error", "always"],
         "object-property-newline": "error",
@@ -50,6 +54,7 @@ module.exports = {
             "asyncArrow": "always"
         }],
         "space-in-parens": ["error", "always"],
+        "quote-props": ["error", "as-needed"],
         "wrap-regex": "error",
     },
     overrides: [

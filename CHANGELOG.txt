@@ -2,7 +2,8 @@
 === (next) ===
 BREAKING: removed AMD/minified dist files
 FIXED: debug console.log() when Variant types are used
-CHANGED: to use eslint instead of jscs & jshint
+CHANGED: to use eslint & webpack for testing
+NEW: webpack-ready
 NEW: NativeIface.spec() API
 NEW: FTN4 Ping-Pong client iface support
 

@@ -24,11 +24,20 @@ function CacheFace()
 
 /**
  * Cache Native interface registration helper
+ * @param {AsyncSteps} as - step interface
+ * @param {AdvancedCCM} ccm - CCM instance
+ * @param {string} name - registration name for CCM
+ * @param {string} endpoint - endpoint URL
+ * @param {*} [credentials=null] - see CCM register()
+ * @param {object} [options={}] - registration options
+ * @param {string} [options.version=1.0] - iface version
  * @alias CacheFace.register
  */
 CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
 {
-    var iface = CacheFace.ifacespec;
+    options = options || {};
+    var ifacever = options.version || '1.0';
+    var iface = this.spec( ifacever );
 
     options = options || {};
     options.nativeImpl = this;
@@ -51,6 +60,7 @@ CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
 var CacheFaceProto = _clone( NativeIface.prototype );
 
 CacheFace.prototype = CacheFaceProto;
+CacheFace.spec = NativeIface.spec;
 
 /**
  * Get or Set cached value
@@ -58,7 +68,7 @@ CacheFace.prototype = CacheFaceProto;
  * NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
  *   of *params* values
  *
- * @param {AsyncSteps} as
+ * @param {AsyncSteps} as - step interface
  * @param {string} key_prefix - unique key prefix
  * @param {Function} callable - func( as, params.. ) - a callable
  *      which is called to generated value on cache miss
@@ -121,62 +131,66 @@ CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
 
 module.exports = CacheFace;
 
+var specs = {};
+
+CacheFace._specs = specs;
+
 /**
  * Embedded spec for FutoIn CacheFace
  * @alias CacheFace.ifacespec
  */
-CacheFace.ifacespec =
+specs['1.0'] =
         {
-            "iface" : "futoin.cache",
-            "version" : "1.0",
-            "ftn3rev" : "1.1",
-            "funcs" : {
-                "get" : {
-                    "params" : {
-                        "key" : {
-                            "type" : "string",
-                            "desc" : "Unique cache key",
+            iface : "futoin.cache",
+            version : "1.0",
+            ftn3rev : "1.1",
+            funcs : {
+                get : {
+                    params : {
+                        key : {
+                            type : "string",
+                            desc : "Unique cache key",
                         },
                     },
-                    "result" : {
-                        "value" : {
-                            "type" : "any",
-                            "desc" : "Any previously cached value",
+                    result : {
+                        value : {
+                            type : "any",
+                            desc : "Any previously cached value",
                         },
                     },
-                    "throws" : [ "CacheMiss" ],
-                    "desc" : "Trivial cached value retrieval",
+                    throws : [ "CacheMiss" ],
+                    desc : "Trivial cached value retrieval",
                 },
-                "set" : {
-                    "params" : {
-                        "key" : {
-                            "type" : "string",
-                            "desc" : "Unique cache key",
+                set : {
+                    params : {
+                        key : {
+                            type : "string",
+                            desc : "Unique cache key",
                         },
-                        "value" : {
-                            "type" : "any",
-                            "desc" : "arbitrary value to cache",
+                        value : {
+                            type : "any",
+                            desc : "arbitrary value to cache",
                         },
-                        "ttl" : {
-                            "type" : "integer",
-                            "desc" : "Time to live in milliseconds",
+                        ttl : {
+                            type : "integer",
+                            desc : "Time to live in milliseconds",
                         },
                     },
-                    "desc" : "Trivial cached value storing",
+                    desc : "Trivial cached value storing",
                 },
-                "custom" : {
-                    "params" : {
-                        "cmd" : {
-                            "type" : "string",
-                            "desc" : "Implementation-defined custom command",
+                custom : {
+                    params : {
+                        cmd : {
+                            type : "string",
+                            desc : "Implementation-defined custom command",
                         },
-                        "prm" : {
-                            "type" : "any",
-                            "desc" : "Implementation-defined custom command parameters",
+                        prm : {
+                            type : "any",
+                            desc : "Implementation-defined custom command parameters",
                         },
                     },
                 },
             },
-            "requires" : [ "SecureChannel" ],
-            "desc" : "Cache interface",
+            requires : [ "SecureChannel" ],
+            desc : "Cache interface",
         };

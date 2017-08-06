@@ -316,9 +316,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
     * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
     * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
     * [.unRegister(name)](#SimpleCCM+unRegister)
-    * [.defense()](#SimpleCCM+defense)
+    * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
     * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
-    * [.cache()](#SimpleCCM+cache) ⇒ <code>object</code>
+    * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
     * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
     * [.alias(name, alias)](#SimpleCCM+alias)
     * [.close()](#SimpleCCM+close)
@@ -379,22 +379,30 @@ Unregister previously registered interface (should not be used, unless really ne
 
 <a name="SimpleCCM+defense"></a>
 
-### advancedCCM.defense()
+### advancedCCM.defense() ⇒ <code>object</code>
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
 ### advancedCCM.log() ⇒ <code>object</code>
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
-### advancedCCM.cache() ⇒ <code>object</code>
+### advancedCCM.cache([bucket]) ⇒ <code>object</code>
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
 <a name="SimpleCCM+assertIface"></a>
 
 ### advancedCCM.assertIface(name, ifacever)
@@ -459,15 +467,15 @@ CCM close event. Fired on CCM shutdown.
     * _instance_
         * [.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace+getOrSet)
         * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
-        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ <code>object</code>
-        * [.bindDerivedKey()](#NativeIface+bindDerivedKey)
+        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
+        * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
         * ["disconnect"](#NativeIface+event_disconnect)
         * ["close"](#NativeIface+event_close)
         * ["commError"](#NativeIface+event_commError)
     * _static_
         * [.ifacespec](#CacheFace.ifacespec)
-        * [.register()](#CacheFace.register)
+        * [.register(as, ccm, name, endpoint, [credentials], [options])](#CacheFace.register)
 
 <a name="new_CacheFace_new"></a>
 
@@ -491,7 +499,7 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | key_prefix | <code>string</code> | unique key prefix |
 | callable | <code>function</code> | func( as, params.. ) - a callable      which is called to generated value on cache miss |
 | params | <code>Array</code> | parameters to be passed to *callable* |
@@ -516,16 +524,22 @@ Result is passed through AsyncSteps.success() as a map.
 
 <a name="NativeIface+ifaceInfo"></a>
 
-### cacheFace.ifaceInfo() ⇒ <code>object</code>
+### cacheFace.ifaceInfo() ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
 Get interface info
 
 **Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
+**Returns**: [<code>InterfaceInfo</code>](#InterfaceInfo) - - interface info  
 <a name="NativeIface+bindDerivedKey"></a>
 
-### cacheFace.bindDerivedKey()
+### cacheFace.bindDerivedKey(as)
 Results with DerivedKeyAccessor through as.success()
 
 **Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+
 <a name="NativeIface+event_connect"></a>
 
 ### "connect"
@@ -559,58 +573,79 @@ Embedded spec for FutoIn CacheFace
 **Kind**: static property of [<code>CacheFace</code>](#CacheFace)  
 <a name="CacheFace.register"></a>
 
-### CacheFace.register()
+### CacheFace.register(as, ccm, name, endpoint, [credentials], [options])
 Cache Native interface registration helper
 
 **Kind**: static method of [<code>CacheFace</code>](#CacheFace)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
+| name | <code>string</code> |  | registration name for CCM |
+| endpoint | <code>string</code> |  | endpoint URL |
+| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
+| [options] | <code>object</code> | <code>{}</code> | registration options |
+| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
+
 <a name="InterfaceInfo"></a>
 
 ## InterfaceInfo
 **Kind**: global class  
 
 * [InterfaceInfo](#InterfaceInfo)
-    * [new InterfaceInfo()](#new_InterfaceInfo_new)
+    * [new InterfaceInfo(raw_info)](#new_InterfaceInfo_new)
     * [.name()](#InterfaceInfo+name) ⇒ <code>string</code>
     * [.version()](#InterfaceInfo+version) ⇒ <code>string</code>
-    * [.inherits()](#InterfaceInfo+inherits) ⇒ <code>object</code>
+    * [.inherits()](#InterfaceInfo+inherits) ⇒ <code>string</code>
     * [.funcs()](#InterfaceInfo+funcs) ⇒ <code>object</code>
-    * [.constraints()](#InterfaceInfo+constraints) ⇒ <code>object</code>
+    * [.constraints()](#InterfaceInfo+constraints) ⇒ <code>array</code>
 
 <a name="new_InterfaceInfo_new"></a>
 
-### new InterfaceInfo()
+### new InterfaceInfo(raw_info)
 FutoIn interface info
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| raw_info | <code>object</code> | futoin spec as is |
 
 <a name="InterfaceInfo+name"></a>
 
 ### interfaceInfo.name() ⇒ <code>string</code>
-Get FutoIn interface type
+Get FutoIn interface name
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
+**Returns**: <code>string</code> - name  
 <a name="InterfaceInfo+version"></a>
 
 ### interfaceInfo.version() ⇒ <code>string</code>
 Get FutoIn interface version
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
+**Returns**: <code>string</code> - version  
 <a name="InterfaceInfo+inherits"></a>
 
-### interfaceInfo.inherits() ⇒ <code>object</code>
+### interfaceInfo.inherits() ⇒ <code>string</code>
 Get list of inherited interfaces starting from the most derived, may be null
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
+**Returns**: <code>string</code> - inherited interface name-ver  
 <a name="InterfaceInfo+funcs"></a>
 
 ### interfaceInfo.funcs() ⇒ <code>object</code>
 Get list of available functions, may be null
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
+**Returns**: <code>object</code> - list of functions  
 <a name="InterfaceInfo+constraints"></a>
 
-### interfaceInfo.constraints() ⇒ <code>object</code>
+### interfaceInfo.constraints() ⇒ <code>array</code>
 Get list of interface constraints, may be null
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
+**Returns**: <code>array</code> - list of constraints  
 <a name="LogFace"></a>
 
 ## LogFace ⇐ [<code>NativeIface</code>](#NativeIface)
@@ -628,8 +663,8 @@ Get list of interface constraints, may be null
         * [.error(txt)](#LogFace+error)
         * [.security(txt)](#LogFace+security)
         * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
-        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ <code>object</code>
-        * [.bindDerivedKey()](#NativeIface+bindDerivedKey)
+        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
+        * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
         * ["disconnect"](#NativeIface+event_disconnect)
         * ["close"](#NativeIface+event_close)
@@ -641,7 +676,7 @@ Get list of interface constraints, may be null
         * [.LVL_WARN](#LogFace.LVL_WARN)
         * [.LVL_ERROR](#LogFace.LVL_ERROR)
         * [.LVL_SECURITY](#LogFace.LVL_SECURITY)
-        * [.register()](#LogFace.register)
+        * [.register(as, ccm, endpoint, [credentials], [options])](#LogFace.register)
 
 <a name="new_LogFace_new"></a>
 
@@ -752,16 +787,22 @@ Result is passed through AsyncSteps.success() as a map.
 
 <a name="NativeIface+ifaceInfo"></a>
 
-### logFace.ifaceInfo() ⇒ <code>object</code>
+### logFace.ifaceInfo() ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
 Get interface info
 
 **Kind**: instance method of [<code>LogFace</code>](#LogFace)  
+**Returns**: [<code>InterfaceInfo</code>](#InterfaceInfo) - - interface info  
 <a name="NativeIface+bindDerivedKey"></a>
 
-### logFace.bindDerivedKey()
+### logFace.bindDerivedKey(as)
 Results with DerivedKeyAccessor through as.success()
 
 **Kind**: instance method of [<code>LogFace</code>](#LogFace)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+
 <a name="NativeIface+event_connect"></a>
 
 ### "connect"
@@ -825,21 +866,31 @@ Security log level
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.register"></a>
 
-### LogFace.register()
+### LogFace.register(as, ccm, endpoint, [credentials], [options])
 AuditLog Native interface registration helper
 
 **Kind**: static method of [<code>LogFace</code>](#LogFace)  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
+| endpoint | <code>string</code> |  | endpoint URL |
+| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
+| [options] | <code>object</code> | <code>{}</code> | registration options |
+| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
+
 <a name="NativeIface"></a>
 
 ## NativeIface
 **Kind**: global class  
 
 * [NativeIface](#NativeIface)
-    * [new NativeIface()](#new_NativeIface_new)
+    * [new NativeIface(ccmimpl, info)](#new_NativeIface_new)
     * _instance_
         * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
-        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ <code>object</code>
-        * [.bindDerivedKey()](#NativeIface+bindDerivedKey)
+        * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
+        * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
         * ["disconnect"](#NativeIface+event_disconnect)
         * ["close"](#NativeIface+event_close)
@@ -847,12 +898,18 @@ AuditLog Native interface registration helper
     * _static_
         * [._specs](#NativeIface._specs)
         * [._specs_module_prefix](#NativeIface._specs_module_prefix)
-        * [.call(version)](#NativeIface.call)
+        * [.spec(version)](#NativeIface.spec) ⇒ <code>object</code>
 
 <a name="new_NativeIface_new"></a>
 
-### new NativeIface()
+### new NativeIface(ccmimpl, info)
 Native Interface for FutoIn ifaces
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ccmimpl | [<code>AdvancedCCMImpl</code>](#new_AdvancedCCMImpl_new) | CCM instance |
+| info | [<code>InterfaceInfo</code>](#InterfaceInfo) | interface info |
 
 <a name="NativeIface+call"></a>
 
@@ -873,16 +930,22 @@ Result is passed through AsyncSteps.success() as a map.
 
 <a name="NativeIface+ifaceInfo"></a>
 
-### nativeIface.ifaceInfo() ⇒ <code>object</code>
+### nativeIface.ifaceInfo() ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
 Get interface info
 
 **Kind**: instance method of [<code>NativeIface</code>](#NativeIface)  
+**Returns**: [<code>InterfaceInfo</code>](#InterfaceInfo) - - interface info  
 <a name="NativeIface+bindDerivedKey"></a>
 
-### nativeIface.bindDerivedKey()
+### nativeIface.bindDerivedKey(as)
 Results with DerivedKeyAccessor through as.success()
 
 **Kind**: instance method of [<code>NativeIface</code>](#NativeIface)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+
 <a name="NativeIface+event_connect"></a>
 
 ### "connect"
@@ -923,12 +986,15 @@ If version 1.0 is requested then spec is loaded from
 'MyModule/specs/name_1_0'
 
 **Kind**: static property of [<code>NativeIface</code>](#NativeIface)  
-<a name="NativeIface.call"></a>
+<a name="NativeIface.spec"></a>
 
-### NativeIface.call(version)
+### NativeIface.spec(version) ⇒ <code>object</code>
 Get hardcoded iface definition, if available.
 
 **Kind**: static method of [<code>NativeIface</code>](#NativeIface)  
+**Returns**: <code>object</code> - interface spec of required version  
+**Note**: this helper is designed for derived native interfaces
+     which define _specs or _specs_module_prefix static members.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -950,9 +1016,9 @@ Get hardcoded iface definition, if available.
         * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
         * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
         * [.unRegister(name)](#SimpleCCM+unRegister)
-        * [.defense()](#SimpleCCM+defense)
+        * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
         * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
-        * [.cache()](#SimpleCCM+cache) ⇒ <code>object</code>
+        * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
@@ -1023,22 +1089,30 @@ Unregister previously registered interface (should not be used, unless really ne
 
 <a name="SimpleCCM+defense"></a>
 
-### simpleCCM.defense()
+### simpleCCM.defense() ⇒ <code>object</code>
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
 ### simpleCCM.log() ⇒ <code>object</code>
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
-### simpleCCM.cache() ⇒ <code>object</code>
+### simpleCCM.cache([bucket]) ⇒ <code>object</code>
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
 <a name="SimpleCCM+assertIface"></a>
 
 ### simpleCCM.assertIface(name, ifacever)
@@ -1144,10 +1218,10 @@ cache v1.x iface name prefix
     * [new spectools()](#new_SpecTools_new)
     * [.standard_errors](#SpecTools.standard_errors)
     * [.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
-    * [.parseIface(as, info, specdirs, raw_spec)](#SpecTools.parseIface)
+    * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
     * [.checkConsistency(as, info)](#SpecTools.checkConsistency)
     * [.checkType(info, type, val)](#SpecTools.checkType) ⇒ <code>Boolean</code>
-    * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType)
+    * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>
     * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
 
@@ -1173,24 +1247,25 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | info | <code>Object</code> | destination object with "iface" and "version" fields already set |
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
 | [load_cache] | <code>Object</code> | arbitrary object to use for caching |
 
 <a name="SpecTools.parseIface"></a>
 
-### SpecTools.parseIface(as, info, specdirs, raw_spec)
+### SpecTools.parseIface(as, info, specdirs, raw_spec, [load_cache])
 Parse raw futoin spec (preloaded)
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | info | <code>Object</code> | destination object with "iface" and "version" fields already set |
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
 | raw_spec | <code>Object</code> | iface definition object |
+| [load_cache] | <code>Object</code> | cache of already loaded interfaces |
 
 <a name="SpecTools.checkConsistency"></a>
 
@@ -1203,7 +1278,7 @@ NOTE: not yet implemented
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | info | <code>Object</code> | previously loaded iface |
 
 <a name="SpecTools.checkType"></a>
@@ -1212,6 +1287,7 @@ NOTE: not yet implemented
 Check if value matches required type
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>Boolean</code> - true on success  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1221,10 +1297,11 @@ Check if value matches required type
 
 <a name="SpecTools.checkParameterType"></a>
 
-### SpecTools.checkParameterType(info, funcname, varname, value)
+### SpecTools.checkParameterType(info, funcname, varname, value) ⇒ <code>boolean</code>
 Check if parameter value matches required type
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>boolean</code> - true on success  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1242,7 +1319,7 @@ Check if result value matches required type
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | info | <code>Object</code> | previously loaded iface |
 | funcname | <code>string</code> | function name |
 | varname | <code>string</code> | result variable name |
@@ -1257,10 +1334,14 @@ NOTE: for simplicity, 'sec' field must not be present
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
 **Returns**: <code>Buffer</code> - Binary HMAC signature  
+**Throws**:
+
+- <code>FutoInError</code> 
+
 
 | Param | Type | Description |
 | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  |
+| as | <code>AsyncSteps</code> | step interface |
 | info | <code>object</code> | Interface raw info object |
 | ftnreq | <code>object</code> | Request Object |
 
@@ -1408,9 +1489,9 @@ Useful for audit logging.
         * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
         * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
         * [.unRegister(name)](#SimpleCCM+unRegister)
-        * [.defense()](#SimpleCCM+defense)
+        * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
         * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
-        * [.cache()](#SimpleCCM+cache) ⇒ <code>object</code>
+        * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
@@ -1481,22 +1562,30 @@ Unregister previously registered interface (should not be used, unless really ne
 
 <a name="SimpleCCM+defense"></a>
 
-### simpleCCM.defense()
+### simpleCCM.defense() ⇒ <code>object</code>
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
 ### simpleCCM.log() ⇒ <code>object</code>
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
-### simpleCCM.cache() ⇒ <code>object</code>
+### simpleCCM.cache([bucket]) ⇒ <code>object</code>
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
 <a name="SimpleCCM+assertIface"></a>
 
 ### simpleCCM.assertIface(name, ifacever)
@@ -1606,9 +1695,9 @@ cache v1.x iface name prefix
         * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
         * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
         * [.unRegister(name)](#SimpleCCM+unRegister)
-        * [.defense()](#SimpleCCM+defense)
+        * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
         * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
-        * [.cache()](#SimpleCCM+cache) ⇒ <code>object</code>
+        * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
@@ -1679,22 +1768,30 @@ Unregister previously registered interface (should not be used, unless really ne
 
 <a name="SimpleCCM+defense"></a>
 
-### simpleCCM.defense()
+### simpleCCM.defense() ⇒ <code>object</code>
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
 ### simpleCCM.log() ⇒ <code>object</code>
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
-### simpleCCM.cache() ⇒ <code>object</code>
+### simpleCCM.cache([bucket]) ⇒ <code>object</code>
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
 <a name="SimpleCCM+assertIface"></a>
 
 ### simpleCCM.assertIface(name, ifacever)
@@ -1803,9 +1900,9 @@ cache v1.x iface name prefix
     * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
     * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
     * [.unRegister(name)](#SimpleCCM+unRegister)
-    * [.defense()](#SimpleCCM+defense)
+    * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
     * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
-    * [.cache()](#SimpleCCM+cache) ⇒ <code>object</code>
+    * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
     * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
     * [.alias(name, alias)](#SimpleCCM+alias)
     * [.close()](#SimpleCCM+close)
@@ -1866,22 +1963,30 @@ Unregister previously registered interface (should not be used, unless really ne
 
 <a name="SimpleCCM+defense"></a>
 
-### advancedCCM.defense()
+### advancedCCM.defense() ⇒ <code>object</code>
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
 ### advancedCCM.log() ⇒ <code>object</code>
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
-### advancedCCM.cache() ⇒ <code>object</code>
+### advancedCCM.cache([bucket]) ⇒ <code>object</code>
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
 <a name="SimpleCCM+assertIface"></a>
 
 ### advancedCCM.assertIface(name, ifacever)

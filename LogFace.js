@@ -29,11 +29,19 @@ function LogFace()
 
 /**
  * AuditLog Native interface registration helper
+ * @param {AsyncSteps} as - step interface
+ * @param {AdvancedCCM} ccm - CCM instance
+ * @param {string} endpoint - endpoint URL
+ * @param {*} [credentials=null] - see CCM register()
+ * @param {object} [options={}] - registration options
+ * @param {string} [options.version=1.0] - iface version
  * @alias LogFace.register
  */
 LogFace.register = function( as, ccm, endpoint, credentials, options )
 {
-    var iface = LogFace.spec( '1.0' );
+    options = options || {};
+    var ifacever = options.version || '1.0';
+    var iface = LogFace.spec( ifacever );
 
     options = options || {};
     options.nativeImpl = this;
@@ -96,6 +104,7 @@ LogFaceProto.LVL_SECURITY = 'security';
 /**
  * Generate 'ts' field log messages
  * @private
+ * @returns {string} current timestamp
  */
 LogFaceProto._ts = function()
 {
@@ -234,49 +243,49 @@ LogFace._specs = specs;
  */
 specs['1.0'] =
         {
-            "iface" : "futoin.log",
-            "version" : "1.0",
-            "ftn3rev" : "1.1",
-            "types" : {
-                "LogLevel" : {
-                    "type" : "string",
-                    "regex" : "^(debug|info|warn|error|security)$",
-                    "desc" : "Severity level",
+            iface : "futoin.log",
+            version : "1.0",
+            ftn3rev : "1.1",
+            types : {
+                LogLevel : {
+                    type : "string",
+                    regex : "^(debug|info|warn|error|security)$",
+                    desc : "Severity level",
                 },
-                "LogTimeStamp" : {
-                    "type" : "string",
-                    "regex" : "^[0-9]{14}(\\.[0-9]+)?$",
-                    "desc" : "Original timestamp in YYYYMMDDhhmmss.frac format",
-                },
-            },
-            "funcs" : {
-                "msg" : {
-                    "params" : {
-                        "lvl" : { "type" : "LogLevel" },
-                        "txt" : {
-                            "type" : "string",
-                            "desc" : "Text message, may include new lines",
-                        },
-                        "ts" : { "type" : "LogTimeStamp" },
-                    },
-                    "desc" : "Trivial log message",
-                },
-                "hexdump" : {
-                    "params" : {
-                        "lvl" : { "type" : "LogLevel" },
-                        "txt" : {
-                            "type" : "string",
-                            "desc" : "Text message, may include new lines",
-                        },
-                        "ts" : { "type" : "LogTimeStamp" },
-                        "data" : {
-                            "type" : "string",
-                            "desc" : "Base64 encoded binary data",
-                        },
-                    },
-                    "desc" : "Trivial log message",
+                LogTimeStamp : {
+                    type : "string",
+                    regex : "^[0-9]{14}(\\.[0-9]+)?$",
+                    desc : "Original timestamp in YYYYMMDDhhmmss.frac format",
                 },
             },
-            "requires" : [ "AllowAnonymous", "SecureChannel" ],
-            "desc" : "Audit Log interface",
+            funcs : {
+                msg : {
+                    params : {
+                        lvl : { type : "LogLevel" },
+                        txt : {
+                            type : "string",
+                            desc : "Text message, may include new lines",
+                        },
+                        ts : { type : "LogTimeStamp" },
+                    },
+                    desc : "Trivial log message",
+                },
+                hexdump : {
+                    params : {
+                        lvl : { type : "LogLevel" },
+                        txt : {
+                            type : "string",
+                            desc : "Text message, may include new lines",
+                        },
+                        ts : { type : "LogTimeStamp" },
+                        data : {
+                            type : "string",
+                            desc : "Base64 encoded binary data",
+                        },
+                    },
+                    desc : "Trivial log message",
+                },
+            },
+            requires : [ "AllowAnonymous", "SecureChannel" ],
+            desc : "Audit Log interface",
         };

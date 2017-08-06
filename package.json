@@ -19,7 +19,7 @@
     "communication",
     "distributed",
     "browser",
-    "amd"
+    "webpack"
   ],
   "author": {
     "name": "Andrey Galkin",
@@ -35,7 +35,7 @@
     "detect-node": "^2.0.3",
     "event-emitter": "^0.3.5",
     "faye-websocket": "^0.11.1",
-    "futoin-asyncsteps": "^1.5.8",
+    "futoin-asyncsteps": "^1.6.0",
     "keep-alive-agent": "^0.0.1",
     "lodash": "^4.17.4",
     "performance-now": "^2.1.0",
@@ -46,20 +46,19 @@
     "eslint": "^4.4.0",
     "grunt": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
-    "grunt-contrib-uglify": "^3.0.1",
     "grunt-eslint": "^20.0.0",
     "grunt-external-daemon": "^1.1.0",
     "grunt-jsdoc-to-markdown": "^3.0.0",
     "grunt-mocha-istanbul": "^5.0.2",
     "grunt-mocha-phantomjs": "^4.0.0",
-    "grunt-pure-cjs": "^1.4.0",
     "grunt-text-replace": "^0.4.0",
+    "grunt-webpack": "^3.0.2",
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
-    "server-destroy": "^1.0.1"
+    "server-destroy": "^1.0.1",
+    "webpack": "^3.4.1"
   },
   "eslintIgnore": [
-    "Gruntfile.js",
     "test/**"
   ]
 }

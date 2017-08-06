@@ -5,7 +5,7 @@ var FutoInError = common.FutoInError;
 
 var fs;
 var request;
-var isNode = require( 'detect-node' );
+var isNode = common._isNode;
 var _cloneDeep = require( 'lodash/cloneDeep' );
 var _zipObject = require( 'lodash/zipObject' );
 var _difference = require( 'lodash/difference' );
@@ -13,10 +13,8 @@ var _extend = require( 'lodash/extend' );
 
 if ( isNode )
 {
-    var hidereq = require;
-
-    fs = hidereq( 'fs' );
-    request = hidereq( 'request' );
+    fs = common._nodeRequire( 'fs' );
+    request = common._nodeRequire( 'request' );
 }
 
 /**
@@ -52,7 +50,7 @@ var spectools =
      * Load FutoIn iface definition.
      *
      * NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
-     * @param {AsyncSteps} as
+     * @param {AsyncSteps} as - step interface
      * @param {Object} info - destination object with "iface" and "version" fields already set
      * @param {Array} specdirs - each element - search path/url (string) or raw iface (object)
      * @param {Object=} load_cache - arbitrary object to use for caching
@@ -261,10 +259,11 @@ var spectools =
 
     /**
      * Parse raw futoin spec (preloaded)
-     * @param {AsyncSteps} as
+     * @param {AsyncSteps} as - step interface
      * @param {Object} info - destination object with "iface" and "version" fields already set
      * @param {Array} specdirs - each element - search path/url (string) or raw iface (object)
      * @param {Object} raw_spec - iface definition object
+     * @param {Object} [load_cache] - cache of already loaded interfaces
      * @alias SpecTools.parseIface
      */
     parseIface : function( as, info, specdirs, raw_spec, load_cache )
@@ -442,6 +441,9 @@ var spectools =
 
     /**
      * @private
+     * @param {AsyncSteps} as - _
+     * @param {object} info - _
+     * @param {object} raw_spec - _
      */
     _checkFTN3Rev : function( as, info, raw_spec )
     {
@@ -513,6 +515,8 @@ var spectools =
 
     /**
      * @private
+     * @param {AsyncSteps} as - _
+     * @param {object} info - _
      */
     _parseFuncs : function( as, info )
     {
@@ -641,6 +645,8 @@ var spectools =
 
     /**
      * @private
+     * @param {AsyncSteps} as - _
+     * @param {object} info - _
      */
     _parseTypes : function( as, info )
     {
@@ -690,6 +696,11 @@ var spectools =
 
     /**
      * @private
+     * @param {AsyncSteps} as - _
+     * @param {object} info - _
+     * @param {array} specdirs - _
+     * @param {object} raw_spec - _
+     * @param {object} sup_info - _
      */
     _parseImportInherit : function( as, info, specdirs, raw_spec, sup_info )
     {
@@ -786,7 +797,7 @@ var spectools =
      * Deeply check consistency of loaded interface.
      *
      * NOTE: not yet implemented
-     * @param {AsyncSteps} as
+     * @param {AsyncSteps} as - step interface
      * @param {Object} info - previously loaded iface
      * @alias SpecTools.checkConsistency
      */
@@ -801,10 +812,24 @@ var spectools =
      * @param {Object} info - previously loaded iface
      * @param {string} type - standard or custom iface type
      * @param {*} val - value to check
-     * @returns {Boolean}
+     * @returns {Boolean} true on success
      * @alias SpecTools.checkType
      */
-    checkType : function( info, type, val, _type_stack )
+    checkType : function( info, type, val )
+    {
+        return this._checkType( info, type, val );
+    },
+
+    /**
+     * Check if value matches required type (internal)
+     * @private
+     * @param {Object} info - previously loaded iface
+     * @param {string} type - standard or custom iface type
+     * @param {*} val - value to check
+     * @param {object} [_type_stack=null] - for internal use only
+     * @returns {Boolean} true on success
+     */
+    _checkType : function( info, type, val, _type_stack )
     {
         if ( val === null )
         {
@@ -869,7 +894,7 @@ var spectools =
             if ( ( typeof tdef === 'string' ) ||
                  ( tdef instanceof Array ) )
             {
-                tdef = { 'type' : tdef };
+                tdef = { type : tdef };
             }
 
             var topmost = !_type_stack;
@@ -903,7 +928,7 @@ var spectools =
 
                     new_type_stack['#last_base'] = vtype;
 
-                    if ( this.checkType( info, vtype, val, new_type_stack ) )
+                    if ( this._checkType( info, vtype, val, new_type_stack ) )
                     {
                         _extend( _type_stack, new_type_stack );
                         break;
@@ -919,7 +944,7 @@ var spectools =
             {
                 _type_stack[ '#last_base' ] = base_type;
 
-                if ( !this.checkType( info, base_type, val, _type_stack ) )
+                if ( !this._checkType( info, base_type, val, _type_stack ) )
                 {
                     return false;
                 }
@@ -1016,7 +1041,7 @@ var spectools =
                     for ( var i = 0; i < val_len; ++i )
                     {
                         // Note, new type stack
-                        if ( !this.checkType( info, elemtype, val[ i ], null ) )
+                        if ( !this._checkType( info, elemtype, val[ i ], null ) )
                         {
                             return false;
                         }
@@ -1039,7 +1064,7 @@ var spectools =
 
                     if ( typeof field_def === 'string' )
                     {
-                        field_def = { 'type' : field_def };
+                        field_def = { type : field_def };
                     }
 
                     if ( !( f in val ) ||
@@ -1054,7 +1079,7 @@ var spectools =
                         return false;
                     }
 
-                    if ( !this.checkType( info, field_def.type, val[ f ], null ) )
+                    if ( !this._checkType( info, field_def.type, val[ f ], null ) )
                     {
                         return false;
                     }
@@ -1066,7 +1091,7 @@ var spectools =
 
                     for ( var ft in val )
                     {
-                        if ( !this.checkType( info, elemtype, val[ ft ], null ) )
+                        if ( !this._checkType( info, elemtype, val[ ft ], null ) )
                         {
                             return false;
                         }
@@ -1116,8 +1141,8 @@ var spectools =
                 {
                     var iv = val[ii];
 
-                    if ( ( !this.checkType( info, 'string', iv ) &&
-                               !this.checkType( info, 'integer', iv ) ) ||
+                    if ( ( !this._checkType( info, 'string', iv ) &&
+                               !this._checkType( info, 'integer', iv ) ) ||
                              !set_items.hasOwnProperty( val[ii] ) )
                     {
                         return false;
@@ -1137,6 +1162,7 @@ var spectools =
      * @param {string} funcname - function name
      * @param {string} varname - parameter name
      * @param {*} value - value to check
+     * @returns {boolean} true on success
      * @alias SpecTools.checkParameterType
      */
     checkParameterType : function( info, funcname, varname, value )
@@ -1150,12 +1176,12 @@ var spectools =
 
         var vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
 
-        return spectools.checkType( info, vartype, value );
+        return spectools._checkType( info, vartype, value );
     },
 
     /**
      * Check if result value matches required type
-     * @param {AsyncSteps} as
+     * @param {AsyncSteps} as - step interface
      * @param {Object} info - previously loaded iface
      * @param {string} funcname - function name
      * @param {string} varname - result variable name
@@ -1167,7 +1193,7 @@ var spectools =
         var vardef = info.funcs[ funcname ].result[ varname ];
         var vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
 
-        if ( !spectools.checkType( info, vartype, value ) )
+        if ( !spectools._checkType( info, vartype, value ) )
         {
             as.error( FutoInError.InvalidRequest, "Type mismatch for result: " + varname );
         }
@@ -1176,10 +1202,15 @@ var spectools =
     /**
      * @deprecated
      * @ignore
+     * @param {AsyncSteps} as - step interface
+     * @param {string} type - interface type
+     * @param {string} varname - variable name
+     * @param {string} value - variable value
+     * @throws {FutoInError}
      */
     checkFutoInType : function( as, type, varname, value )
     {
-        if ( !spectools.checkType( {}, type, value ) )
+        if ( !spectools._checkType( {}, type, value ) )
         {
             as.error( FutoInError.InvalidRequest, "Type mismatch for parameter: " + varname );
         }
@@ -1189,10 +1220,11 @@ var spectools =
      * Generate HMAC
      *
      * NOTE: for simplicity, 'sec' field must not be present
-     * @param {AsyncSteps} as
+     * @param {AsyncSteps} as - step interface
      * @param {object} info - Interface raw info object
      * @param {object} ftnreq - Request Object
      * @returns {Buffer} Binary HMAC signature
+     * @throws {FutoInError}
      */
     genHMAC : function( as, info, ftnreq )
     {
@@ -1200,12 +1232,13 @@ var spectools =
         void info;
         void ftnreq;
         as.error( FutoInError.InvalidRequest, "HMAC generation is supported only for server environment" );
+        return {}; // suppress eslint
     },
 };
 
 if ( isNode )
 {
-    hidereq( './lib/node/spectools_hmac' )( spectools );
+    common._nodeRequire( './node/spectools_hmac' )( spectools );
 }
 
 module.exports = spectools;
