@@ -39,7 +39,6 @@ CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
     var ifacever = options.version || '1.0';
     var iface = this.spec( ifacever );
 
-    options = options || {};
     options.nativeImpl = this;
     options.specDirs = [ iface ];
 
@@ -137,7 +136,7 @@ CacheFace._specs = specs;
 
 /**
  * Embedded spec for FutoIn CacheFace
- * @alias CacheFace.ifacespec
+ * @ignore
  */
 specs['1.0'] =
         {

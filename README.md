@@ -474,7 +474,6 @@ CCM close event. Fired on CCM shutdown.
         * ["close"](#NativeIface+event_close)
         * ["commError"](#NativeIface+event_commError)
     * _static_
-        * [.ifacespec](#CacheFace.ifacespec)
         * [.register(as, ccm, name, endpoint, [credentials], [options])](#CacheFace.register)
 
 <a name="new_CacheFace_new"></a>
@@ -565,12 +564,6 @@ Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
 **Kind**: event emitted by [<code>CacheFace</code>](#CacheFace)  
-<a name="CacheFace.ifacespec"></a>
-
-### CacheFace.ifacespec
-Embedded spec for FutoIn CacheFace
-
-**Kind**: static property of [<code>CacheFace</code>](#CacheFace)  
 <a name="CacheFace.register"></a>
 
 ### CacheFace.register(as, ccm, name, endpoint, [credentials], [options])
@@ -670,7 +663,6 @@ Get list of interface constraints, may be null
         * ["close"](#NativeIface+event_close)
         * ["commError"](#NativeIface+event_commError)
     * _static_
-        * [.ifacespec](#LogFace.ifacespec)
         * [.LVL_DEBUG](#LogFace.LVL_DEBUG)
         * [.LVL_INFO](#LogFace.LVL_INFO)
         * [.LVL_WARN](#LogFace.LVL_WARN)
@@ -828,12 +820,6 @@ Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
-<a name="LogFace.ifacespec"></a>
-
-### LogFace.ifacespec
-Embedded spec for FutoIn LogFace
-
-**Kind**: static property of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_DEBUG"></a>
 
 ### LogFace.LVL_DEBUG

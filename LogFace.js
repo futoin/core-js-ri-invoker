@@ -43,7 +43,6 @@ LogFace.register = function( as, ccm, endpoint, credentials, options )
     var ifacever = options.version || '1.0';
     var iface = LogFace.spec( ifacever );
 
-    options = options || {};
     options.nativeImpl = this;
     options.specDirs = [ iface ];
 
@@ -239,7 +238,7 @@ LogFace._specs = specs;
 
 /**
  * Embedded spec for FutoIn LogFace
- * @alias LogFace.ifacespec
+ * @ignore
  */
 specs['1.0'] =
         {
