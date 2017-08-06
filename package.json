@@ -1,6 +1,6 @@
 {
   "name": "futoin-invoker",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
   "browser": "lib/browser.js",
