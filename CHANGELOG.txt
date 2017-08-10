@@ -1,5 +1,6 @@
 
 === (next) ===
+FIXED: minor fixes & improvements to unit tests
 NEW: FTN3 v1.7 custom result types
 
 === 1.2.2 (2017-08-06) ===

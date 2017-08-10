@@ -321,7 +321,8 @@ var spectools =
 
             if ( m === null )
             {
-                as.error( FutoInError.InvokerError, "Invalid inherit ifacever: " + raw_spec.inherit );
+                as.error( FutoInError.InvokerError,
+                    "Invalid inherit ifacever: " + raw_spec.inherit );
             }
 
             var sup_info = {};
@@ -466,12 +467,22 @@ var spectools =
         {
             if ( mnr < 1 )
             {
-                if ( raw_spec.imports ||
-                     raw_spec.types ||
-                     'BiDirectChannel' in info.constraints )
+                if ( raw_spec.imports )
                 {
                     as.error( FutoInError.InternalError,
-                        "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
+                        "Import is FTN3 v1.1 feature" );
+                }
+
+                if ( raw_spec.types )
+                {
+                    as.error( FutoInError.InternalError,
+                        "Custom types is FTN3 v1.1 feature" );
+                }
+
+                if ( 'BiDirectChannel' in info.constraints )
+                {
+                    as.error( FutoInError.InternalError,
+                        "BiDirectChannel is FTN3 v1.1 feature" );
                 }
             }
 

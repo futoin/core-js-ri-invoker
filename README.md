@@ -1429,7 +1429,7 @@ Overall call timeout (int)
 Production mode - disables some checks without compomising security
 
 **Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
-**Default**: <code>false</code>  
+**Default**: <code>NODE_ENV === &#x27;production&#x27;</code>  
 <a name="SimpleCCMOptions.commConfigCallback"></a>
 
 ### SimpleCCMOptions.commConfigCallback

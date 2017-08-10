@@ -383,12 +383,12 @@ call_remotes_model_as.add(
                     i : 4
                 }
             );
+            as.add(function(as, res){
+                res.res.should.equal('MY_RESULT');
+            });
         }).add(function(as, res){
-            res.res.should.equal('MY_RESULT');
-            
             if ( is_browser )
             {
-                as.success( res );
                 return;
             }
 
@@ -403,10 +403,12 @@ call_remotes_model_as.add(
                     o : { m : 3 },
                     i : 4
                 }
-            );;
-        }).add(function(as, res){
-            res.res.should.equal('MY_RESULT');
-            
+            );
+            as.add(function(as, res){
+                res.res.should.equal('MY_RESULT');
+            });
+        }).add(function(as){
+           
             as.state.step = "noResult";
             
             iface.call(
@@ -416,32 +418,47 @@ call_remotes_model_as.add(
                     a : "123"
                 }
             );
-        }).add(function(as, res){
-            if ( iface._raw_info.funcs.noResult )
-            {
-                assert.strictEqual( undefined, res );
-            }
-            else
-            {
-                res.should.be.empty;
-            }
+            as.add(function(as, res){
+                if ( iface._raw_info.funcs.noResult )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.should.be.empty;
+                }
+            });
+        }).add(function(as){
+
+            as.state.step = "customResult";
             
+            iface.call(
+                as,
+                "customResult"
+            );
+            as.add(function(as, res){
+                assert.strictEqual( true, res );
+            });
+        }).add(function(as){
+
             as.state.step = "call";
 
             iface.call(
                 as,
                 "call"
             );
-        }).add(function(as, res){ try{
-            if ( iface._raw_info.funcs.call )
-            {
-                assert.strictEqual( undefined, res );
-            }
-            else
-            {
-                res.should.be.empty;
-            }
             
+            as.add(function(as, res) {
+                if ( iface._raw_info.funcs.call )
+                {
+                    assert.strictEqual( undefined, res );
+                }
+                else
+                {
+                    res.should.be.empty;
+                }
+            });
+        }).add(function(as){
             as.state.step = "rawUploadFunc";
             
             if ( is_browser )
@@ -456,18 +473,17 @@ call_remotes_model_as.add(
                 {},
                 "MY_UPLOAD"
             );
-        } catch ( e ) {
-            console.dir( e.stack );
-            console.log( as.state.error_info );
-            throw e;
-        }} ).add(function(as, res){ try{
-            res.ok.should.equal("OK");
+            
+            as.add(function(as, res) {
+                res.ok.should.equal("OK");
+            });
+            
+        } ).add(function(as){
             
             as.state.step = "rawUploadFuncParams";
             
             if ( is_browser )
             {
-                as.success( { ok : 'OK' } );
                 return;
             }
 
@@ -484,16 +500,14 @@ call_remotes_model_as.add(
                 null,
                 3e3
             );
-        } catch ( e ) {
-            console.dir( e.stack );
-            console.log( as.state.error_info );
-            throw e;
-        }}).add(function(as, res){
-            res.ok.should.equal("OK");
+            
+            as.add(function(as, res) {
+                res.ok.should.equal("OK");
+            });
+        }).add(function(as){
 
             if ( is_ws || is_browser )
             {
-                as.success( "MY_DOWNLOAD" );
                 return;
             }
             
@@ -503,10 +517,13 @@ call_remotes_model_as.add(
                 as,
                 "rawDownload"                
             );
-        }).add(
-            function(as, res){
+            
+            
+            as.add(function(as, res) {
                 res.should.equal("MY_DOWNLOAD");
-                
+            });
+        }).add(
+            function(as){
                 as.state.step = "triggerError";
 
                 iface.call(
@@ -923,7 +940,7 @@ describe( 'NativeIface', function()
             closeTestHttpServer( done );
         });
         
-        it( 'should return ifaceInfo without details', function(){
+        it( 'should return ifaceInfo without details', function(done){
             ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
             
             as.add( function( as )
@@ -941,7 +958,9 @@ describe( 'NativeIface', function()
                 
                 iface.should.not.have.property( 'testFunc' );
                 iface.should.not.have.property( 'rawUploadFunc' );
+                done();
             } );
+            as.execute();
         });
         
         it( 'should call HTTP remotes', function( done ){
@@ -1422,6 +1441,13 @@ describe( 'LogFace', function()
                 ccm.log().security( 'SECURITYMSG' );
                 ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
                 ccm.log().call( as, 'msg', { txt: 'sync', lvl : 'debug', ts : '12345678901234.123' } );
+                
+                as.add(function(as) {
+                    as.setTimeout(5e3);
+                    setTimeout(function(){
+                        as.success();
+                    }, 1e3);
+                });
                 
                 as.add( function( as )
                 {

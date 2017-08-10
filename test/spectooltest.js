@@ -109,7 +109,8 @@ describe('SpecTools', function()
                 function( as, err )
                 {
                     console.log( err + ': ' + as.state.error_info );
-                    done( as.state.last_exception );
+                    console.log( as.state.last_exception );
+                    done( as.state.error_info );
                 }
             ).
             add( function( as ){
@@ -202,7 +203,7 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
+                        as.state.error_info.should.equal( "Import is FTN3 v1.1 feature" );
                         as.success('OK');
                     }
                     catch ( e )
@@ -227,7 +228,7 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Missing ftn3rev or wrong field for FTN3 v1.1 features" );
+                        as.state.error_info.should.equal( "Custom types is FTN3 v1.1 feature" );
                         as.success('OK');
                     }
                     catch ( e )
