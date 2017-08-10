@@ -44,7 +44,7 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 6,
+    _max_supported_v1_minor : 7,
 
     /**
      * Load FutoIn iface definition.
@@ -457,6 +457,8 @@ var spectools =
 
         var mjr = parseInt( rv[ 1 ] );
         var mnr = parseInt( rv[ 2 ] );
+        var funcs = info.funcs;
+        var f;
 
         // Check for version-specific features
         // ---
@@ -478,18 +480,18 @@ var spectools =
                 if ( 'MessageSignature' in info.constraints )
                 {
                     as.error( FutoInError.InternalError,
-                        "Missing ftn3rev or wrong field for FTN3 v1.2 features" );
+                        "MessageSignature is FTN3 v1.2 feature" );
                 }
             }
 
             if ( mnr < 3 )
             {
-                for ( var f in info.funcs )
+                for ( f in funcs )
                 {
-                    if ( info.funcs[f].seclvl )
+                    if ( funcs[f].seclvl )
                     {
                         as.error( FutoInError.InternalError,
-                            "Missing ftn3rev or wrong field for FTN3 v1.3 features" );
+                            "Function seclvl is FTN3 v1.3 feature" );
                     }
                 }
             }
@@ -497,6 +499,21 @@ var spectools =
             if ( mnr < 4 )
             {
                 // TODO:
+            }
+
+
+            if ( mnr < 7 )
+            {
+                for ( f in funcs )
+                {
+                    f = funcs[f];
+
+                    if ( f.result && typeof f.result === 'string' )
+                    {
+                        as.error( FutoInError.InternalError,
+                            "Custom result type FTN3 v1.7 feature" );
+                    }
+                }
             }
 
             // Executor is not allowed to support newer than implemented version (v1.1)
@@ -575,29 +592,35 @@ var spectools =
             {
                 var fresult = finfo.result;
 
-                if ( typeof fresult !== 'object' )
+                if ( typeof fresult === 'string' )
+                {
+                    finfo.expect_result = true;
+                }
+                else if ( typeof fresult == 'object' )
+                {
+                    for ( var rn in fresult )
+                    {
+                        var rinfo = fresult[ rn ];
+
+                        if ( typeof rinfo !== 'string' )
+                        {
+                            if ( typeof rinfo !== 'object' )
+                            {
+                                as.error( FutoInError.InternalError, "Invalid resultvar object" );
+                            }
+
+                            if ( !( 'type' in rinfo ) )
+                            {
+                                as.error( FutoInError.InternalError, "Missing type for result" );
+                            }
+                        }
+
+                        finfo.expect_result = true;
+                    }
+                }
+                else
                 {
                     as.error( FutoInError.InternalError, "Invalid result object" );
-                }
-
-                for ( var rn in fresult )
-                {
-                    var rinfo = fresult[ rn ];
-
-                    if ( typeof rinfo !== 'string' )
-                    {
-                        if ( typeof rinfo !== 'object' )
-                        {
-                            as.error( FutoInError.InternalError, "Invalid resultvar object" );
-                        }
-
-                        if ( !( 'type' in rinfo ) )
-                        {
-                            as.error( FutoInError.InternalError, "Missing type for result" );
-                        }
-                    }
-
-                    finfo.expect_result = true;
                 }
             }
             else

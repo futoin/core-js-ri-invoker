@@ -14,7 +14,7 @@ window.addEventListener( 'message', function( event ){
         var freq = event.data;
         var frsp = processServerRequest( freq, '' );
         
-        if ( !( 'e' in frsp ) )
+        if ( typeof frsp === 'boolean' || !( 'e' in frsp ) )
         {
             frsp = { r : frsp };
         }

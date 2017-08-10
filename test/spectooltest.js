@@ -35,7 +35,7 @@ var SpecTools = invoker.SpecTools;
 
 describe('SpecTools', function()
 {
-    before(function(){
+    beforeEach(function(){
         as = async_steps();
     });
     
@@ -53,6 +53,11 @@ describe('SpecTools', function()
 
         it('should load spec from file', function( done )
         {
+            if (!isNode) {
+                done();
+                return;
+            }
+            
             var info = {
                 iface : 'fileface.a',
                 version : '1.1'
@@ -1379,7 +1384,55 @@ describe('SpecTools', function()
                 done( as.state.last_exception );
             }
         ).execute();
-    });    
+    });
+    
+    it('should allow custom result type', function(){
+        this.timeout( 5e3 );
+        var iface = {
+            iface: 'some.face',
+            version: '1.0',
+            ftn3rev: '1.4',
+            funcs: {
+                test: {
+                    params: {
+                        required : {
+                            type: "string"
+                        },
+                        nullable: {
+                            type: "string",
+                            "default": null
+                        }
+                    },
+                    result: "boolean",
+                }
+            }
+        };
+
+        var info = {
+            iface: iface.iface,
+            version: iface.version
+        };
+        
+        as.add(
+            function( as ){
+                SpecTools.loadIface( as, info, [ iface ] );
+            },
+            function( as, err ){
+                done( as.state.last_exception );
+            }
+        ).add(
+            function( as ){
+                SpecTools.checkParameterType(info, "test", "nullable", "abc").should.be.true;
+                SpecTools.checkParameterType(info, "test", "nullable", null).should.be.true;
+                SpecTools.checkParameterType(info, "test", "required", "abc").should.be.true;
+                SpecTools.checkParameterType(info, "test", "required", null).should.be.false;
+                done();
+            },
+            function( as, err ){
+                done( as.state.last_exception );
+            }
+        ).execute();
+    });
         
 if ( isNode )
 {

@@ -112,6 +112,9 @@ function processServerRequest( freq, data )
             freq.p.a.should.equal( '123' ); 
             return {};
             
+        case 'customResult':
+            return true;
+            
         case "call" :
             freq.p.should.be.empty;
             return {};

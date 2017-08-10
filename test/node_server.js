@@ -95,7 +95,16 @@ function createTestHttpServer( cb )
             
             if ( typeof frsp !== 'string' )
             {
-                if ( !( 'e' in frsp ) )
+                if (typeof frsp === 'boolean')
+                {
+                    frsp = { r : frsp };
+                }
+                else if ( typeof frsp !== "object" )
+                {
+                    request.socket.destroy();
+                    return;
+                }
+                else if ( !( 'e' in frsp ) )
                 {
                     frsp = { r : frsp };
                 }
@@ -160,13 +169,17 @@ function createTestHttpServer( cb )
                 sock.destroy();
                 return;
             }
-            
-            if ( typeof frsp !== "object" )
+         
+            if (typeof frsp === 'boolean')
             {
+                frsp = { r : frsp };
+            }
+            else if ( typeof frsp !== "object" )
+            {
+                sock.destroy();
                 return;
             }
-            
-            if ( !( 'e' in frsp ) )
+            else if ( !( 'e' in frsp ) )
             {
                 frsp = { r : frsp };
             }

@@ -1,6 +1,7 @@
 {
     "iface" : "fileface.a",
     "version" : "1.1",
+    "ftn3rev" : "1.7",
     "inherit" : "fileface.b:3.1",
     "funcs" : {
         "testFunc" : {
@@ -77,6 +78,9 @@
                     "type" : "string"
                 }
             }
+        },
+        "customResult": {
+            "result" : "boolean"
         },
         "rawDownload" : {
             "rawresult" : true
