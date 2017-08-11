@@ -240,6 +240,233 @@ describe('SpecTools', function()
                 function( as, ok )
                 {
                     ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        requires: [ 'BiDirectChannel' ]
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "BiDirectChannel is FTN3 v1.1 feature" );
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        requires: [ 'MessageSignature' ]
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "MessageSignature is FTN3 v1.2 feature" );
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        funcs: {
+                            test: {
+                                seclvl: 'OPS',
+                            }
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Function seclvl is FTN3 v1.3 feature" );
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.3",
+                        types: {
+                            Str: "string"
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Type shortcut is FTN3 v1.4 feature" );
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.4",
+                        types: {
+                            Str: "string",
+                            StrMin: {
+                                type: "Str",
+                                minlen: 1,
+                            }
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "String min/maxlen is FTN3 v1.5 feature");
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.5",
+                        types: {
+                            Map: "map",
+                            MapElemType: {
+                                type: "Map",
+                                elemtype: 'string',
+                            }
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Map elemtype is FTN3 v1.6 feature");
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.5",
+                        types: {
+                            Enum: "enum"
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Enum/Set is FTN3 v1.6 feature");
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.5",
+                        types: {
+                            Or: ["enum", "string"]
+                        }
+                    };
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Type variant is FTN3 v1.6 feature");
+                        as.success('OK');
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal('OK');
                     
                     var iface = {
                         iface : info.iface,
@@ -1106,7 +1333,7 @@ describe('SpecTools', function()
             var iface = {
                 iface: 'some.face',
                 version: '1.0',
-                ftn3rev: '1.1',
+                ftn3rev: '1.7',
                 types: {
                     'Int' : {
                         type: 'integer'

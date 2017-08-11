@@ -460,6 +460,10 @@ var spectools =
         var mnr = parseInt( rv[ 2 ] );
         var funcs = info.funcs;
         var f;
+        var tmp;
+        var t;
+        var tt;
+        var ts;
 
         // Check for version-specific features
         // ---
@@ -509,9 +513,147 @@ var spectools =
 
             if ( mnr < 4 )
             {
-                // TODO:
+                for ( f in funcs )
+                {
+                    tmp = funcs[f].params;
+
+                    if ( tmp )
+                    {
+                        for ( t in tmp )
+                        {
+                            if ( typeof tmp[t] === 'string' )
+                            {
+                                as.error( FutoInError.InternalError,
+                                    "Type shortcut is FTN3 v1.4 feature" );
+                            }
+                        }
+                    }
+
+                    tmp = funcs[f].result;
+
+                    if ( tmp && typeof tmp === 'object' )
+                    {
+                        for ( t in tmp )
+                        {
+                            t = tmp[t];
+
+                            if ( typeof t === 'string' )
+                            {
+                                as.error( FutoInError.InternalError,
+                                    "Type shortcut is FTN3 v1.4 feature" );
+                            }
+                            else if ( t.type === 'map' && t.fields )
+                            {
+                                for ( t in t.fields )
+                                {
+                                    if ( typeof t === 'string' )
+                                    {
+                                        as.error( FutoInError.InternalError,
+                                            "Type shortcut is FTN3 v1.4 feature" );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                tmp = info.types;
+
+                for ( t in tmp )
+                {
+                    if ( typeof tmp[t] === 'string' )
+                    {
+                        as.error( FutoInError.InternalError,
+                            "Type shortcut is FTN3 v1.4 feature" );
+                    }
+                }
             }
 
+            if ( mnr < 5 )
+            {
+                tmp = info.types;
+
+                for ( t in tmp )
+                {
+                    tt = tmp[t];
+
+                    if ( tt.minlen !== undefined || tt.maxlen !== undefined )
+                    {
+                        ts = {};
+                        this._checkType( info, t, '', ts );
+
+                        if ( ts['#last_base'] === 'string' )
+                        {
+                            as.error( FutoInError.InternalError,
+                                "String min/maxlen is FTN3 v1.5 feature" );
+                        }
+                    }
+                }
+            }
+
+            if ( mnr < 6 )
+            {
+                for ( f in funcs )
+                {
+                    tmp = funcs[f].params;
+
+                    if ( tmp )
+                    {
+                        for ( t in tmp )
+                        {
+                            if ( tmp[t] instanceof Array )
+                            {
+                                as.error( FutoInError.InternalError,
+                                    "Type variant is FTN3 v1.6 feature" );
+                            }
+                        }
+                    }
+
+                    tmp = funcs[f].result;
+
+                    if ( tmp && typeof tmp === 'object' )
+                    {
+                        for ( t in tmp )
+                        {
+                            if ( tmp[t] instanceof Array )
+                            {
+                                as.error( FutoInError.InternalError,
+                                    "Type variant is FTN3 v1.6 feature" );
+                            }
+                        }
+                    }
+                }
+
+                tmp = info.types;
+
+                for ( t in tmp )
+                {
+                    tt = tmp[t];
+
+                    if ( tt instanceof Array )
+                    {
+                        as.error( FutoInError.InternalError,
+                            "Type variant is FTN3 v1.6 feature" );
+                    }
+                    else if ( tt === 'enum' || tt === 'set' ||
+                         tt.type === 'enum' || tt.type === 'set' )
+                    {
+                        as.error( FutoInError.InternalError,
+                            "Enum/Set is FTN3 v1.6 feature" );
+                    }
+                    else if ( tt.elemtype !== undefined )
+                    {
+                        ts = {};
+                        this._checkType( info, t, '', ts );
+
+                        if ( ts['#last_base'] === 'map' )
+                        {
+                            as.error( FutoInError.InternalError,
+                                "Map elemtype is FTN3 v1.6 feature" );
+                        }
+                    }
+                }
+            }
 
             if ( mnr < 7 )
             {
@@ -525,6 +667,11 @@ var spectools =
                             "Custom result type FTN3 v1.7 feature" );
                     }
                 }
+            }
+
+            if ( mnr < 8 )
+            {
+                // TODO
             }
 
             // Executor is not allowed to support newer than implemented version (v1.1)

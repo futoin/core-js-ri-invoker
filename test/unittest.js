@@ -1431,6 +1431,8 @@ describe( 'LogFace', function()
 
     it( 'should call futoin.log through native interface', function( done )
     {
+        this.timeout( 10e3 );
+        
         as
         .add(
             function( as ){
@@ -1446,7 +1448,7 @@ describe( 'LogFace', function()
                     as.setTimeout(5e3);
                     setTimeout(function(){
                         as.success();
-                    }, 1e3);
+                    }, 2e3);
                 });
                 
                 as.add( function( as )

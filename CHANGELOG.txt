@@ -3,6 +3,7 @@
 FIXED: minor fixes & improvements to unit tests
 CHANGED: to auto-enabled CCM prodMode, if NODE_ENV=production
 NEW: FTN3 v1.7 custom result types
+NEW: improved FTN3 feature vs. revision control
 
 === 1.2.2 (2017-08-06) ===
 FIXED: not populated module.exports in repeated browser require()
