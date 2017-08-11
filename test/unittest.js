@@ -1397,7 +1397,7 @@ describe( 'NativeIface', function()
 });
 
 //============================================================================
-if (isNode) describe( 'LogFace', function()
+describe( 'LogFace', function()
 {
     before(function( done ){
         as = async_steps();
@@ -1431,7 +1431,7 @@ if (isNode) describe( 'LogFace', function()
 
     it( 'should call futoin.log through native interface', function( done )
     {
-        this.timeout( 10e3 );
+        this.timeout( 30e3 );
         
         as
         .add(
@@ -1449,7 +1449,7 @@ if (isNode) describe( 'LogFace', function()
                 as.loop(function(as){
                     as.add(function( as )
                     {
-                        as.setTimeout(3e3);
+                        as.setTimeout(1e3);
                         setTimeout(function(){
                             setTimeout(function(){
                                 as.success();
@@ -1468,7 +1468,7 @@ if (isNode) describe( 'LogFace', function()
                         
                         as.state.waits += 1;
                         
-                        if (as.state.waits > 10) {
+                        if (as.state.waits > 50) {
                             res.count.should.equal(7);
                         }
                     } );
