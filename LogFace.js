@@ -25,6 +25,8 @@ var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
 function LogFace()
 {
     NativeIface.apply( this, arguments );
+    this._log_queue = [];
+    this._active_runner = false;
 }
 
 /**
@@ -126,26 +128,12 @@ LogFaceProto._ts = function()
  */
 LogFaceProto.msg = function( lvl, txt )
 {
-    var _this = this;
-
-    async_steps()
-        .add(
-            function( as )
-            {
-                _this.call( as, 'msg', {
-                    lvl : lvl,
-                    txt : txt,
-                    ts : _this._ts(),
-                } );
-            },
-            function( as, err )
-            {
-                console.log( 'LOGFAIL:' + lvl + ':' + txt );
-                console.log( 'ERROR:' + err + ':' + as.state.error_info );
-                console.log( as.state.last_exception.stack );
-            }
-        )
-        .execute();
+    this._add_queue(
+        'msg', {
+            lvl : lvl,
+            txt : txt,
+            ts : this._ts(),
+        } );
 };
 
 /**
@@ -157,27 +145,13 @@ LogFaceProto.msg = function( lvl, txt )
  */
 LogFaceProto.hexdump = function( lvl, txt, data )
 {
-    var _this = this;
-
-    async_steps()
-        .add(
-            function( as )
-            {
-                _this.call( as, 'hexdump', {
-                    lvl : lvl,
-                    txt : txt,
-                    ts : _this._ts(),
-                    data : btoa( data ),
-                } );
-            },
-            function( as, err )
-            {
-                console.log( 'LOGFAIL:' + lvl + ':' + txt );
-                console.log( 'ERROR:' + err + ':' + as.state.error_info );
-                console.log( as.state.last_exception.stack );
-            }
-        )
-        .execute();
+    this._add_queue(
+        'hexdump', {
+            lvl : lvl,
+            txt : txt,
+            ts : this._ts(),
+            data : btoa( data ),
+        } );
 };
 
 /**
@@ -228,6 +202,62 @@ LogFaceProto.error = function( txt )
 LogFaceProto.security = function( txt )
 {
     this.msg( 'security', txt );
+};
+
+/**
+ * Make sure to keep only one pending async request
+ * @private
+ * @param {string} func - log/hexdump
+ * @param {object} args - call args
+ */
+LogFaceProto._add_queue = function( func, args )
+{
+    var log_queue = this._log_queue;
+
+    log_queue.push( [ func, args ] );
+
+    if ( this._active_runner )
+    {
+        return;
+    }
+
+    var _this = this;
+
+    this._active_runner = true;
+
+    async_steps()
+        .add(
+            function( as )
+            {
+                as.loop( function( as )
+                {
+                    if ( !log_queue.length )
+                    {
+                        _this._active_runner = false;
+                        as.break();
+                    }
+
+                    as.state.log_item = log_queue.shift();
+
+                    as.add(
+                        function( as )
+                        {
+                            var item = as.state.log_item;
+
+                            _this.call( as, item[0], item[1] );
+                        },
+                        function( as, err )
+                        {
+                            console.log( 'LOGFAIL:' + as.state.log_item );
+                            console.log( 'ERROR:' + err + ':' + as.state.error_info );
+                            console.log( as.state.last_exception.stack );
+                            as.success();
+                        }
+                    );
+                } );
+            }
+        )
+        .execute();
 };
 
 module.exports = LogFace;
