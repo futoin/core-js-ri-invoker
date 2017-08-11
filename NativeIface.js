@@ -4,7 +4,6 @@ var common = require( './lib/common' );
 var futoin_error = common.FutoInError;
 var _zipObject = require( 'lodash/zipObject' );
 var ee = require( 'event-emitter' );
-var async_steps = require( 'futoin-asyncsteps' );
 var InterfaceInfo = require( './InterfaceInfo' );
 var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
 
@@ -135,14 +134,10 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
     // Perform request
     // ---
     as.add(
-        function( orig_as, req )
+        function( as, req )
         {
-            var as;
-
             if ( ctx.expect_response )
             {
-                as = orig_as;
-
                 if ( typeof timeout !== 'number' )
                 {
                     timeout = ctx.info.options.callTimeoutMS;
@@ -152,10 +147,6 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
                 {
                     as.setTimeout( timeout );
                 }
-            }
-            else
-            {
-                as = async_steps();
             }
 
             var scheme = raw_info.endpoint_scheme;
@@ -218,12 +209,7 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
                 as.error( futoin_error.InvokerError, 'Unknown endpoint scheme' );
             }
 
-            if ( as !== orig_as )
-            {
-                as.execute();
-                orig_as.success();
-            }
-            else
+            if ( ctx.expect_response )
             {
                 as.add(
                     function( as, rsp, content_type )

@@ -1,6 +1,9 @@
 
 === (next) ===
 BREAKING: dropped Node,js < v6 support
+BREAKING: no-response requests execute in same AsyncSteps now
+  - it may introduce unwanted delays
+  - but it safe from bigger headaches
 FIXED: LogFace to use internal queue for async log messages
 
 === 1.3.0 (2017-08-11) ===
