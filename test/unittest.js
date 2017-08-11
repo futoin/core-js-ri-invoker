@@ -1397,7 +1397,7 @@ describe( 'NativeIface', function()
 });
 
 //============================================================================
-describe( 'LogFace', function()
+if (isNode) describe( 'LogFace', function()
 {
     before(function( done ){
         as = async_steps();
