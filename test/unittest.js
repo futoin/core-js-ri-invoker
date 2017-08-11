@@ -1447,9 +1447,15 @@ describe( 'LogFace', function()
                 as.loop(function(as){
                     as.add(function( as )
                     {
+                        as.setTimeout(3e3);
+                        setTimeout(function(){
+                            as.success();
+                        }, 300);
+                    })
+                    .add( function(as) {
                         ccm.iface( 'myiface' ).getLogCount( as );
                     })
-                    as.add( function( as, res )
+                    .add( function( as, res )
                     {
                         if (res.count === 7)
                         {
