@@ -1444,13 +1444,17 @@ describe( 'LogFace', function()
                 ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
                 ccm.log().call( as, 'msg', { txt: 'sync', lvl : 'debug', ts : '12345678901234.123' } );
                 
+                as.state.waits = 0;
+                
                 as.loop(function(as){
                     as.add(function( as )
                     {
                         as.setTimeout(3e3);
                         setTimeout(function(){
-                            as.success();
-                        }, 300);
+                            setTimeout(function(){
+                                as.success();
+                            }, 300);
+                        }, 1);
                     })
                     .add( function(as) {
                         ccm.iface( 'myiface' ).getLogCount( as );
@@ -1460,6 +1464,12 @@ describe( 'LogFace', function()
                         if (res.count === 7)
                         {
                             as.break();
+                        }
+                        
+                        as.state.waits += 1;
+                        
+                        if (as.state.waits > 10) {
+                            res.count.should.equal(7);
                         }
                     } );
                     
