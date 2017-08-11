@@ -97,6 +97,14 @@ module.exports = {
             env: {
                 es6: true,
                 node: true,
+                commonjs: true,
+            },
+            files: [ "lib/node/*.js" ],
+        },
+        {
+            env: {
+                es6: true,
+                node: true,
                 browser: true,
             },
             files: [ "PingFace.js" ],

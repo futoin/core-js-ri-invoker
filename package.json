@@ -4,6 +4,9 @@
   "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
   "browser": "lib/browser.js",
+  "engines": {
+    "node": ">=6"
+  },
   "scripts": {
     "test": "grunt test"
   },
@@ -35,15 +38,14 @@
     "detect-node": "^2.0.3",
     "event-emitter": "^0.3.5",
     "faye-websocket": "^0.11.1",
-    "futoin-asyncsteps": "^1.6.1",
-    "keep-alive-agent": "^0.0.1",
+    "futoin-asyncsteps": "^1.6.2",
     "lodash": "^4.17.4",
     "performance-now": "^2.1.0",
     "request": "^2.81.0"
   },
   "devDependencies": {
     "chai": "^4.1.1",
-    "eslint": "^4.4.0",
+    "eslint": "^4.4.1",
     "grunt": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-eslint": "^20.0.0",
@@ -56,7 +58,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^3.5.0",
     "server-destroy": "^1.0.1",
-    "webpack": "^3.4.1"
+    "webpack": "^3.5.3"
   },
   "eslintIgnore": [
     "test/**"
