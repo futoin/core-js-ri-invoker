@@ -1444,22 +1444,20 @@ describe( 'LogFace', function()
                 ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
                 ccm.log().call( as, 'msg', { txt: 'sync', lvl : 'debug', ts : '12345678901234.123' } );
                 
-                as.add(function(as) {
-                    as.setTimeout(5e3);
-                    setTimeout(function(){
-                        as.success();
-                    }, 2e3);
+                as.loop(function(as){
+                    as.add(function( as )
+                    {
+                        ccm.iface( 'myiface' ).getLogCount( as );
+                    })
+                    as.add( function( as, res )
+                    {
+                        if (res.count === 7)
+                        {
+                            as.break();
+                        }
+                    } );
+                    
                 });
-                
-                as.add( function( as )
-                {
-                    ccm.iface( 'myiface' ).getLogCount( as );
-                } );
-                
-                as.add( function( as, res )
-                {
-                    res.count.should.equal( 7 );
-                } );
             },
             function( as, err )
             {
