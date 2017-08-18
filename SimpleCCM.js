@@ -160,6 +160,7 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
         impl = this._native_iface_builder;
         endpoint_scheme = '#internal#';
         is_bidirect = true;
+        credentials = credentials || '-internal';
     }
     else
     {

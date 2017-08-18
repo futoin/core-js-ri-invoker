@@ -310,6 +310,25 @@ describe( 'SimpleCCM', function()
             ccm.iface( 'aiface2' )
         }, 'InvokerError' );
     });
+    
+    if('should use "-internal" credentials', function(done){
+        var ifacedef = {
+            name: 'internal.test',
+            version: '1.0',
+            ftn3rev: 1.7,
+        };
+        
+                
+        assert.throws( function(){
+            ccm.register( as , 'mf', 'internal.test:1.0',
+                          'http://localhost:23456', null,
+                          { specDirs: [ ifacedef ] } );
+        }, 'InvokerError' );
+        
+        ccm.register( as , 'mf', 'internal.test:1.0',
+                        { onInternalRequest: function(){} }, null,
+                        { specDirs: [ ifacedef ] } );
+    });
 } );
 
 describe( 'AdvancedCCM', function()
