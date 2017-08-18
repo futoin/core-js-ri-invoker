@@ -311,23 +311,47 @@ describe( 'SimpleCCM', function()
         }, 'InvokerError' );
     });
     
-    if('should use "-internal" credentials', function(done){
+    it('should use "-internal" credentials', function(done){
         var ifacedef = {
             name: 'internal.test',
             version: '1.0',
             ftn3rev: 1.7,
         };
         
-                
-        assert.throws( function(){
-            ccm.register( as , 'mf', 'internal.test:1.0',
-                          'http://localhost:23456', null,
-                          { specDirs: [ ifacedef ] } );
-        }, 'InvokerError' );
-        
-        ccm.register( as , 'mf', 'internal.test:1.0',
-                        { onInternalRequest: function(){} }, null,
-                        { specDirs: [ ifacedef ] } );
+        as.add(function(as){
+            as.add(
+                function(as)
+                {
+                    ccm.register( as , 'mf', 'internal.test:1.0',
+                                { onInternalRequest: function(){} }, null,
+                                { specDirs: [ ifacedef ] } );
+                },
+                function(as, err)
+                {
+                    done(as.last_exception);
+                }
+            );
+
+            as.add(
+                function(as)
+                {
+                    ccm.register( as , 'mf', 'internal.test:1.0',
+                                'http://localhost:23456', null,
+                                { specDirs: [ ifacedef ] } );
+                },
+                function(as, err)
+                {
+                    if (err === 'SecurityError')
+                    {
+                        as.success();
+                    } else {
+                        done(as.last_exception);
+                    }
+                }
+            );            
+        })
+        as.add(function(as) { done(); });
+        as.execute();
     });
 } );
 
