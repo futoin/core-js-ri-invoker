@@ -1552,15 +1552,27 @@ describe( 'CacheFace', function()
                 {
                     call_count += 1;
                     as.add( function( as ){
-                        as.success( a + b );
+                        as.success( a + b || 100 );
                     });
                 };
                 
                 cface.getOrSet( as, 'mykey', cb, [1,2], 10 );
                 
+                as.add( function(as, value) {
+                    value.should.equal( 3 );
+                    cface.getOrSet( as, 'mykey', cb, [1,2], 10 );
+                });
+                
                 as.add( function( as, value ){
                     value.should.equal( 3 );
                     call_count.should.equal( 1 );
+                });
+                
+                cface.getOrSet( as, 'mykey', cb );
+                
+                as.add( function( as, value ){
+                    value.should.equal( 100 );
+                    call_count.should.equal( 2 );
                 });
             },
             function( as, err )

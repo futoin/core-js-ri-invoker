@@ -1,7 +1,6 @@
 'use strict';
 
 var _clone = require( 'lodash/clone' );
-var _extend = require( 'lodash/extend' );
 var NativeIface = require( './NativeIface' );
 var common = require( './lib/common' );
 
@@ -15,11 +14,13 @@ var common = require( './lib/common' );
  * @class
  * @alias CacheFace
  * @augments NativeIface
+ * @param {SimpleCCM} ccm - CCM instance
+ * @param {object} info - internal info
  */
-function CacheFace()
+function CacheFace( ccm, info )
 {
-    _extend( this, CacheFaceProto );
     NativeIface.apply( this, arguments );
+    this._ttl_ms = info.options.ttl_ms || 1000;
 }
 
 /**
@@ -31,6 +32,7 @@ function CacheFace()
  * @param {*} [credentials=null] - see CCM register()
  * @param {object} [options={}] - registration options
  * @param {string} [options.version=1.0] - iface version
+ * @param {integer} [options.ttl_ms=1000] - default TTL
  * @alias CacheFace.register
  */
 CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
@@ -79,7 +81,7 @@ CacheFace.spec = NativeIface.spec;
 CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
 {
     params = params || [];
-    ttl_ms = ttl_ms || 0;
+    ttl_ms = ttl_ms || this._ttl_ms;
 
     var key = key_prefix + params.join( '_' );
     var _this = this;

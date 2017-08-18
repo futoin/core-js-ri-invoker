@@ -474,7 +474,7 @@ CCM close event. Fired on CCM shutdown.
 **Extends**: [<code>NativeIface</code>](#NativeIface)  
 
 * [CacheFace](#CacheFace) ⇐ [<code>NativeIface</code>](#NativeIface)
-    * [new CacheFace()](#new_CacheFace_new)
+    * [new CacheFace(ccm, info)](#new_CacheFace_new)
     * _instance_
         * [.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace+getOrSet)
         * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
@@ -489,13 +489,19 @@ CCM close event. Fired on CCM shutdown.
 
 <a name="new_CacheFace_new"></a>
 
-### new CacheFace()
+### new CacheFace(ccm, info)
 Cache Native interface
 
 Register with CacheFace.register()
 
 NOTE: it is not directly available in Invoker module
 interface, include separately
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ccm | [<code>SimpleCCM</code>](#SimpleCCM) | CCM instance |
+| info | <code>object</code> | internal info |
 
 <a name="CacheFace+getOrSet"></a>
 
@@ -591,6 +597,7 @@ Cache Native interface registration helper
 | [credentials] | <code>\*</code> | <code></code> | see CCM register() |
 | [options] | <code>object</code> | <code>{}</code> | registration options |
 | [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
+| [options.ttl_ms] | <code>integer</code> | <code>1000</code> | default TTL |
 
 <a name="InterfaceInfo"></a>
 

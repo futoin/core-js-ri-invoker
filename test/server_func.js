@@ -47,8 +47,15 @@ function processServerRequest( freq, data )
     else if ( func[0] === 'futoin.cache' &&
               func[1] === '1.0' )
     {
-        if ( freq.p.key !== 'mykey1_2' ||
-             ( func[2] === 'set' && freq.p.ttl !== 10 ) )
+        if ( freq.p.key === 'mykey1_2' &&
+             ( func[2] === 'get' || freq.p.ttl === 10 ) )
+        {}
+        else if ( freq.p.key === 'mykey' &&
+             ( func[2] === 'get' || freq.p.ttl === 1000 ) )
+        {
+            cached_value = null;
+        }
+        else
         {
             return { e : 'InvalidRequest', edesc: JSON.stringify( freq ) };
         }
@@ -57,7 +64,7 @@ function processServerRequest( freq, data )
         {
             case 'set':
                 cached_value = freq.p.value;
-                return { value: cached_value };
+                return {};
                 
             case 'get':
                 if ( cached_value )
