@@ -13,7 +13,7 @@
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.5
+    Version: 1.6
     
     FTN3: FutoIn Interface Definition
     Version: 1.7
