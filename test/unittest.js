@@ -313,9 +313,9 @@ describe( 'SimpleCCM', function()
     
     it('should use "-internal" credentials', function(done){
         var ifacedef = {
-            name: 'internal.test',
+            iface: 'internal.test',
             version: '1.0',
-            ftn3rev: 1.7,
+            ftn3rev: '1.7',
         };
         
         as.add(function(as){
@@ -328,14 +328,14 @@ describe( 'SimpleCCM', function()
                 },
                 function(as, err)
                 {
-                    done(as.last_exception);
+                    done(err);
                 }
             );
 
             as.add(
                 function(as)
                 {
-                    ccm.register( as , 'mf', 'internal.test:1.0',
+                    ccm.register( as , 'mf2', 'internal.test:1.0',
                                 'http://localhost:23456', null,
                                 { specDirs: [ ifacedef ] } );
                 },
@@ -345,7 +345,8 @@ describe( 'SimpleCCM', function()
                     {
                         as.success();
                     } else {
-                        done(as.last_exception);
+                        console.log(as.state.error_info);
+                        done(err);
                     }
                 }
             );            
