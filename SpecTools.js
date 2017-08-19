@@ -1144,6 +1144,9 @@ var spectools =
 
             switch ( base_type )
             {
+            case 'boolean':
+                return true;
+
             case 'integer':
             case 'number':
                 if ( ( 'min' in tdef ) &&

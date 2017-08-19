@@ -1397,7 +1397,7 @@ describe('SpecTools', function()
                         type: 'enum',
                         items: [ 'one', 'two', 'three', 10, 20 ]
                     },
-                    'Variant' : [  'IntMinMax', 'StringRegex' ],
+                    'Variant' : [  'IntMinMax', 'StringRegex', "boolean" ],
                     'DerivedVariant' : {
                         type: 'Variant',
                         min: 2,
@@ -1475,8 +1475,8 @@ describe('SpecTools', function()
                     fail : [ [ 'one' ], false, null, 1 ],
                 },
                 'DerivedVariant' : {
-                    ok : [ 2, 3, 'abcde'],
-                    fail : [ 1, 4, 'abcdE', 'abc', false, null, {}, [] ],
+                    ok : [ 2, 3, 'abcde', false],
+                    fail : [ 1, 4, 'abcdE', 'abc', null, {}, [] ],
                 }
             };
             
