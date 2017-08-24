@@ -111,23 +111,26 @@ var spectools =
 
                 var uri = v + '/' + fn;
 
-                var on_read = function( data )
+                var on_read = function( data, err )
                 {
                     if ( !read_as )
                     {
                         return;
                     }
 
-                    try
+                    if ( !err )
                     {
-                        v = JSON.parse( data );
-                        v._just_loaded = true;
-                        read_as.success();
-                        return;
-                    }
-                    catch ( e )
-                    {
-                        // ignore
+                        try
+                        {
+                            v = JSON.parse( data );
+                            v._just_loaded = true;
+                            read_as.success();
+                            return;
+                        }
+                        catch ( e )
+                        {
+                            // ignore
+                        }
                     }
 
                     try
@@ -142,9 +145,9 @@ var spectools =
 
                 if ( uri.substr( 0, 4 ) === 'http' )
                 {
-                    request( uri, function( error, response, body )
+                    request( uri, function( error, _response, body )
                     {
-                        on_read( body );
+                        on_read( body, error );
                     } );
                 }
                 else
@@ -154,7 +157,7 @@ var spectools =
                         { encoding : 'utf8' },
                         function( err, data )
                         {
-                            on_read( data );
+                            on_read( data, err );
                         }
                     );
                 }
