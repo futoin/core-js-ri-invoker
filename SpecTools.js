@@ -98,7 +98,7 @@ var spectools =
             cached_info = info;
         }
 
-        as.forEach( specdirs, function( as, k, v )
+        as.forEach( specdirs, function( as, _k, v )
         {
             // Check Node.js fs
             as.add( function( read_as )
@@ -337,7 +337,7 @@ var spectools =
 
             as.add( function( as )
             {
-                spectools._parseImportInherit( as, info, specdirs, raw_spec, sup_info );
+                spectools._parseImportInherit( as, info, raw_spec, sup_info );
 
                 info.inherits.push( raw_spec.inherit );
                 info.inherits = info.inherits.concat( sup_info.inherits );
@@ -353,7 +353,7 @@ var spectools =
 
             info.imports = raw_spec.imports.slice();
 
-            as.forEach( raw_spec.imports, function( as, k, v )
+            as.forEach( raw_spec.imports, function( as, _k, v )
             {
                 var m = v.match( iface_pattern );
 
@@ -431,7 +431,7 @@ var spectools =
 
                         as.add( function( as )
                         {
-                            spectools._parseImportInherit( as, info, specdirs, raw_spec, imp_info );
+                            spectools._parseImportInherit( as, info, raw_spec, imp_info );
                         } );
                     } );
                 } );
@@ -882,11 +882,10 @@ var spectools =
      * @private
      * @param {AsyncSteps} as - _
      * @param {object} info - _
-     * @param {array} specdirs - _
      * @param {object} raw_spec - _
      * @param {object} sup_info - _
      */
-    _parseImportInherit : function( as, info, specdirs, raw_spec, sup_info )
+    _parseImportInherit : function( as, info, raw_spec, sup_info )
     {
         var i;
         var pn;

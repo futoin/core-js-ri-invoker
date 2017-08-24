@@ -14,10 +14,10 @@ var common = require( './lib/common' );
  * @class
  * @alias CacheFace
  * @augments NativeIface
- * @param {SimpleCCM} ccm - CCM instance
+ * @param {SimpleCCM} _ccm - CCM instance
  * @param {object} info - internal info
  */
-function CacheFace( ccm, info )
+function CacheFace( _ccm, info )
 {
     NativeIface.apply( this, arguments );
     this._ttl_ms = info.options.ttl_ms || 1000;

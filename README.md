@@ -474,7 +474,7 @@ CCM close event. Fired on CCM shutdown.
 **Extends**: [<code>NativeIface</code>](#NativeIface)  
 
 * [CacheFace](#CacheFace) ⇐ [<code>NativeIface</code>](#NativeIface)
-    * [new CacheFace(ccm, info)](#new_CacheFace_new)
+    * [new CacheFace(_ccm, info)](#new_CacheFace_new)
     * _instance_
         * [.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace+getOrSet)
         * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
@@ -489,7 +489,7 @@ CCM close event. Fired on CCM shutdown.
 
 <a name="new_CacheFace_new"></a>
 
-### new CacheFace(ccm, info)
+### new CacheFace(_ccm, info)
 Cache Native interface
 
 Register with CacheFace.register()
@@ -500,7 +500,7 @@ interface, include separately
 
 | Param | Type | Description |
 | --- | --- | --- |
-| ccm | [<code>SimpleCCM</code>](#SimpleCCM) | CCM instance |
+| _ccm | [<code>SimpleCCM</code>](#SimpleCCM) | CCM instance |
 | info | <code>object</code> | internal info |
 
 <a name="CacheFace+getOrSet"></a>
