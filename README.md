@@ -37,6 +37,8 @@ Reference implementation of:
 * Spec: [FTN14: FutoIn Cache v1.x](http://specs.futoin.org/final/preview/ftn14_cache.html)
 * Spec: [FTN4: FutoIn Interface - Ping-Pong v1.x](http://specs.futoin.org/final/preview/ftn4_if_ping.html)
 
+Author: [Andrey Galkin](mailto:andrey@futoin.org)
+
 [Web Site](http://futoin.org/)
 
 # About
