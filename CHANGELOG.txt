@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.5.1 (2017-09-03) ===
 BREAKING: "any" is not allowed to be "undefined" anymore
 BREAKING: "any" is allowed to be null now
 FIXED: check failure when "any" is used in type variant or custom type
