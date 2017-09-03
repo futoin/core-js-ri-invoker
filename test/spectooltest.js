@@ -1271,32 +1271,32 @@ describe('SpecTools', function()
             this.timeout( 10e3 );
             var tests = {
                 'any' : {
-                    'ok' : [ true, false, 'yes', 1, 1.1, {}, [] ],
-                    'fail' : [ null ]
+                    'ok' : [ true, false, 'yes', 1, 1.1, {}, [], null ],
+                    'fail' : [ undefined ]
                 },
                 'string' : {
                     'ok' : [ 'yes' ],
-                    'fail' : [ true, false, 1, 1.1, {}, [], null ]
+                    'fail' : [ true, false, 1, 1.1, {}, [], null, undefined ]
                 },
                 'number' : {
                     'ok' : [ 1, 1.1, -1, 100 ],
-                    'fail' : [ true, false, 'yes', {}, [], null ]
+                    'fail' : [ true, false, 'yes', {}, [], null, undefined ]
                 },
                 'integer' : {
                     'ok' : [ 1, 2, -1 ],
-                    'fail' : [ true, false, 'yes', 1.1, {}, [], null ]
+                    'fail' : [ true, false, 'yes', 1.1, {}, [], null, undefined ]
                 },
                 'boolean' : {
                     'ok' : [ true, false ],
-                    'fail' : [ 'yes', 1, 1.1, {}, [], null ]
+                    'fail' : [ 'yes', 1, 1.1, {}, [], null, undefined ]
                 },
                 'array' : {
                     'ok' : [ [] ],
-                    'fail' : [ true, false, 'yes', 1, 1.1, {}, null ]
+                    'fail' : [ true, false, 'yes', 1, 1.1, {}, null, undefined ]
                 },
                 'map' : {
                     'ok' : [ {} ],
-                    'fail' : [ true, false, 'yes', 1, 1.1, [], null ]
+                    'fail' : [ true, false, 'yes', 1, 1.1, [], null, undefined ]
                 },
             };
             
@@ -1309,6 +1309,7 @@ describe('SpecTools', function()
                         as.add(
                             function( as ){
                                 SpecTools.checkFutoInType( as, type, type + ':fail', t );
+                                as.success(`Fail at ${type} : ${t}`);
                             },
                             function( as, err ){
                                 as.state.error_info.should.match( /^Type mismatch for parameter/ );
@@ -1401,7 +1402,8 @@ describe('SpecTools', function()
                     'DerivedVariant' : {
                         type: 'Variant',
                         min: 2,
-                    }
+                    },
+                    "AnyType" : "any",
                 }
             };
 
@@ -1477,6 +1479,10 @@ describe('SpecTools', function()
                 'DerivedVariant' : {
                     ok : [ 2, 3, 'abcde', false],
                     fail : [ 1, 4, 'abcdE', 'abc', null, {}, [] ],
+                },
+                "AnyType" : {
+                    ok: [ 1, "abc", null, true, false, 1.23, [], {} ],
+                    fail: [ undefined ],
                 }
             };
             

@@ -1014,17 +1014,12 @@ var spectools =
      */
     _checkType : function( info, type, val, _type_stack )
     {
-        if ( val === null )
-        {
-            return false;
-        }
-
         // Standard Types
         // ---
         switch ( type )
         {
         case 'any':
-            return true;
+            return ( typeof val !== 'undefined' );
 
         case 'boolean':
         case 'string':
@@ -1033,7 +1028,8 @@ var spectools =
 
         case 'map':
             return ( typeof val === 'object' ) &&
-                       !( val instanceof Array );
+                       !( val instanceof Array ) &&
+                       ( val !== null );
 
         case 'integer':
             return ( typeof val === "number" ) &&
@@ -1146,6 +1142,7 @@ var spectools =
 
             switch ( base_type )
             {
+            case 'any':
             case 'boolean':
                 return true;
 
