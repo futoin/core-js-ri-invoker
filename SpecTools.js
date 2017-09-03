@@ -330,8 +330,8 @@ var spectools =
 
             var sup_info = {};
 
-            sup_info.iface = m[ 1 ];
-            sup_info.version = m[ 4 ];
+            sup_info.iface = m[ common._ifacever_pattern_name ];
+            sup_info.version = m[ common._ifacever_pattern_ver ];
             sup_info._invoker_use = info._invoker_use;
             spectools.loadIface( as, sup_info, specdirs, load_cache );
 
@@ -364,8 +364,8 @@ var spectools =
 
                 var imp_info = {};
 
-                imp_info.iface = m[ 1 ];
-                imp_info.version = m[ 4 ];
+                imp_info.iface = m[ common._ifacever_pattern_name ];
+                imp_info.version = m[ common._ifacever_pattern_ver ];
                 imp_info._import_use = true;
                 spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
@@ -388,8 +388,8 @@ var spectools =
                     {
                         var imp_ifacever = info.imports[i];
                         var m = imp_ifacever.match( iface_pattern );
-                        var iface = m[1];
-                        var ver = m[4];
+                        var iface = m[ common._ifacever_pattern_name ];
+                        var ver = m[ common._ifacever_pattern_ver ];
                         var curr_ver = import_candidates[iface];
 
                         if ( curr_ver )

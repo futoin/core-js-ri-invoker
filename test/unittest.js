@@ -403,6 +403,47 @@ describe( 'AdvancedCCM', function()
             as.execute();
         }
     );
+    
+    it('should handle inheritted interface assert',
+        function( done ){
+            as.add(
+                function( as )
+                {
+                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
+                    
+                    as.add( function(as) {
+                        ccm.assertIface('myiface', 'fileface.a:1.1');
+                        ccm.assertIface('myiface', 'fileface.a:1.0');
+                        ccm.assertIface('myiface', 'fileface.b:3.1');
+                        ccm.assertIface('myiface', 'fileface.b:3.0');
+                    });
+                    as.forEach([
+                        'fileface.a:1.2', 'fileface.a:0.1',
+                        'fileface.b:3.2', 'fileface.b:2.1' ],
+                        function(as, i, v) {
+                            as.add(
+                                function(as) {
+                                    ccm.assertIface('myiface', v);
+                                    as.error('Fail');
+                                },
+                                function(as, err) {
+                                    if ( err !== 'Fail' ) {
+                                        as.success();
+                                    }
+                                }
+                            );
+                        }
+                    );
+                },
+                function( as, err )
+                {
+                    done( as.state.last_exception );
+                }
+            ).add( function( as ){
+                done();
+            } ).execute();
+        }
+    );
 });
 
 //============================================================================
@@ -1175,6 +1216,8 @@ describe( 'NativeIface', function()
                     try {
                         var info = ccm.iface( 'myiface' ).ifaceInfo();
                         ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+                        ccm.assertIface('myiface', 'fileface.b:3.1');
+                        ccm.assertIface('myiface', 'fileface.b:3.0');
                         
                         info.name().should.equal( 'fileface.a' );
                         info.version().should.equal( '1.1' );

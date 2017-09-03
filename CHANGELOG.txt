@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: CCM.assertIface() to handle check for inheritted interfaces
+
 === 1.4.3 (2017-08-29) ===
 NEW: upgraded to AsyncSteps v1.7 with FTN12 v1.8 support
 

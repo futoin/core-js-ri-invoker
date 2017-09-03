@@ -96,10 +96,10 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
         as.error( futoin_error.InvokerError, "Invalid ifacever" );
     }
 
-    var iface = m[ 1 ];
-    var mjrmnr = m[ 4 ];
-    var mjr = m[ 5 ];
-    var mnr = m[ 6 ];
+    var iface = m[ common._ifacever_pattern_name ];
+    var mjrmnr = m[ common._ifacever_pattern_ver ];
+    var mjr = m[ common._ifacever_pattern_mjr ];
+    var mnr = m[ common._ifacever_pattern_mnr ];
 
     var secure_channel = false;
     var impl = null;
@@ -407,16 +407,35 @@ SimpleCCMProto.assertIface = function( name, ifacever )
         throw new Error( futoin_error.InvokerError );
     }
 
-    var iface = m[ 1 ];
-    var mjr = m[ 5 ];
-    var mnr = m[ 6 ];
+    var iface = m[ common._ifacever_pattern_name ];
+    var mjr = m[ common._ifacever_pattern_mjr ];
+    var mnr = m[ common._ifacever_pattern_mnr ];
 
-    if ( ( info.iface !== iface ) ||
-         ( info.mjrver !== mjr ) ||
-         ( info.mnrver < mnr ) )
+    if ( ( info.iface === iface ) &&
+         ( info.mjrver === mjr ) &&
+         ( info.mnrver >= mnr ) )
     {
-        throw new Error( futoin_error.InvokerError );
+        return;
     }
+
+    var inherits = info.inherits;
+
+    if ( inherits )
+    {
+        for ( var i = inherits.length - 1; i >= 0; --i )
+        {
+            m = inherits[i].match( common._ifacever_pattern );
+
+            if ( ( m[ common._ifacever_pattern_name ] === iface ) &&
+                ( m[ common._ifacever_pattern_mjr ] === mjr ) &&
+                ( m[ common._ifacever_pattern_mnr ] >= mnr ) )
+            {
+                return;
+            }
+        }
+    }
+
+    throw new Error( futoin_error.InvokerError );
 };
 
 /**
