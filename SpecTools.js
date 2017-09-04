@@ -1217,10 +1217,11 @@ var spectools =
                     return false;
                 }
 
-                if ( 'elemtype' in tdef )
-                {
-                    elemtype = tdef.elemtype;
+                //--
+                elemtype = tdef.elemtype;
 
+                if ( typeof elemtype !== 'undefined' )
+                {
                     for ( var i = 0; i < val_len; ++i )
                     {
                         // Note, new type stack
@@ -1234,42 +1235,40 @@ var spectools =
                 return true;
 
             case 'map':
-                if ( !( 'fields' in tdef ) )
-                {
-                    return true;
-                }
-
                 var fields = tdef.fields;
 
-                for ( var f in fields )
+                if ( typeof fields !== 'undefined' )
                 {
-                    var field_def = fields[ f ];
-
-                    if ( typeof field_def === 'string' )
+                    for ( var f in fields )
                     {
-                        field_def = { type : field_def };
-                    }
+                        var field_def = fields[ f ];
 
-                    if ( !( f in val ) ||
-                             ( val[ f ] === null ) )
-                    {
-                        if ( field_def.optional )
+                        if ( typeof field_def === 'string' )
                         {
-                            val[ f ] = null;
-                            return true;
+                            field_def = { type : field_def };
                         }
-                    }
 
-                    if ( !this._checkType( info, field_def.type, val[ f ], null ) )
-                    {
-                        return false;
+                        if ( !( f in val ) ||
+                                ( val[ f ] === null ) )
+                        {
+                            if ( field_def.optional )
+                            {
+                                val[ f ] = null;
+                                return true;
+                            }
+                        }
+
+                        if ( !this._checkType( info, field_def.type, val[ f ], null ) )
+                        {
+                            return false;
+                        }
                     }
                 }
 
-                if ( 'elemtype' in tdef )
-                {
-                    elemtype = tdef.elemtype;
+                elemtype = tdef.elemtype;
 
+                if ( typeof elemtype !== 'undefined' )
+                {
                     for ( var ft in val )
                     {
                         if ( !this._checkType( info, elemtype, val[ ft ], null ) )

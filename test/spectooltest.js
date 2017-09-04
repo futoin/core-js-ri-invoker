@@ -1409,6 +1409,11 @@ describe('SpecTools', function()
                         fields: {
                             f: "AnyType",
                         },
+                    },
+                    "Array" : {
+                        type: "array",
+                        elemtype: "Int",
+                        maxlen: 3,
                     }
                 }
             };
@@ -1457,7 +1462,7 @@ describe('SpecTools', function()
                 },
                 'MapElemType' : {
                     ok: [ { 'int':1 }, { 'int':3 } ],
-                    fail: [ { 'int':5, 'string':'abcde' }, { 'int': 4 }  ]
+                    fail: [ { 'int':5, 'string':'abcde' }, { 'int': 4 }, { string: 'abcde' } ]
                 },
                 'DerivedIntMinMax' : {
                     ok : [ -2, 1, 3 ],
@@ -1493,6 +1498,10 @@ describe('SpecTools', function()
                 "MapAny" : {
                     ok: [ { f: null }, { f: false }, { f: 1 } ],
                     fail: [ {}, { f: undefined } ]
+                },
+                "Array" : {
+                    ok: [ [], [1], [1, 2, 3] ],
+                    fail: [ [1,2,3,4], null, undefined, true ],
                 }
             };
             
