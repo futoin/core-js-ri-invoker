@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to allow "null" as value of "any" typed field in "map"
+
 === 1.5.1 (2017-09-03) ===
 BREAKING: "any" is not allowed to be "undefined" anymore
 BREAKING: "any" is allowed to be null now

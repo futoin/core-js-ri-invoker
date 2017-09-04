@@ -1404,6 +1404,12 @@ describe('SpecTools', function()
                         min: 2,
                     },
                     "AnyType" : "any",
+                    "MapAny" : {
+                        type: 'map',
+                        fields: {
+                            f: "AnyType",
+                        },
+                    }
                 }
             };
 
@@ -1483,6 +1489,10 @@ describe('SpecTools', function()
                 "AnyType" : {
                     ok: [ 1, "abc", null, true, false, 1.23, [], {} ],
                     fail: [ undefined ],
+                },
+                "MapAny" : {
+                    ok: [ { f: null }, { f: false }, { f: 1 } ],
+                    fail: [ {}, { f: undefined } ]
                 }
             };
             

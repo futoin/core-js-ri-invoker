@@ -1258,8 +1258,6 @@ var spectools =
                             val[ f ] = null;
                             return true;
                         }
-
-                        return false;
                     }
 
                     if ( !this._checkType( info, field_def.type, val[ f ], null ) )
