@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.5.2 (2017-09-04) ===
 SECURITY: fixed ignored "elemtype" of map, if "fields" is not set
 FIXED: to allow "null" as value of "any" typed field in "map"
 
