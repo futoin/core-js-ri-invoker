@@ -1230,6 +1230,7 @@ cache v1.x iface name prefix
     * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>
     * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
+    * ["error"](#SpecTools.event_error)
 
 <a name="new_SpecTools_new"></a>
 
@@ -1351,6 +1352,12 @@ NOTE: for simplicity, 'sec' field must not be present
 | info | <code>object</code> | Interface raw info object |
 | ftnreq | <code>object</code> | Request Object |
 
+<a name="SpecTools.event_error"></a>
+
+### "error"
+On error message for details in debugging.
+
+**Kind**: event emitted by [<code>SpecTools</code>](#SpecTools)  
 <a name="AdvancedCCMOptions"></a>
 
 ## AdvancedCCMOptions ⇐ [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)

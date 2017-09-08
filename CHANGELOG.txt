@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: added SpecTool.error event for more descriptive error reporting
+
 === 1.5.3 (2017-09-04) ===
 FIXED: added workaround for NPM: https://github.com/npm/npm/issues/16723
 

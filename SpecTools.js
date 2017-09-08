@@ -10,6 +10,7 @@ var _cloneDeep = require( 'lodash/cloneDeep' );
 var _zipObject = require( 'lodash/zipObject' );
 var _difference = require( 'lodash/difference' );
 var _extend = require( 'lodash/extend' );
+var ee = require( 'event-emitter' );
 
 if ( isNode )
 {
@@ -1139,6 +1140,7 @@ var spectools =
             }
 
             var elemtype;
+            var val_len;
 
             switch ( base_type )
             {
@@ -1151,12 +1153,18 @@ var spectools =
                 if ( ( 'min' in tdef ) &&
                          ( val < tdef.min ) )
                 {
+                    spectools.emit( 'error',
+                        'Value min range mismatch for ' + type );
+
                     return false;
                 }
 
                 if ( ( 'max' in tdef ) &&
                          ( val > tdef.max ) )
                 {
+                    spectools.emit( 'error',
+                        'Value max range mismatch for ' + type );
+
                     return false;
                 }
 
@@ -1184,36 +1192,53 @@ var spectools =
 
                     if ( val.match( comp_regex[ type ] ) === null )
                     {
+                        spectools.emit( 'error',
+                            'Regex mismatch mismatch for ' + type );
+
                         return false;
                     }
                 }
 
-                if ( ( 'minlen' in tdef ) &&
-                         ( val.length < tdef.minlen ) )
-                {
-                    return false;
-                }
-
-                if ( ( 'maxlen' in tdef ) &&
-                         ( val.length > tdef.maxlen ) )
-                {
-                    return false;
-                }
-
-                return true;
-
-            case 'array':
-                var val_len = val.length;
+                val_len = val.length;
 
                 if ( ( 'minlen' in tdef ) &&
                          ( val_len < tdef.minlen ) )
                 {
+                    spectools.emit( 'error',
+                        'Value min length' + val_len+ ' mismatch for ' + type );
+
                     return false;
                 }
 
                 if ( ( 'maxlen' in tdef ) &&
                          ( val_len > tdef.maxlen ) )
                 {
+                    spectools.emit( 'error',
+                        'Value max length' + val_len + ' mismatch for ' + type );
+
+                    return false;
+                }
+
+                return true;
+
+            case 'array':
+                val_len = val.length;
+
+                if ( ( 'minlen' in tdef ) &&
+                         ( val_len < tdef.minlen ) )
+                {
+                    spectools.emit( 'error',
+                        'Value min length' + val_len + ' mismatch for ' + type );
+
+                    return false;
+                }
+
+                if ( ( 'maxlen' in tdef ) &&
+                         ( val_len > tdef.maxlen ) )
+                {
+                    spectools.emit( 'error',
+                        'Value max length' + val_len + ' mismatch for ' + type );
+
                     return false;
                 }
 
@@ -1227,6 +1252,9 @@ var spectools =
                         // Note, new type stack
                         if ( !this._checkType( info, elemtype, val[ i ], null ) )
                         {
+                            spectools.emit( 'error',
+                                'Value ' + val[ i ] + ' mismatch for ' + type );
+
                             return false;
                         }
                     }
@@ -1260,6 +1288,10 @@ var spectools =
 
                         if ( !this._checkType( info, field_def.type, val[ f ], null ) )
                         {
+                            spectools.emit( 'error',
+                                'Field ' + f + ' value ' + val[ f ] +
+                                ' mismatch for ' + type );
+
                             return false;
                         }
                     }
@@ -1273,6 +1305,9 @@ var spectools =
                     {
                         if ( !this._checkType( info, elemtype, val[ ft ], null ) )
                         {
+                            spectools.emit( 'error',
+                                'Value ' + val[ ft ] + ' mismatch for ' + type );
+
                             return false;
                         }
                     }
@@ -1301,6 +1336,7 @@ var spectools =
 
                     if ( typeof set_items === 'undefined' )
                     {
+                        spectools.emit( 'error', 'No set items for: ' + type );
                         return false;
                     }
 
@@ -1323,8 +1359,10 @@ var spectools =
 
                     if ( ( !this._checkType( info, 'string', iv ) &&
                                !this._checkType( info, 'integer', iv ) ) ||
-                             !set_items.hasOwnProperty( val[ii] ) )
+                             !set_items.hasOwnProperty( iv ) )
                     {
+                        spectools.emit( 'error',
+                            'No set item ' + iv + ' for ' + type );
                         return false;
                     }
                 }
@@ -1375,7 +1413,10 @@ var spectools =
 
         if ( !spectools._checkType( info, vartype, value ) )
         {
-            as.error( FutoInError.InvalidRequest, "Type mismatch for result: " + varname );
+            var msg = "Type mismatch for result: " + varname;
+
+            spectools.emit( 'error', msg );
+            as.error( FutoInError.InvalidRequest, msg );
         }
     },
 
@@ -1392,7 +1433,10 @@ var spectools =
     {
         if ( !spectools._checkType( {}, type, value ) )
         {
-            as.error( FutoInError.InvalidRequest, "Type mismatch for parameter: " + varname );
+            var msg = "Type mismatch for parameter: " + varname;
+
+            spectools.emit( 'error', msg );
+            as.error( FutoInError.InvalidRequest, msg );
         }
     },
 
@@ -1420,5 +1464,12 @@ if ( isNode )
 {
     module.require( './lib/node/spectools_hmac' )( spectools );
 }
+
+ee( spectools );
+
+/**
+ * On error message for details in debugging.
+ * @event SpecTools.error
+ */
 
 module.exports = spectools;
