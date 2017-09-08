@@ -1282,7 +1282,7 @@ var spectools =
                             if ( field_def.optional )
                             {
                                 val[ f ] = null;
-                                return true;
+                                continue;
                             }
                         }
 

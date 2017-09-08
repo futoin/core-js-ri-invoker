@@ -1,5 +1,6 @@
 
 === (next) ===
+SECURITY: fixed partial map check on skipped optional field
 NEW: added SpecTool.error event for more descriptive error reporting
 
 === 1.5.3 (2017-09-04) ===
