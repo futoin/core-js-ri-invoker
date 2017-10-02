@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.5.5 (2017-10-02) ===
 FIXED: to check HTTP status code in browser requests
     - affectes use of SimpleCCM with generic HTTP failures
 
