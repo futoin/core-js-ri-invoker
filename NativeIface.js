@@ -44,7 +44,7 @@ function NativeIface( ccmimpl, info )
 
 /**
  * Must be object with version => spec pairs in child class, if set.
- * 
+ *
  * @alias NativeIface._specs
  */
 NativeIface._specs = null;
@@ -54,7 +54,7 @@ NativeIface._specs = null;
  *
  * If version 1.0 is requested then spec is loaded from
  * 'MyModule/specs/name_1_0'
- * 
+ *
  * @alias NativeIface._specs_module_prefix
  */
 NativeIface._specs_module_prefix = null;
