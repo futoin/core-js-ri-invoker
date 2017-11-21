@@ -3,6 +3,7 @@
 FIXED: major rework of type checking in SpecTools (more clean & reliable now)
     - makes sure derived types override base type contraints
     - allows enum to be part of variant (previously failed in some scenarios)
+NEW: added dump of parameter value on client-side request check failure
 
 === 1.5.5 (2017-10-02) ===
 FIXED: to check HTTP status code in browser requests
