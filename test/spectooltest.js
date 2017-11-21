@@ -33,6 +33,8 @@ else
 
 var SpecTools = invoker.SpecTools;
 
+// SpecTools.on('error', function() { console.log( arguments ) } );
+
 describe('SpecTools', function()
 {
     beforeEach(function(){
@@ -361,6 +363,7 @@ describe('SpecTools', function()
                         }
                     };
                     SpecTools.loadIface( as, info, [ iface ] );
+                    as.add( (as) => as.success('Fail') );
                 },
                 function( as, err )
                 {
@@ -1543,7 +1546,7 @@ describe('SpecTools', function()
         var iface = {
             iface: 'some.face',
             version: '1.0',
-            ftn3rev: '1.4',
+            ftn3rev: '1.7',
             funcs: {
                 test: {
                     params: {
@@ -1580,6 +1583,7 @@ describe('SpecTools', function()
                 done();
             },
             function( as, err ){
+                console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).execute();
@@ -1624,6 +1628,7 @@ describe('SpecTools', function()
                 SpecTools.loadIface( as, info, [ iface ] );
             },
             function( as, err ){
+                console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).add(
@@ -1634,17 +1639,18 @@ describe('SpecTools', function()
                 done();
             },
             function( as, err ){
+                console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).execute();
     });
     
-    it('should allow custom result type', function(){
+    it('should allow custom result type', function(done){
         this.timeout( 5e3 );
         var iface = {
             iface: 'some.face',
             version: '1.0',
-            ftn3rev: '1.4',
+            ftn3rev: '1.7',
             funcs: {
                 test: {
                     params: {
@@ -1671,6 +1677,7 @@ describe('SpecTools', function()
                 SpecTools.loadIface( as, info, [ iface ] );
             },
             function( as, err ){
+                console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).add(
@@ -1679,6 +1686,51 @@ describe('SpecTools', function()
                 SpecTools.checkParameterType(info, "test", "nullable", null).should.be.true;
                 SpecTools.checkParameterType(info, "test", "required", "abc").should.be.true;
                 SpecTools.checkParameterType(info, "test", "required", null).should.be.false;
+                done();
+            },
+            function( as, err ){
+                done( as.state.last_exception );
+            }
+        ).execute();
+    });
+    
+    it('should allow enum in variant', function(done){
+        var iface = {
+            iface: 'some.face',
+            version: '1.0',
+            ftn3rev: '1.6',
+            types: {
+                MyEnum: {
+                    type: "enum",
+                    items: [ '11', '22', 33 ]
+                },
+                MyString: {
+                    type: "string",
+                    minlen: 3,
+                    maxlen: 16,
+                },
+                MyVariant: [ 'MyString', 'MyEnum' ]
+            }
+        };
+
+        var info = {
+            iface: iface.iface,
+            version: iface.version
+        };
+        
+        as.add(
+            function( as ){
+                SpecTools.loadIface( as, info, [ iface ] );
+            },
+            function( as, err ){
+                done( as.state.last_exception || 'Fail' );
+            }
+        ).add(
+            function( as ){
+                SpecTools.checkType(info, "MyVariant", '22').should.be.true;
+                SpecTools.checkType(info, "MyVariant", '444').should.be.true;
+                SpecTools.checkType(info, "MyVariant", 44).should.be.false;
+                SpecTools.checkType(info, "MyVariant", 33).should.be.true;
                 done();
             },
             function( as, err ){

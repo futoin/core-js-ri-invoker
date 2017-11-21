@@ -1,4 +1,9 @@
 
+=== (next) ===
+FIXED: major rework of type checking in SpecTools (more clean & reliable now)
+    - makes sure derived types override base type contraints
+    - allows enum to be part of variant (previously failed in some scenarios)
+
 === 1.5.5 (2017-10-02) ===
 FIXED: to check HTTP status code in browser requests
     - affectes use of SimpleCCM with generic HTTP failures

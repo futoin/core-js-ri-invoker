@@ -1015,6 +1015,12 @@ var spectools =
      */
     _checkType : function( info, type, val, _type_stack )
     {
+        _type_stack = _type_stack || {};
+        var tdef = _type_stack[ '#tdef' ] || {};
+        var top_type = _type_stack[ '#top' ] || type;
+        var elemtype;
+        var val_len;
+
         // Standard Types
         // ---
         switch ( type )
@@ -1023,355 +1029,325 @@ var spectools =
             return ( typeof val !== 'undefined' );
 
         case 'boolean':
-        case 'string':
-        case 'number':
             return ( typeof val === type );
 
+        case 'string':
+            if ( typeof val !== type )
+            {
+                return false;
+            }
+
+            if ( 'regex' in tdef )
+            {
+                var comp_regex;
+
+                if ( '_comp_regex' in info )
+                {
+                    comp_regex = info._comp_regex;
+                }
+                else
+                {
+                    comp_regex = {};
+                    info._comp_regex = comp_regex;
+                }
+
+                if ( !( top_type in comp_regex ) )
+                {
+                    comp_regex[ top_type ] = new RegExp( tdef.regex );
+                }
+
+                if ( val.match( comp_regex[ top_type ] ) === null )
+                {
+                    spectools.emit( 'error',
+                        'Regex mismatch mismatch for ' + top_type );
+
+                    return false;
+                }
+            }
+
+            val_len = val.length;
+
+            if ( ( 'minlen' in tdef ) &&
+                        ( val_len < tdef.minlen ) )
+            {
+                spectools.emit( 'error',
+                    'Value min length' + val_len+ ' mismatch for ' + top_type );
+
+                return false;
+            }
+
+            if ( ( 'maxlen' in tdef ) &&
+                        ( val_len > tdef.maxlen ) )
+            {
+                spectools.emit( 'error',
+                    'Value max length' + val_len + ' mismatch for ' + top_type );
+
+                return false;
+            }
+
+            return true;
+
         case 'map':
-            return ( typeof val === 'object' ) &&
-                       !( val instanceof Array ) &&
-                       ( val !== null );
+            if ( ( typeof val !== 'object' ) ||
+                 ( val instanceof Array ) ||
+                 ( val === null )
+            )
+            {
+                return false;
+            }
+
+            var fields = tdef.fields;
+
+            if ( typeof fields !== 'undefined' )
+            {
+                for ( var f in fields )
+                {
+                    var field_def = fields[ f ];
+
+                    if ( typeof field_def === 'string' )
+                    {
+                        field_def = { type : field_def };
+                    }
+
+                    if ( !( f in val ) ||
+                            ( val[ f ] === null ) )
+                    {
+                        if ( field_def.optional )
+                        {
+                            val[ f ] = null;
+                            continue;
+                        }
+                    }
+
+                    if ( !this._checkType( info, field_def.type, val[ f ], null ) )
+                    {
+                        spectools.emit( 'error',
+                            'Field ' + f + ' value ' + val[ f ] +
+                            ' mismatch for ' + top_type );
+
+                        return false;
+                    }
+                }
+            }
+
+            elemtype = tdef.elemtype;
+
+            if ( typeof elemtype !== 'undefined' )
+            {
+                for ( var ft in val )
+                {
+                    if ( !this._checkType( info, elemtype, val[ ft ], null ) )
+                    {
+                        spectools.emit( 'error',
+                            'Value ' + val[ ft ] + ' mismatch for ' + top_type );
+
+                        return false;
+                    }
+                }
+            }
+
+            return true;
 
         case 'integer':
-            return ( typeof val === "number" ) &&
-                       ( ( val | 0 ) === val );
+        case 'number':
+            if ( typeof val !== 'number' )
+            {
+                return false;
+            }
+
+            if ( ( type === 'integer' ) && ( ( val | 0 ) !== val ) )
+            {
+                return false;
+            }
+
+            if ( ( 'min' in tdef ) &&
+                        ( val < tdef.min ) )
+            {
+                spectools.emit( 'error',
+                    'Value min range mismatch for ' + top_type );
+
+                return false;
+            }
+
+            if ( ( 'max' in tdef ) &&
+                        ( val > tdef.max ) )
+            {
+                spectools.emit( 'error',
+                    'Value max range mismatch for ' + top_type );
+
+                return false;
+            }
+
+            return true;
 
         case 'array':
-            return ( val instanceof Array );
+            if ( !( val instanceof Array ) )
+            {
+                return false;
+            }
+
+            val_len = val.length;
+
+            if ( ( 'minlen' in tdef ) &&
+                        ( val_len < tdef.minlen ) )
+            {
+                spectools.emit( 'error',
+                    'Value min length' + val_len + ' mismatch for ' + top_type );
+
+                return false;
+            }
+
+            if ( ( 'maxlen' in tdef ) &&
+                        ( val_len > tdef.maxlen ) )
+            {
+                spectools.emit( 'error',
+                    'Value max length' + val_len + ' mismatch for ' + top_type );
+
+                return false;
+            }
+
+            //--
+            elemtype = tdef.elemtype;
+
+            if ( typeof elemtype !== 'undefined' )
+            {
+                for ( var i = 0; i < val_len; ++i )
+                {
+                    // Note, new type stack
+                    if ( !this._checkType( info, elemtype, val[ i ], null ) )
+                    {
+                        spectools.emit( 'error',
+                            'Value ' + val[ i ] + ' mismatch for ' + top_type );
+
+                        return false;
+                    }
+                }
+            }
+
+            return true;
 
         case 'enum':
         case 'set':
             if ( _type_stack )
             {
-                if ( type === 'enum' )
-                {
-                    return true;
-                }
-                else
-                {
-                    return ( val instanceof Array );
-                }
-            }
-
-            console.log( "[ERROR] enum and set are allowed only in custom types" );
-            return false;
-
-        default:
-            if ( !( 'types' in info ) ||
-                     !( type in info.types ) )
-            {
-                return false;
-            }
-                // continue;
-        }
-
-        // Custom Types
-        // ---
-        if ( type in info.types )
-        {
-            var tdef = info.types[ type ];
-
-            if ( ( typeof tdef === 'string' ) ||
-                 ( tdef instanceof Array ) )
-            {
-                tdef = { type : tdef };
-            }
-
-            var topmost = !_type_stack;
-
-            _type_stack = _type_stack || {};
-
-            // ---
-            if ( type in _type_stack )
-            {
-                if ( console )
-                {
-                    console.log( "[ERROR] Custom type recursion: " + tdef.type );
-                }
-
-                throw new Error( FutoInError.InternalError );
-            }
-
-            _type_stack[ type ] = true;
-
-            // ---
-            var base_type = tdef.type;
-
-            if ( base_type instanceof Array )
-            {
-                _type_stack[ '#last_base' ] = null;
-
-                for ( var vti = base_type.length - 1; vti >= 0; --vti )
-                {
-                    var vtype = base_type[vti];
-                    var new_type_stack = Object.create( _type_stack );
-
-                    new_type_stack['#last_base'] = vtype;
-
-                    if ( this._checkType( info, vtype, val, new_type_stack ) )
-                    {
-                        _extend( _type_stack, new_type_stack );
-                        break;
-                    }
-                }
-
-                if ( !_type_stack[ '#last_base' ] )
+                if ( type === 'set' && !( val instanceof Array ) )
                 {
                     return false;
                 }
             }
             else
             {
-                _type_stack[ '#last_base' ] = base_type;
+                console.log( "[ERROR] enum and set are allowed only in custom types: " + top_type );
+                throw new Error( FutoInError.InternalError );
+            }
 
-                if ( !this._checkType( info, base_type, val, _type_stack ) )
+            var comp_set;
+            var set_items;
+
+            if ( '_comp_set' in info )
+            {
+                comp_set = info._comp_set;
+            }
+            else
+            {
+                comp_set = {};
+                info._comp_set = comp_set;
+            }
+
+            if ( !( top_type in comp_set ) )
+            {
+                set_items = tdef.items;
+
+                if ( typeof set_items === 'undefined' )
                 {
+                    console.log( "[ERROR] enum and set require items: " + top_type );
+                    throw new Error( FutoInError.InternalError );
+                }
+
+                set_items = _zipObject( set_items, set_items );
+                comp_set[ top_type ] = set_items;
+            }
+            else
+            {
+                set_items = comp_set[ top_type ];
+            }
+
+            if ( type === 'enum' )
+            {
+                val = [ val ];
+            }
+
+            for ( var ii = val.length - 1; ii >= 0; --ii )
+            {
+                var iv = val[ii];
+
+                if ( ( !this._checkType( info, 'string', iv ) &&
+                            !this._checkType( info, 'integer', iv ) ) ||
+                            !set_items.hasOwnProperty( iv ) )
+                {
+                    spectools.emit( 'error',
+                        'No set item ' + iv + ' for ' + top_type );
                     return false;
                 }
             }
 
-            base_type = _type_stack[ '#last_base' ];
-            tdef = _extend( _type_stack[ '#tdef' ] || {}, tdef );
+            return true;
 
-            if ( !topmost )
+        default:
+            // Custom Types
+            // ---
+            if ( type in info.types )
             {
-                _type_stack[ '#tdef' ] = tdef;
-                return true;
+                var tdef_part = info.types[ type ];
+
+                if ( ( typeof tdef_part === 'string' ) ||
+                    ( tdef_part instanceof Array ) )
+                {
+                    tdef_part = { type : tdef_part };
+                }
+
+                _type_stack[ '#tdef' ] = _extend( {}, tdef_part, tdef );
+                _type_stack[ '#top' ] = top_type;
+
+                // ---
+                if ( type in _type_stack )
+                {
+                    console.log( "[ERROR] Custom type recursion: " + top_type );
+                    throw new Error( FutoInError.InternalError );
+                }
+
+                _type_stack[ type ] = true;
+
+                // ---
+                var base_type = tdef_part.type;
+
+                if ( base_type instanceof Array )
+                {
+                    for ( var vti = base_type.length - 1; vti >= 0; --vti )
+                    {
+                        var vtype = base_type[vti];
+                        var new_type_stack = _extend( {}, _type_stack );
+
+                        if ( this._checkType( info, vtype, val, new_type_stack ) )
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+                else
+                {
+                    _type_stack['#last_base'] = base_type; // see FTN3 rev check
+                    return this._checkType( info, base_type, val, _type_stack );
+                }
             }
-
-            var elemtype;
-            var val_len;
-
-            switch ( base_type )
+            else
             {
-            case 'any':
-            case 'boolean':
-                return true;
-
-            case 'integer':
-            case 'number':
-                if ( ( 'min' in tdef ) &&
-                         ( val < tdef.min ) )
-                {
-                    spectools.emit( 'error',
-                        'Value min range mismatch for ' + type );
-
-                    return false;
-                }
-
-                if ( ( 'max' in tdef ) &&
-                         ( val > tdef.max ) )
-                {
-                    spectools.emit( 'error',
-                        'Value max range mismatch for ' + type );
-
-                    return false;
-                }
-
-                return true;
-
-            case 'string':
-                if ( 'regex' in tdef )
-                {
-                    var comp_regex;
-
-                    if ( '_comp_regex' in info )
-                    {
-                        comp_regex = info._comp_regex;
-                    }
-                    else
-                    {
-                        comp_regex = {};
-                        info._comp_regex = comp_regex;
-                    }
-
-                    if ( !( type in comp_regex ) )
-                    {
-                        comp_regex[ type ] = new RegExp( tdef.regex );
-                    }
-
-                    if ( val.match( comp_regex[ type ] ) === null )
-                    {
-                        spectools.emit( 'error',
-                            'Regex mismatch mismatch for ' + type );
-
-                        return false;
-                    }
-                }
-
-                val_len = val.length;
-
-                if ( ( 'minlen' in tdef ) &&
-                         ( val_len < tdef.minlen ) )
-                {
-                    spectools.emit( 'error',
-                        'Value min length' + val_len+ ' mismatch for ' + type );
-
-                    return false;
-                }
-
-                if ( ( 'maxlen' in tdef ) &&
-                         ( val_len > tdef.maxlen ) )
-                {
-                    spectools.emit( 'error',
-                        'Value max length' + val_len + ' mismatch for ' + type );
-
-                    return false;
-                }
-
-                return true;
-
-            case 'array':
-                val_len = val.length;
-
-                if ( ( 'minlen' in tdef ) &&
-                         ( val_len < tdef.minlen ) )
-                {
-                    spectools.emit( 'error',
-                        'Value min length' + val_len + ' mismatch for ' + type );
-
-                    return false;
-                }
-
-                if ( ( 'maxlen' in tdef ) &&
-                         ( val_len > tdef.maxlen ) )
-                {
-                    spectools.emit( 'error',
-                        'Value max length' + val_len + ' mismatch for ' + type );
-
-                    return false;
-                }
-
-                //--
-                elemtype = tdef.elemtype;
-
-                if ( typeof elemtype !== 'undefined' )
-                {
-                    for ( var i = 0; i < val_len; ++i )
-                    {
-                        // Note, new type stack
-                        if ( !this._checkType( info, elemtype, val[ i ], null ) )
-                        {
-                            spectools.emit( 'error',
-                                'Value ' + val[ i ] + ' mismatch for ' + type );
-
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-
-            case 'map':
-                var fields = tdef.fields;
-
-                if ( typeof fields !== 'undefined' )
-                {
-                    for ( var f in fields )
-                    {
-                        var field_def = fields[ f ];
-
-                        if ( typeof field_def === 'string' )
-                        {
-                            field_def = { type : field_def };
-                        }
-
-                        if ( !( f in val ) ||
-                                ( val[ f ] === null ) )
-                        {
-                            if ( field_def.optional )
-                            {
-                                val[ f ] = null;
-                                continue;
-                            }
-                        }
-
-                        if ( !this._checkType( info, field_def.type, val[ f ], null ) )
-                        {
-                            spectools.emit( 'error',
-                                'Field ' + f + ' value ' + val[ f ] +
-                                ' mismatch for ' + type );
-
-                            return false;
-                        }
-                    }
-                }
-
-                elemtype = tdef.elemtype;
-
-                if ( typeof elemtype !== 'undefined' )
-                {
-                    for ( var ft in val )
-                    {
-                        if ( !this._checkType( info, elemtype, val[ ft ], null ) )
-                        {
-                            spectools.emit( 'error',
-                                'Value ' + val[ ft ] + ' mismatch for ' + type );
-
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-
-            case 'enum':
-            case 'set':
-                var comp_set;
-                var set_items;
-
-                if ( '_comp_set' in info )
-                {
-                    comp_set = info._comp_set;
-                }
-                else
-                {
-                    comp_set = {};
-                    info._comp_set = comp_set;
-                }
-
-                if ( !( type in comp_set ) )
-                {
-                    set_items = tdef.items;
-
-                    if ( typeof set_items === 'undefined' )
-                    {
-                        spectools.emit( 'error', 'No set items for: ' + type );
-                        return false;
-                    }
-
-                    set_items = _zipObject( set_items, set_items );
-                    comp_set[ type ] = set_items;
-                }
-                else
-                {
-                    set_items = comp_set[ type ];
-                }
-
-                if ( base_type === 'enum' )
-                {
-                    val = [ val ];
-                }
-
-                for ( var ii = val.length - 1; ii >= 0; --ii )
-                {
-                    var iv = val[ii];
-
-                    if ( ( !this._checkType( info, 'string', iv ) &&
-                               !this._checkType( info, 'integer', iv ) ) ||
-                             !set_items.hasOwnProperty( iv ) )
-                    {
-                        spectools.emit( 'error',
-                            'No set item ' + iv + ' for ' + type );
-                        return false;
-                    }
-                }
-
-                return true;
+                console.log( "[ERROR] missing type: " + type );
+                throw new Error( FutoInError.InternalError );
             }
         }
-
-        return false;
     },
 
     /**
