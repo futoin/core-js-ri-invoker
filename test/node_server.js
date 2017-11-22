@@ -1,8 +1,10 @@
-var http = require('http');
+'use strict';
+
+var http = require( 'http' );
 var url = require( 'url' );
-var WebSocket = require('faye-websocket');
+var WebSocket = require( 'faye-websocket' );
 var processServerRequest = require( './server_func' );
-var enableDestroy = require('server-destroy');
+var enableDestroy = require( 'server-destroy' );
 var httpsrv = null;
 var wssrv = null;
 
@@ -15,13 +17,13 @@ function processTestServerRequest( request, data )
     if ( request && request.url !== '/ftn' )
     {
         var parsed_url = url.parse( request.url, true );
-        var path = parsed_url.pathname.split('/');
-        
+        var path = parsed_url.pathname.split( '/' );
+
         freq = {
             f : path[2] + ':' + path[3] + ':' + path[4],
-            p : parsed_url.query
+            p : parsed_url.query,
         };
-        
+
         if ( path[5] )
         {
             freq.sec = path[5];
@@ -38,7 +40,7 @@ function processTestServerRequest( request, data )
             return { e : 'InvalidReuquest' };
         }
     }
-    
+
     return processServerRequest( freq, data );
 }
 
@@ -50,15 +52,18 @@ function createTestHttpServer( cb )
         return;
     }
 
-    httpsrv = http.createServer(function (request, response) {
+    httpsrv = http.createServer( function( request, response )
+    {
         var freq = [];
-        
+
         request.connection.setTimeout( 100 );
-        
-        request.on( "data",function( chunk ) {
+
+        request.on( "data", function( chunk )
+        {
             freq.push( chunk );
         } );
-        request.on( "end",function(){
+        request.on( "end", function()
+        {
             if ( freq.length )
             {
                 if ( freq.length > 1 )
@@ -74,9 +79,9 @@ function createTestHttpServer( cb )
             {
                 freq = '';
             }
-            
+
             var frsp;
-            
+
             if ( request.method !== 'OPTIONS' )
             {
                 frsp = processTestServerRequest( request, freq );
@@ -91,11 +96,12 @@ function createTestHttpServer( cb )
             {
                 frsp = '';
             }
+
             var content_type;
-            
+
             if ( typeof frsp !== 'string' )
             {
-                if (typeof frsp === 'boolean')
+                if ( typeof frsp === 'boolean' )
                 {
                     frsp = { r : frsp };
                 }
@@ -108,7 +114,7 @@ function createTestHttpServer( cb )
                 {
                     frsp = { r : frsp };
                 }
-                
+
                 frsp = JSON.stringify( frsp );
                 content_type = 'application/futoin+json';
             }
@@ -116,19 +122,19 @@ function createTestHttpServer( cb )
             {
                 content_type = 'application/octet-stream';
             }
-            
+
             response.writeHead( 200, {
                 'Content-Type' : content_type,
                 'Content-Length' : Buffer.byteLength( frsp, 'utf8' ),
                 'Access-Control-Allow-Origin' : '*',
                 'Access-Control-Allow-Methods' : 'POST',
-                'Access-Control-Allow-Headers' : 'Content-Type'
-                
+                'Access-Control-Allow-Headers' : 'Content-Type',
+
             } );
             response.write( frsp, 'utf8' );
             response.end();
-        });
-    });
+        } );
+    } );
     httpsrv.listen( 23456, '127.0.0.1', 10, cb );
 
     httpsrv.on( 'upgrade', function( req, sock, body )
@@ -137,40 +143,42 @@ function createTestHttpServer( cb )
         {
             return;
         }
-        
+
         if ( !req.url.match( /^\/ftn/ ) )
         {
             return;
         }
-        
+
         var ws = new WebSocket( req, sock, body );
-        
+
         var req_close = function()
         {
             ws.close();
-        }
-        
+        };
+
         httpsrv.once( 'close', req_close );
         httpsrv.once( 'preclose', req_close );
-        ws.on('close', function(){
+        ws.on( 'close', function()
+        {
             if ( httpsrv )
             {
                 httpsrv.removeListener( 'close', req_close );
                 httpsrv.removeListener( 'preclose', req_close );
             }
-        });
+        } );
 
-        ws.on('message', function( event ){
+        ws.on( 'message', function( event )
+        {
             var msg = event.data;
             var frsp = processTestServerRequest( null, msg );
-            
+
             if ( frsp === null )
             {
                 sock.destroy();
                 return;
             }
-         
-            if (typeof frsp === 'boolean')
+
+            if ( typeof frsp === 'boolean' )
             {
                 frsp = { r : frsp };
             }
@@ -183,16 +191,16 @@ function createTestHttpServer( cb )
             {
                 frsp = { r : frsp };
             }
-            
+
             msg = JSON.parse( msg );
             frsp.rid = msg.rid;
 
             frsp = JSON.stringify( frsp );
             ws.send( frsp );
-        });
+        } );
     } );
-    
-    enableDestroy(httpsrv);
+
+    enableDestroy( httpsrv );
 }
 
 function closeTestHttpServer( done )
@@ -202,7 +210,10 @@ function closeTestHttpServer( done )
         try
         {
             httpsrv.emit( 'preclose' );
-            httpsrv.close( function(){ done(); } );
+            httpsrv.close( function()
+            {
+                done();
+            } );
             httpsrv.destroy();
             httpsrv = null;
         }
@@ -224,9 +235,11 @@ exports.closeTestHttpServer = closeTestHttpServer;
 
 if ( require.main === module )
 {
-    createTestHttpServer(function(){
-        console.log('LISTENING');
-    });
+    createTestHttpServer( function()
+    {
+        console.log( 'LISTENING' );
+    } );
     var hidereq = require;
+
     hidereq( 'chai' ).should();
 }

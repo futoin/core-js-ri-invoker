@@ -1,10 +1,14 @@
+'use strict';
 
 var expect;
 
-if ( typeof chai !== 'undefined' ) {
+if ( typeof chai !== 'undefined' )
+{
     expect = chai.expect;
-} else {
-    expect = require('chai').expect;
+}
+else
+{
+    expect = require( 'chai' ).expect;
 }
 
 
@@ -14,7 +18,7 @@ var cached_value;
 
 function processServerRequest( freq, data )
 {
-    var func = freq.f.split(':');
+    var func = freq.f.split( ':' );
 
     if ( func.length !== 3 )
     {
@@ -57,36 +61,38 @@ function processServerRequest( freq, data )
         }
         else
         {
-            return { e : 'InvalidRequest', edesc: JSON.stringify( freq ) };
+            return { e : 'InvalidRequest',
+                edesc: JSON.stringify( freq ) };
         }
 
         switch ( func[2] )
         {
-            case 'set':
-                cached_value = freq.p.value;
-                return {};
-                
-            case 'get':
-                if ( cached_value )
-                {
-                    return { value: cached_value };
-                }
-                else
-                {
-                    return { e: 'CacheMiss' };
-                }
+        case 'set':
+            cached_value = freq.p.value;
+            return {};
+
+        case 'get':
+            if ( cached_value )
+            {
+                return { value: cached_value };
+            }
+            else
+            {
+                return { e: 'CacheMiss' };
+            }
         }
     }
     else if ( func[0] === 'futoin.ping' &&
             func[1] === '1.0' )
     {
-        switch ( func[2] ) {
-            case "ping":
-                freq.p.echo.should.equal(123);
-                return { echo : freq.p.echo };
-                
-            default:
-                return { e : 'UnknownInterface' };
+        switch ( func[2] )
+        {
+        case "ping":
+            freq.p.echo.should.equal( 123 );
+            return { echo : freq.p.echo };
+
+        default:
+            return { e : 'UnknownInterface' };
         }
     }
     else if ( func[0] !== 'fileface.a' )
@@ -97,76 +103,76 @@ function processServerRequest( freq, data )
     {
         return { e : 'NotSupportedVersion' };
     }
-    
+
     switch ( func[2] )
     {
-        case 'testFuncRetry' :
-            fail_next = !fail_next;
+    case 'testFuncRetry' :
+        fail_next = !fail_next;
 
-            if ( fail_next )
-            {
-                return null;
-            }
-            
-        case 'testFunc' :
-            freq.p.a.should.equal( '1' );
-            freq.p.n.should.equal( 2.8 );
-            freq.p.i.should.equal( 4 );
-            freq.p.o.m.should.equal( 3 );
-            return { res : 'MY_RESULT' };
-        
-        case 'noResult' :
-            freq.p.a.should.equal( '123' ); 
-            return {};
-            
-        case 'customResult':
-            return true;
-            
-        case "call" :
-            freq.p.should.be.empty;
-            return {};
-            
-        case "rawUploadFunc" :
-            expect(freq.p).to.be.empty;
-            data.should.equal( "MY_UPLOAD" );
-            return { ok : "OK" };
+        if ( fail_next )
+        {
+            return null;
+        }
 
-        case "rawUploadFuncParams" :
-            freq.p.a.should.equal( '123' );
-            JSON.parse( freq.p.o ).b.should.equal( false );
-            data.should.equal( "MY_UPLOAD" );
-            return { ok : "OK" };
-            
-        case "rawDownload" :
-            expect(freq.p).to.be.empty;
-            return "MY_DOWNLOAD";
-            
-        case "wrongDataResult":
-            expect(freq.p).to.be.empty;
-            return "MY_DOWNLOAD";
-            
-        case "missingResultVar":
-        case "rawResultExpected":
-        case "unexpectedUpload":
-            expect(freq.p).to.be.empty;
-            return { ok : "OK" };
-            
-        case "unknownParam":
-        case "noParams":
-            return { ok : "OK" };
-            
-        case "triggerError":
-        case "wrongException":
-        case "unknownFunc":
-            return { e : 'MY_ERROR' };
-            
-        case "pingPong":
-            return { pong : freq.p.ping };
-            
-        case "getLogCount":
-            return { count: log_count };
+    case 'testFunc' :
+        freq.p.a.should.equal( '1' );
+        freq.p.n.should.equal( 2.8 );
+        freq.p.i.should.equal( 4 );
+        freq.p.o.m.should.equal( 3 );
+        return { res : 'MY_RESULT' };
+
+    case 'noResult' :
+        freq.p.a.should.equal( '123' );
+        return {};
+
+    case 'customResult':
+        return true;
+
+    case "call" :
+        freq.p.should.be.empty;
+        return {};
+
+    case "rawUploadFunc" :
+        expect( freq.p ).to.be.empty;
+        data.should.equal( "MY_UPLOAD" );
+        return { ok : "OK" };
+
+    case "rawUploadFuncParams" :
+        freq.p.a.should.equal( '123' );
+        JSON.parse( freq.p.o ).b.should.equal( false );
+        data.should.equal( "MY_UPLOAD" );
+        return { ok : "OK" };
+
+    case "rawDownload" :
+        expect( freq.p ).to.be.empty;
+        return "MY_DOWNLOAD";
+
+    case "wrongDataResult":
+        expect( freq.p ).to.be.empty;
+        return "MY_DOWNLOAD";
+
+    case "missingResultVar":
+    case "rawResultExpected":
+    case "unexpectedUpload":
+        expect( freq.p ).to.be.empty;
+        return { ok : "OK" };
+
+    case "unknownParam":
+    case "noParams":
+        return { ok : "OK" };
+
+    case "triggerError":
+    case "wrongException":
+    case "unknownFunc":
+        return { e : 'MY_ERROR' };
+
+    case "pingPong":
+        return { pong : freq.p.ping };
+
+    case "getLogCount":
+        return { count: log_count };
     }
-    
+
     return { e : 'InvalidFunction' };
 }
 

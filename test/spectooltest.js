@@ -1,3 +1,5 @@
+'use strict';
+
 var assert;
 var async_steps = require( 'futoin-asyncsteps' );
 var _ = require( 'lodash' );
@@ -13,21 +15,22 @@ if ( !isNode )
     // Browser test
     chai.should();
     assert = chai.assert;
-    
+
     thisDir = '.';
-    
+
     invoker = FutoInInvoker;
 }
 else
 {
     // Node test
     var chai_module = module.require( 'chai' );
+
     chai_module.should();
     assert = chai_module.assert;
-    
+
     thisDir = __dirname;
-    
-    invoker = module.require('../lib/invoker.js');
+
+    invoker = module.require( '../lib/invoker.js' );
     var crypto = module.require( 'crypto' );
 }
 
@@ -35,39 +38,43 @@ var SpecTools = invoker.SpecTools;
 
 // SpecTools.on('error', function() { console.log( arguments ) } );
 
-describe('SpecTools', function()
+describe( 'SpecTools', function()
 {
-    beforeEach(function(){
+    beforeEach( function()
+    {
         as = async_steps();
-    });
-    
-    after(function(){
-        as = null;
-    });
+    } );
 
-    describe('#loadIface', function(){
+    after( function()
+    {
+        as = null;
+    } );
+
+    describe( '#loadIface', function()
+    {
         var testspec = {
-            'iface' : 'test.spec',
-            'version' : '2.3',
+            iface : 'test.spec',
+            version : '2.3',
             funcs : {
-            }
+            },
         };
 
-        it('should load spec from file', function( done )
+        it( 'should load spec from file', function( done )
         {
-            if (!isNode) {
+            if ( !isNode )
+            {
                 done();
                 return;
             }
-            
+
             var info = {
                 iface : 'fileface.a',
-                version : '1.1'
+                version : '1.1',
             };
-            
+
             as.add(
-                function( as ){
-                    
+                function( as )
+                {
                     SpecTools.loadIface(
                         as,
                         info,
@@ -79,29 +86,31 @@ describe('SpecTools', function()
                     done( as.state.last_exception );
                 }
             ).
-            add( function( as ){
-                try
+                add( function( as )
                 {
-                    info.funcs.should.have.property( 'testFunc' );
-                    done();
-                }
-                catch ( e )
-                {
-                    done( e );
-                }
-            });
+                    try
+                    {
+                        info.funcs.should.have.property( 'testFunc' );
+                        done();
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                } );
             as.execute();
-        });
+        } );
 
-        it('should load spec from url', function( done )
+        it( 'should load spec from url', function( done )
         {
             var info = {
                 iface : 'fileface.a',
                 version : '1.1',
             };
-            
+
             as.add(
-                function( as ){
+                function( as )
+                {
                     SpecTools.loadIface(
                         as,
                         info,
@@ -115,89 +124,94 @@ describe('SpecTools', function()
                     done( as.state.error_info );
                 }
             ).
-            add( function( as ){
-                try
+                add( function( as )
                 {
-                    info.funcs.should.have.property( 'testFunc' );
-                    done();
-                }
-                catch ( e )
-                {
-                    done( e );
-                }
-            });
+                    try
+                    {
+                        info.funcs.should.have.property( 'testFunc' );
+                        done();
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                } );
             as.execute();
-        });
-        
-        it('should load spec from cache', function( done )
+        } );
+
+        it( 'should load spec from cache', function( done )
         {
             var info = {
                 iface : 'fileface.a',
                 version : '1.1',
             };
-            
-            var load_cache = {};
-            
-            as.add(
-                function( as ){
-                    SpecTools.loadIface(
-                        as,
-                        info,
-                        [ 'not_existing', 'http://localhost:8000/test/specs' ],
-                        load_cache
-                    );
-                },
-                function( as, err )
-                {
-                    console.log( err + ': ' + as.state.error_info );
-                    done( as.state.last_exception );
-                }
-            )
-            .add(
-                function( as ){
-                    load_cache[ 'fileface.a:1.1:e' ].comes_from_cache = true;
-                    SpecTools.loadIface(
-                        as,
-                        info,
-                        [ 'not_existing', 'http://localhost:8000/test/specs' ],
-                        load_cache
-                    );
-                },
-                function( as, err )
-                {
-                    console.log( err + ': ' + as.state.error_info );
-                    done( as.state.last_exception );
-                }
-            )
-            .add( function( as ){
-                try
-                {
-                    info.should.have.property( 'comes_from_cache' );
-                    done();
-                }
-                catch ( e )
-                {
-                    done( e );
-                }
-            });
-            as.execute();
-        });
 
-        it('should handle ftn3rev correctly', function( done )
+            var load_cache = {};
+
+            as.add(
+                function( as )
+                {
+                    SpecTools.loadIface(
+                        as,
+                        info,
+                        [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                        load_cache
+                    );
+                },
+                function( as, err )
+                {
+                    console.log( err + ': ' + as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+                .add(
+                    function( as )
+                    {
+                        load_cache[ 'fileface.a:1.1:e' ].comes_from_cache = true;
+                        SpecTools.loadIface(
+                            as,
+                            info,
+                            [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                            load_cache
+                        );
+                    },
+                    function( as, err )
+                    {
+                        console.log( err + ': ' + as.state.error_info );
+                        done( as.state.last_exception );
+                    }
+                )
+                .add( function( as )
+                {
+                    try
+                    {
+                        info.should.have.property( 'comes_from_cache' );
+                        done();
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                } );
+            as.execute();
+        } );
+
+        it( 'should handle ftn3rev correctly', function( done )
         {
             var info = {
                 iface : 'test.face',
                 version: '1.0',
             };
-            
+
             as.add(
                 function( as )
                 {
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        imports: []
+                        imports: [],
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -206,7 +220,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Import is FTN3 v1.1 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -216,13 +230,14 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        types: {}
+                        types: {},
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -231,7 +246,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Custom types is FTN3 v1.1 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -241,13 +256,14 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        requires: [ 'BiDirectChannel' ]
+                        requires: [ 'BiDirectChannel' ],
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -256,7 +272,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "BiDirectChannel is FTN3 v1.1 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -266,13 +282,14 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        requires: [ 'MessageSignature' ]
+                        requires: [ 'MessageSignature' ],
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -281,7 +298,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "MessageSignature is FTN3 v1.2 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -291,7 +308,7 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
@@ -299,9 +316,10 @@ describe('SpecTools', function()
                         funcs: {
                             test: {
                                 seclvl: 'OPS',
-                            }
-                        }
+                            },
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -310,7 +328,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Function seclvl is FTN3 v1.3 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -320,16 +338,17 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: "1.3",
                         types: {
-                            Str: "string"
-                        }
+                            Str: "string",
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -338,7 +357,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Type shortcut is FTN3 v1.4 feature" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -348,7 +367,7 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
@@ -359,19 +378,20 @@ describe('SpecTools', function()
                             StrMin: {
                                 type: "Str",
                                 minlen: 1,
-                            }
-                        }
+                            },
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
-                    as.add( (as) => as.success('Fail') );
+                    as.add( ( as ) => as.success( 'Fail' ) );
                 },
                 function( as, err )
                 {
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "String min/maxlen is FTN3 v1.5 feature");
-                        as.success('OK');
+                        as.state.error_info.should.equal( "String min/maxlen is FTN3 v1.5 feature" );
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -381,7 +401,7 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
@@ -392,9 +412,10 @@ describe('SpecTools', function()
                             MapElemType: {
                                 type: "Map",
                                 elemtype: 'string',
-                            }
-                        }
+                            },
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -402,8 +423,8 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Map elemtype is FTN3 v1.6 feature");
-                        as.success('OK');
+                        as.state.error_info.should.equal( "Map elemtype is FTN3 v1.6 feature" );
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -413,16 +434,17 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: "1.5",
                         types: {
-                            Enum: "enum"
-                        }
+                            Enum: "enum",
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -430,8 +452,8 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Enum/Set is FTN3 v1.6 feature");
-                        as.success('OK');
+                        as.state.error_info.should.equal( "Enum/Set is FTN3 v1.6 feature" );
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -441,16 +463,17 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
 
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: "1.5",
                         types: {
-                            Or: ["enum", "string"]
-                        }
+                            Or: [ "enum", "string" ],
+                        },
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
@@ -458,8 +481,8 @@ describe('SpecTools', function()
                     try
                     {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "Type variant is FTN3 v1.6 feature");
-                        as.success('OK');
+                        as.state.error_info.should.equal( "Type variant is FTN3 v1.6 feature" );
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -469,21 +492,23 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
-                    
+                    ok.should.equal( 'OK' );
+
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
                 {
-                    try{
+                    try
+                    {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Not supported FTN3 revision for Executor" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -493,21 +518,23 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
-                    
+                    ok.should.equal( 'OK' );
+
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
+
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
                 function( as, err )
                 {
-                    try{
+                    try
+                    {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Not supported FTN3 revision for Executor" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -517,13 +544,14 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
-                    
+                    ok.should.equal( 'OK' );
+
                     var iface = {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
+
                     info._invoker_use = true;
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
@@ -535,12 +563,13 @@ describe('SpecTools', function()
                 function( as, ok )
                 {
                     assert.isUndefined( ok );
-                    
+
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        ftn3rev: '2.0'
+                        ftn3rev: '2.0',
                     };
+
                     info._invoker_use = true;
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
@@ -550,7 +579,7 @@ describe('SpecTools', function()
                     {
                         err.should.equal( 'InternalError' );
                         as.state.error_info.should.equal( "Not supported FTN3 revision" );
-                        as.success('OK');
+                        as.success( 'OK' );
                     }
                     catch ( e )
                     {
@@ -560,13 +589,13 @@ describe('SpecTools', function()
             ).add(
                 function( as, ok )
                 {
-                    ok.should.equal('OK');
+                    ok.should.equal( 'OK' );
                     done();
                 }
             ).execute();
-        });
-        
-        it ('should fail to find with invalid version', function( done )
+        } );
+
+        it ( 'should fail to find with invalid version', function( done )
         {
             as.add(
                 function( as )
@@ -575,7 +604,7 @@ describe('SpecTools', function()
                         as,
                         {
                             iface : 'test.spec',
-                            version : 2.4
+                            version : 2.4,
                         },
                         [ 'somedir', testspec ]
                     );
@@ -595,9 +624,9 @@ describe('SpecTools', function()
                     }
                 }
             ).execute();
-        });
-        
-        it ('should load iface without funcs', function( done )
+        } );
+
+        it ( 'should load iface without funcs', function( done )
         {
             as.add(
                 function( as )
@@ -606,22 +635,23 @@ describe('SpecTools', function()
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.4'
+                            version : '2.4',
                         },
                         [ 'somedir',
                             {
                                 iface : 'test.spec',
-                                version : '2.4'
-                            }
+                                version : '2.4',
+                            },
                         ]
                     );
                 }
-            ).add( function( as ){
+            ).add( function( as )
+            {
                 done();
             } ).execute();
-        });
-        
-        it ('should fail to load iface with different version', function( done )
+        } );
+
+        it ( 'should fail to load iface with different version', function( done )
         {
             as.add(
                 function( as )
@@ -630,7 +660,7 @@ describe('SpecTools', function()
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.4'
+                            version : '2.4',
                         },
                         [ 'somedir', testspec ]
                     );
@@ -650,32 +680,33 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on params without type', function( done )
+        } );
+
+        it ( 'should fail on params without type', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingParam = {
                         params : {
                             a : {
-                                type : "string"
+                                type : "string",
                             },
                             b : {
-                                default : "B"
-                            }
-                        }
+                                default : "B",
+                            },
+                        },
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -695,30 +726,31 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on result without type', function( done )
+        } );
+
+        it ( 'should fail on result without type', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         result : {
                             a : {
-                                type : "string"
+                                type : "string",
                             },
-                            b : {}
-                        }
+                            b : {},
+                        },
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -738,25 +770,26 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on params not object', function( done )
+        } );
+
+        it ( 'should fail on params not object', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
-                        params : true
+                        params : true,
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -776,27 +809,28 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on param not object', function( done )
+        } );
+
+        it ( 'should fail on param not object', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         params : {
-                            a : true
-                        }
+                            a : true,
+                        },
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -816,25 +850,26 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on result not object', function( done )
+        } );
+
+        it ( 'should fail on result not object', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
-                        result : true
+                        result : true,
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -854,27 +889,28 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on resultvar not object', function( done )
+        } );
+
+        it ( 'should fail on resultvar not object', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         result : {
-                            a : true
-                        }
+                            a : true,
+                        },
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -894,30 +930,31 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on throws not array', function( done )
+        } );
+
+        it ( 'should fail on throws not array', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         result : {
                             a : {
-                                type : "string"
-                            }
+                                type : "string",
+                            },
                         },
-                        throws : true
+                        throws : true,
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -937,23 +974,24 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on requires not array', function( done )
+        } );
+
+        it ( 'should fail on requires not array', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         result : {
                             a : {
-                                type : "string"
-                            }
+                                type : "string",
+                            },
                         },
-                        throws : [ 'SomeError' ]
+                        throws : [ 'SomeError' ],
                     };
                     spec.requires = true;
 
@@ -961,7 +999,7 @@ describe('SpecTools', function()
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -981,30 +1019,31 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should load with no requires', function( done )
+        } );
+
+        it ( 'should load with no requires', function( done )
         {
             as.add(
                 function( as )
                 {
                     var spec = _.cloneDeep( testspec );
+
                     spec.funcs.missingResult = {
                         result : {
                             a : {
-                                type : "string"
-                            }
+                                type : "string",
+                            },
                         },
-                        throws : [ 'SomeError' ]
+                        throws : [ 'SomeError' ],
                     };
 
                     SpecTools.loadIface(
                         as,
                         {
                             iface : 'test.spec',
-                            version : '2.3'
+                            version : '2.3',
                         },
                         [ 'somedir', spec ]
                     );
@@ -1014,12 +1053,15 @@ describe('SpecTools', function()
                 {
                     done( new Error( err + ": " + as.state.error_info ) );
                 }
-            ).add( function( as ){ done(); } );
-            
+            ).add( function( as )
+            {
+                done();
+            } );
+
             as.execute();
-        });
-        
-        it ('should fail on integer type mismatch', function( done )
+        } );
+
+        it ( 'should fail on integer type mismatch', function( done )
         {
             as.add(
                 function( as )
@@ -1044,11 +1086,11 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should fail on boolean type mismatch', function( done )
+        } );
+
+        it ( 'should fail on boolean type mismatch', function( done )
         {
             as.add(
                 function( as )
@@ -1073,54 +1115,55 @@ describe('SpecTools', function()
                     }
                 }
             );
-            
+
             as.execute();
-        });
-        
-        it ('should correctly process imports', function( done )
+        } );
+
+        it ( 'should correctly process imports', function( done )
         {
             var baseface = {
                 iface: 'base.face',
                 version: '2.1',
                 ftn3rev: '1.1',
                 types: {
-                    'MyString' : {
-                        type: 'string'
-                    }
+                    MyString : {
+                        type: 'string',
+                    },
                 },
                 funcs: {
-                    'FirstFunc' : {
-                        rawresult : true
-                    }
-                }
+                    FirstFunc : {
+                        rawresult : true,
+                    },
+                },
             };
-            
+
             var derivedface = {
                 iface: 'derived.face',
                 version: '1.0',
                 ftn3rev: '1.1',
                 imports: [
-                    'base.face:2.1'
+                    'base.face:2.1',
                 ],
                 types: {
-                    'MyInt' : {
-                        type: 'integer'
-                    }
+                    MyInt : {
+                        type: 'integer',
+                    },
                 },
                 funcs: {
-                    'SecondFunc' : {
-                        rawresult : true
-                    }
-                }
+                    SecondFunc : {
+                        rawresult : true,
+                    },
+                },
             };
-            
+
             var load_info = {
                 iface : 'derived.face',
-                version : '1.0'
+                version : '1.0',
             };
-            
+
             as.add(
-                function( as ) {
+                function( as )
+                {
                     SpecTools.loadIface(
                         as,
                         load_info,
@@ -1130,8 +1173,10 @@ describe('SpecTools', function()
                 {
                     done( as.state.last_exception );
                 }
-            ).add( function( as ) {
-                try {
+            ).add( function( as )
+            {
+                try
+                {
                     load_info.types.should.have.property( 'MyString' );
                     load_info.types.should.have.property( 'MyInt' );
                     load_info.inherits.should.be.empty;
@@ -1139,28 +1184,30 @@ describe('SpecTools', function()
                     load_info.funcs.should.have.property( 'SecondFunc' );
                     load_info.imports[0].should.equal( 'base.face:2.1' );
                     done();
-                } catch ( e ) {
+                }
+                catch ( e )
+                {
                     done( e );
                 }
             } ).execute();
-        });
-        
-        it ('should correctly process diamond import', function( done )
+        } );
+
+        it ( 'should correctly process diamond import', function( done )
         {
             var baseface = {
                 iface: 'base.face',
                 version: '2.1',
                 ftn3rev: '1.4',
                 types: {
-                    'MyString' : {
-                        type: 'string'
-                    }
+                    MyString : {
+                        type: 'string',
+                    },
                 },
                 funcs: {
-                    'FirstFunc' : {
-                        rawresult : true
-                    }
-                }
+                    FirstFunc : {
+                        rawresult : true,
+                    },
+                },
             };
 
             var newer_baseface = {
@@ -1168,37 +1215,37 @@ describe('SpecTools', function()
                 version: '2.2',
                 ftn3rev: '1.4',
                 types: {
-                    'MyString' : {
-                        type: 'string'
+                    MyString : {
+                        type: 'string',
                     },
-                    'MyString2' : {
-                        type: 'string'
-                    }
+                    MyString2 : {
+                        type: 'string',
+                    },
                 },
                 funcs: {
-                    'FirstFunc' : {
-                        rawresult : true
-                    }
-                }
+                    FirstFunc : {
+                        rawresult : true,
+                    },
+                },
             };
-            
+
             var derivedface1 = {
                 iface: 'derived.face1',
                 version: '1.0',
                 ftn3rev: '1.4',
                 imports: [
-                    'base.face:2.2'
+                    'base.face:2.2',
                 ],
                 types: {
-                    'MyInt' : {
-                        type: 'integer'
-                    }
+                    MyInt : {
+                        type: 'integer',
+                    },
                 },
                 funcs: {
-                    'SecondFunc' : {
-                        rawresult : true
-                    }
-                }
+                    SecondFunc : {
+                        rawresult : true,
+                    },
+                },
             };
 
             var derivedface2 = {
@@ -1206,18 +1253,18 @@ describe('SpecTools', function()
                 version: '1.0',
                 ftn3rev: '1.4',
                 imports: [
-                    'base.face:2.1'
+                    'base.face:2.1',
                 ],
                 types: {
-                    'MyInt2' : {
-                        type: 'integer'
-                    }
+                    MyInt2 : {
+                        type: 'integer',
+                    },
                 },
                 funcs: {
-                    'ThirdFunc' : {
-                        rawresult : true
-                    }
-                }
+                    ThirdFunc : {
+                        rawresult : true,
+                    },
+                },
             };
 
             var topface = {
@@ -1229,14 +1276,15 @@ describe('SpecTools', function()
                     'derived.face2:1.0',
                 ],
             };
-            
+
             var load_info = {
                 iface : 'top.face',
-                version : '1.0'
+                version : '1.0',
             };
-            
+
             as.add(
-                function( as ) {
+                function( as )
+                {
                     SpecTools.loadIface(
                         as,
                         load_info,
@@ -1244,11 +1292,13 @@ describe('SpecTools', function()
                 },
                 function( as, err )
                 {
-                    console.log(as.state.error_info);
+                    console.log( as.state.error_info );
                     done( as.state.last_exception );
                 }
-            ).add( function( as ) {
-                try {
+            ).add( function( as )
+            {
+                try
+                {
                     load_info.types.should.have.property( 'MyString' );
                     load_info.types.should.have.property( 'MyString2' );
                     load_info.types.should.have.property( 'MyInt' );
@@ -1257,81 +1307,92 @@ describe('SpecTools', function()
                     load_info.funcs.should.have.property( 'FirstFunc' );
                     load_info.funcs.should.have.property( 'SecondFunc' );
                     load_info.funcs.should.have.property( 'ThirdFunc' );
-                    load_info.imports.should.be.eql([
+                    load_info.imports.should.be.eql( [
                         'base.face:2.2',
                         'derived.face2:1.0',
                         'derived.face1:1.0',
-                    ]);
+                    ] );
                     done();
-                } catch ( e ) {
+                }
+                catch ( e )
+                {
                     done( e );
                 }
             } ).execute();
-        });
-        
-        it ('should properly check standard types', function( done )
+        } );
+
+        it ( 'should properly check standard types', function( done )
         {
             this.timeout( 10e3 );
             var tests = {
-                'any' : {
-                    'ok' : [ true, false, 'yes', 1, 1.1, {}, [], null ],
-                    'fail' : [ undefined ]
+                any : {
+                    ok : [ true, false, 'yes', 1, 1.1, {}, [], null ],
+                    fail : [ undefined ],
                 },
-                'string' : {
-                    'ok' : [ 'yes' ],
-                    'fail' : [ true, false, 1, 1.1, {}, [], null, undefined ]
+                string : {
+                    ok : [ 'yes' ],
+                    fail : [ true, false, 1, 1.1, {}, [], null, undefined ],
                 },
-                'number' : {
-                    'ok' : [ 1, 1.1, -1, 100 ],
-                    'fail' : [ true, false, 'yes', {}, [], null, undefined ]
+                number : {
+                    ok : [ 1, 1.1, -1, 100 ],
+                    fail : [ true, false, 'yes', {}, [], null, undefined ],
                 },
-                'integer' : {
-                    'ok' : [ 1, 2, -1 ],
-                    'fail' : [ true, false, 'yes', 1.1, {}, [], null, undefined ]
+                integer : {
+                    ok : [ 1, 2, -1 ],
+                    fail : [ true, false, 'yes', 1.1, {}, [], null, undefined ],
                 },
-                'boolean' : {
-                    'ok' : [ true, false ],
-                    'fail' : [ 'yes', 1, 1.1, {}, [], null, undefined ]
+                boolean : {
+                    ok : [ true, false ],
+                    fail : [ 'yes', 1, 1.1, {}, [], null, undefined ],
                 },
-                'array' : {
-                    'ok' : [ [] ],
-                    'fail' : [ true, false, 'yes', 1, 1.1, {}, null, undefined ]
+                array : {
+                    ok : [ [] ],
+                    fail : [ true, false, 'yes', 1, 1.1, {}, null, undefined ],
                 },
-                'map' : {
-                    'ok' : [ {} ],
-                    'fail' : [ true, false, 'yes', 1, 1.1, [], null, undefined ]
+                map : {
+                    ok : [ {} ],
+                    fail : [ true, false, 'yes', 1, 1.1, [], null, undefined ],
                 },
             };
-            
-            as.forEach( tests, function( as, type, v ){
-                as.add(function(as) {
-                    as.forEach( v.ok,function( as, i, t ){
+
+            as.forEach( tests, function( as, type, v )
+            {
+                as.add( function( as )
+                {
+                    as.forEach( v.ok, function( as, i, t )
+                    {
                         SpecTools.checkFutoInType( as, type, type + ':ok', t );
-                    });
-                    as.forEach( v.fail, function( as, i, t ){
+                    } );
+                    as.forEach( v.fail, function( as, i, t )
+                    {
                         as.add(
-                            function( as ){
+                            function( as )
+                            {
                                 SpecTools.checkFutoInType( as, type, type + ':fail', t );
-                                as.success(`Fail at ${type} : ${t}`);
+                                as.success( `Fail at ${type} : ${t}` );
                             },
-                            function( as, err ){
+                            function( as, err )
+                            {
                                 as.state.error_info.should.match( /^Type mismatch for parameter/ );
                                 as.success( 'OK' );
                             }
-                        ).add( function( as, ok ){
+                        ).add( function( as, ok )
+                        {
                             ok.should.equal( 'OK' );
-                        });
-                    });
+                        } );
+                    } );
                 },
-                function(as, err){
-                    done(as.state.last_exception);
-                });
-            }).add(function(as){
+                function( as, err )
+                {
+                    done( as.state.last_exception );
+                } );
+            } ).add( function( as )
+            {
                 done();
-            }).execute();
-        });
-        
-        it ('should process custom type constraints', function( done )
+            } ).execute();
+        } );
+
+        it ( 'should process custom type constraints', function( done )
         {
             this.timeout( 5e3 );
             var iface = {
@@ -1339,139 +1400,143 @@ describe('SpecTools', function()
                 version: '1.0',
                 ftn3rev: '1.7',
                 types: {
-                    'Int' : {
-                        type: 'integer'
+                    Int : {
+                        type: 'integer',
                     },
-                    'IntMinMax' : {
+                    IntMinMax : {
                         type: 'integer',
                         min: -3,
-                        max: 3
+                        max: 3,
                     },
-                    'Number' : {
-                        type: 'number'
+                    Number : {
+                        type: 'number',
                     },
-                    'NumberMinMax' : {
+                    NumberMinMax : {
                         type: 'number',
                         min: -3.1,
-                        max: 3.1
+                        max: 3.1,
                     },
-                    'String' : {
-                        type: 'string'
-                    },
-                    'StringRegex' : {
+                    String : {
                         type: 'string',
-                        regex: /^[a-z]{5}$/
                     },
-                    'StringMinMax' : {
+                    StringRegex : {
+                        type: 'string',
+                        regex: /^[a-z]{5}$/,
+                    },
+                    StringMinMax : {
                         type: 'string',
                         minlen: 1,
-                        maxlen: 3
+                        maxlen: 3,
                     },
-                    'ArrayMinMax' : {
+                    ArrayMinMax : {
                         type: 'array',
                         minlen: 1,
                         maxlen: 3,
-                        elemtype: 'IntMinMax'
+                        elemtype: 'IntMinMax',
                     },
-                    'Map' : {
+                    Map : {
                         type: 'map',
                         fields: {
-                            'int' : {
-                                type:'IntMinMax'
+                            int : {
+                                type:'IntMinMax',
                             },
-                            'string' : {
+                            string : {
                                 type:'StringRegex',
-                                optional: true
-                            }
-                        }
+                                optional: true,
+                            },
+                        },
                     },
-                    'MapElemType' : {
+                    MapElemType : {
                         type: 'map',
                         elemtype: 'IntMinMax',
                     },
-                    'DerivedIntMinMax' : {
+                    DerivedIntMinMax : {
                         type: 'IntMinMax',
                         min: -2,
                     },
-                    'Set' : {
+                    Set : {
                         type: 'set',
-                        items: [ 'one', 'two', 'three', 10, 20 ]
+                        items: [ 'one', 'two', 'three', 10, 20 ],
                     },
-                    'Enum' : {
+                    Enum : {
                         type: 'enum',
-                        items: [ 'one', 'two', 'three', 10, 20 ]
+                        items: [ 'one', 'two', 'three', 10, 20 ],
                     },
-                    'Variant' : [  'IntMinMax', 'StringRegex', "boolean" ],
-                    'DerivedVariant' : {
+                    Variant : [ 'IntMinMax', 'StringRegex', "boolean" ],
+                    DerivedVariant : {
                         type: 'Variant',
                         min: 2,
                     },
-                    "AnyType" : "any",
-                    "MapAny" : {
+                    AnyType : "any",
+                    MapAny : {
                         type: 'map',
                         fields: {
                             f: "AnyType",
                         },
                     },
-                    "Array" : {
+                    Array : {
                         type: "array",
                         elemtype: "Int",
                         maxlen: 3,
-                    }
-                }
+                    },
+                },
             };
 
             var info = {
                 iface: iface.iface,
-                version: iface.version
+                version: iface.version,
             };
-            
+
             var tests = {
-                'Int' : {
+                Int : {
                     ok : [ -5, 1, 5 ],
-                    fail: [ 1.1 ]
+                    fail: [ 1.1 ],
                 },
-                'IntMinMax' : {
+                IntMinMax : {
                     ok : [ -3, 1, 3 ],
                     fail : [ -4, 1.1, 4 ],
                 },
-                'Number' : {
+                Number : {
                     ok : [ -5, 1.1, 5 ],
-                    fail: [ 'string' ]
+                    fail: [ 'string' ],
                 },
-                'NumberMinMax' : {
+                NumberMinMax : {
                     ok : [ -3.1, 0.5, 3.1 ],
                     fail : [ -3.2, 'string', 3.2 ],
                 },
-                'String' : {
+                String : {
                     ok : [ 'Some', 'string' ],
-                    fail : [ 1, false, null ]
+                    fail : [ 1, false, null ],
                 },
-                'StringRegex' : {
+                StringRegex : {
                     ok : [ 'strin' ],
-                    fail : [ 'Some', 'Strin', 1, false, null ]
+                    fail : [ 'Some', 'Strin', 1, false, null ],
                 },
-                'StringMinMax' : {
+                StringMinMax : {
                     ok : [ 'a', 'abc' ],
-                    fail : [ '', 'abcd' ]
+                    fail : [ '', 'abcd' ],
                 },
-                'ArrayMinMax' : {
-                    ok : [ [ 1, 1, 1 ],  [ -3, 0, 3 ] ],
-                    fail : [ [], [ 1, 1, 1, 1], [ 1, -5, 1 ], [ 1, 's', true ], 1, false, null ]
+                ArrayMinMax : {
+                    ok : [ [ 1, 1, 1 ], [ -3, 0, 3 ] ],
+                    fail : [ [], [ 1, 1, 1, 1 ], [ 1, -5, 1 ], [ 1, 's', true ], 1, false, null ],
                 },
-                'Map' : {
-                    ok: [ { 'int':1 }, { 'int':3, 'string':'abcde' } ],
-                    fail: [ { 'int':5, 'string':'abcde' }, { 'string':'abcde' }, { 'int':3, 'string':'abcdE' } ]
+                Map : {
+                    ok: [ { int:1 }, { int:3,
+                        string:'abcde' } ],
+                    fail: [ { int:5,
+                        string:'abcde' }, { string:'abcde' }, { int:3,
+                        string:'abcdE' } ],
                 },
-                'MapElemType' : {
-                    ok: [ { 'int':1 }, { 'int':3 } ],
-                    fail: [ { 'int':5, 'string':'abcde' }, { 'int': 4 }, { string: 'abcde' } ]
+                MapElemType : {
+                    ok: [ { int:1 }, { int:3 } ],
+                    fail: [ { int:5,
+                        string:'abcde' }, { int: 4 }, { string: 'abcde' } ],
                 },
-                'DerivedIntMinMax' : {
+                DerivedIntMinMax : {
                     ok : [ -2, 1, 3 ],
                     fail : [ -4, -3, 1.1, 4 ],
                 },
-                'Set' : {
+                Set : {
                     ok : [
                         [],
                         [ 'one' ],
@@ -1483,64 +1548,72 @@ describe('SpecTools', function()
                         [ 'one', 'two', 'three', 10, 20, 30 ],
                         false,
                         null,
-                        1
-                    ]
+                        1,
+                    ],
                 },
-                'Enum' : {
-                    ok : [ 'one', 20, 'three'],
+                Enum : {
+                    ok : [ 'one', 20, 'three' ],
                     fail : [ [ 'one' ], false, null, 1 ],
                 },
-                'DerivedVariant' : {
-                    ok : [ 2, 3, 'abcde', false],
+                DerivedVariant : {
+                    ok : [ 2, 3, 'abcde', false ],
                     fail : [ 1, 4, 'abcdE', 'abc', null, {}, [] ],
                 },
-                "AnyType" : {
+                AnyType : {
                     ok: [ 1, "abc", null, true, false, 1.23, [], {} ],
                     fail: [ undefined ],
                 },
-                "MapAny" : {
+                MapAny : {
                     ok: [ { f: null }, { f: false }, { f: 1 } ],
-                    fail: [ {}, { f: undefined } ]
+                    fail: [ {}, { f: undefined } ],
                 },
-                "Array" : {
-                    ok: [ [], [1], [1, 2, 3] ],
-                    fail: [ [1,2,3,4], null, undefined, true ],
-                }
+                Array : {
+                    ok: [ [], [ 1 ], [ 1, 2, 3 ] ],
+                    fail: [ [ 1, 2, 3, 4 ], null, undefined, true ],
+                },
             };
-            
+
             as.add(
-                function( as ){
+                function( as )
+                {
                     SpecTools.loadIface( as, info, [ iface ] );
                 },
-                function( as, err ){
+                function( as, err )
+                {
                     done( as.state.last_exception );
                 }
-            ).forEach( tests, function( as, type, v ){
-                as.add(function(as) {
-                    as.forEach( v.ok,function( as, i, t ){
+            ).forEach( tests, function( as, type, v )
+            {
+                as.add( function( as )
+                {
+                    as.forEach( v.ok, function( as, i, t )
+                    {
                         if ( !SpecTools.checkType( info, type, t ) )
                         {
                             throw new Error( 'Failed at ' + type + " " + t );
                         }
                     } );
-                    as.forEach( v.fail, function( as, i, t ){
+                    as.forEach( v.fail, function( as, i, t )
+                    {
                         if ( SpecTools.checkType( info, type, t ) )
                         {
                             throw new Error( 'Failed at ' + type + " " + t );
                         }
-                    });
+                    } );
                 },
-                function( as, err ){
+                function( as, err )
+                {
                     done( as.state.last_exception );
-                });
-        }).add(function(as){
+                } );
+            } ).add( function( as )
+            {
                 done();
-            }).execute();
-        });
-    });
-    
-    
-    it ('should allow null for default null parameter', function( done )
+            } ).execute();
+        } );
+    } );
+
+
+    it ( 'should allow null for default null parameter', function( done )
     {
         this.timeout( 5e3 );
         var iface = {
@@ -1551,45 +1624,49 @@ describe('SpecTools', function()
                 test: {
                     params: {
                         required : {
-                            type: "string"
+                            type: "string",
                         },
                         nullable: {
                             type: "string",
-                            "default": null
-                        }
-                    }
-                }
-            }
+                            default: null,
+                        },
+                    },
+                },
+            },
         };
 
         var info = {
             iface: iface.iface,
-            version: iface.version
+            version: iface.version,
         };
-        
+
         as.add(
-            function( as ){
+            function( as )
+            {
                 SpecTools.loadIface( as, info, [ iface ] );
             },
-            function( as, err ){
+            function( as, err )
+            {
                 done( as.state.last_exception );
             }
         ).add(
-            function( as ){
-                SpecTools.checkParameterType(info, "test", "nullable", "abc").should.be.true;
-                SpecTools.checkParameterType(info, "test", "nullable", null).should.be.true;
-                SpecTools.checkParameterType(info, "test", "required", "abc").should.be.true;
-                SpecTools.checkParameterType(info, "test", "required", null).should.be.false;
+            function( as )
+            {
+                SpecTools.checkParameterType( info, "test", "nullable", "abc" ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "nullable", null ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "required", "abc" ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "required", null ).should.be.false;
                 done();
             },
-            function( as, err ){
+            function( as, err )
+            {
                 console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).execute();
-    });
-    
-    it ('should allow type definition shortcut', function( done )
+    } );
+
+    it ( 'should allow type definition shortcut', function( done )
     {
         this.timeout( 5e3 );
         var iface = {
@@ -1600,52 +1677,57 @@ describe('SpecTools', function()
                 MyNum: 'integer',
                 MyOtherNum: 'MyNum',
                 MyObj: {
-                    'type': 'map',
-                    'fields' : {
-                        num: 'MyOtherNum'
-                    }
-                }
+                    type: 'map',
+                    fields : {
+                        num: 'MyOtherNum',
+                    },
+                },
             },
             funcs: {
                 test: {
                     params: {
-                        myobj : 'MyObj'
+                        myobj : 'MyObj',
                     },
                     result: {
-                        resobj: 'MyObj'
-                    }
-                }
-            }
+                        resobj: 'MyObj',
+                    },
+                },
+            },
         };
 
         var info = {
             iface: iface.iface,
-            version: iface.version
+            version: iface.version,
         };
-        
+
         as.add(
-            function( as ){
+            function( as )
+            {
                 SpecTools.loadIface( as, info, [ iface ] );
             },
-            function( as, err ){
+            function( as, err )
+            {
                 console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).add(
-            function( as ){
-                SpecTools.checkParameterType(info, "test", "myobj", { num: 1 }).should.be.true;
-                SpecTools.checkParameterType(info, "test", "myobj", { num: '1' }).should.be.false;
-                SpecTools.checkResultType(as, info, "test", "resobj", { num: 1 });
+            function( as )
+            {
+                SpecTools.checkParameterType( info, "test", "myobj", { num: 1 } ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "myobj", { num: '1' } ).should.be.false;
+                SpecTools.checkResultType( as, info, "test", "resobj", { num: 1 } );
                 done();
             },
-            function( as, err ){
+            function( as, err )
+            {
                 console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).execute();
-    });
-    
-    it('should allow custom result type', function(done){
+    } );
+
+    it( 'should allow custom result type', function( done )
+    {
         this.timeout( 5e3 );
         var iface = {
             iface: 'some.face',
@@ -1655,46 +1737,51 @@ describe('SpecTools', function()
                 test: {
                     params: {
                         required : {
-                            type: "string"
+                            type: "string",
                         },
                         nullable: {
                             type: "string",
-                            "default": null
-                        }
+                            default: null,
+                        },
                     },
                     result: "boolean",
-                }
-            }
+                },
+            },
         };
 
         var info = {
             iface: iface.iface,
-            version: iface.version
+            version: iface.version,
         };
-        
+
         as.add(
-            function( as ){
+            function( as )
+            {
                 SpecTools.loadIface( as, info, [ iface ] );
             },
-            function( as, err ){
+            function( as, err )
+            {
                 console.log( err, as.state.error_info );
                 done( as.state.last_exception );
             }
         ).add(
-            function( as ){
-                SpecTools.checkParameterType(info, "test", "nullable", "abc").should.be.true;
-                SpecTools.checkParameterType(info, "test", "nullable", null).should.be.true;
-                SpecTools.checkParameterType(info, "test", "required", "abc").should.be.true;
-                SpecTools.checkParameterType(info, "test", "required", null).should.be.false;
+            function( as )
+            {
+                SpecTools.checkParameterType( info, "test", "nullable", "abc" ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "nullable", null ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "required", "abc" ).should.be.true;
+                SpecTools.checkParameterType( info, "test", "required", null ).should.be.false;
                 done();
             },
-            function( as, err ){
+            function( as, err )
+            {
                 done( as.state.last_exception );
             }
         ).execute();
-    });
-    
-    it('should allow enum in variant', function(done){
+    } );
+
+    it( 'should allow enum in variant', function( done )
+    {
         var iface = {
             iface: 'some.face',
             version: '1.0',
@@ -1702,107 +1789,116 @@ describe('SpecTools', function()
             types: {
                 MyEnum: {
                     type: "enum",
-                    items: [ '11', '22', 33 ]
+                    items: [ '11', '22', 33 ],
                 },
                 MyString: {
                     type: "string",
                     minlen: 3,
                     maxlen: 16,
                 },
-                MyVariant: [ 'MyString', 'MyEnum' ]
-            }
+                MyVariant: [ 'MyString', 'MyEnum' ],
+            },
         };
 
         var info = {
             iface: iface.iface,
-            version: iface.version
+            version: iface.version,
         };
-        
+
         as.add(
-            function( as ){
+            function( as )
+            {
                 SpecTools.loadIface( as, info, [ iface ] );
             },
-            function( as, err ){
+            function( as, err )
+            {
                 done( as.state.last_exception || 'Fail' );
             }
         ).add(
-            function( as ){
-                SpecTools.checkType(info, "MyVariant", '22').should.be.true;
-                SpecTools.checkType(info, "MyVariant", '444').should.be.true;
-                SpecTools.checkType(info, "MyVariant", 44).should.be.false;
-                SpecTools.checkType(info, "MyVariant", 33).should.be.true;
+            function( as )
+            {
+                SpecTools.checkType( info, "MyVariant", '22' ).should.be.true;
+                SpecTools.checkType( info, "MyVariant", '444' ).should.be.true;
+                SpecTools.checkType( info, "MyVariant", 44 ).should.be.false;
+                SpecTools.checkType( info, "MyVariant", 33 ).should.be.true;
                 done();
             },
-            function( as, err ){
+            function( as, err )
+            {
                 done( as.state.last_exception );
             }
         ).execute();
-    });
-        
-if ( isNode )
-{
-    describe('#genHMAC', function(){
-        var req = {
-            rid : 'C1234',
-            f : 'some.iface:1.2',
-            p : {
-                b : false,
-                a : 'alpha',
-                n : 1.34,
-                o : {
-                    b : true,
-                    a : 'beta',
-                }
-            },
-            r : {
-                test : 'alpha'
-            }
-        };
-        
-        var hmacbase = 'f:some.iface:1.2;p:a:alpha;b:false;n:1.34;o:a:beta;b:true;;;r:test:alpha;;rid:C1234;';
-        var key = crypto.randomBytes( 200 ); // 1600-bit block size for SHA3
-        var keyb64 = key.toString( 'base64' );
-        
-        var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
-        
-        it ( 'should correclt create HMAC base', function(){
-            var b = [];
-            SpecTools._hmacBase( b, req );
-            b.join('').should.equal( hmacbase );
-        } );
-        
-        for ( var i = 0, c = algos.length; i < c; ++i )
+    } );
+
+    if ( isNode )
+    {
+        describe( '#genHMAC', function()
         {
-            (function( i ){
-                var algo = algos[i];
-                var algo_lo = algo.toLowerCase();
+            var req = {
+                rid : 'C1234',
+                f : 'some.iface:1.2',
+                p : {
+                    b : false,
+                    a : 'alpha',
+                    n : 1.34,
+                    o : {
+                        b : true,
+                        a : 'beta',
+                    },
+                },
+                r : {
+                    test : 'alpha',
+                },
+            };
 
-                it ( 'should gen correct ' + algo + ' HMAC', function(){
-                    var options = {
-                        hmacKey : keyb64,
-                        hmacAlgo : algo,
-                    };
+            var hmacbase = 'f:some.iface:1.2;p:a:alpha;b:false;n:1.34;o:a:beta;b:true;;;r:test:alpha;;rid:C1234;';
+            var key = crypto.randomBytes( 200 ); // 1600-bit block size for SHA3
+            var keyb64 = key.toString( 'base64' );
 
-                    var res1 = SpecTools.genHMAC( as, options, req );
-                    var res2 = SpecTools.genHMAC( as, options, req );
-                    
-                    //SpecTools.hmacbase.should.equal( hmacbase );
-                    SpecTools.checkHMAC( res1, res2 ).should.be.true;
-                    
-                    var testres = crypto
+            var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
+
+            it ( 'should correclt create HMAC base', function()
+            {
+                var b = [];
+
+                SpecTools._hmacBase( b, req );
+                b.join( '' ).should.equal( hmacbase );
+            } );
+
+            for ( var i = 0, c = algos.length; i < c; ++i )
+            {
+                ( function( i )
+                {
+                    var algo = algos[i];
+                    var algo_lo = algo.toLowerCase();
+
+                    it ( 'should gen correct ' + algo + ' HMAC', function()
+                    {
+                        var options = {
+                            hmacKey : keyb64,
+                            hmacAlgo : algo,
+                        };
+
+                        var res1 = SpecTools.genHMAC( as, options, req );
+                        var res2 = SpecTools.genHMAC( as, options, req );
+
+                        //SpecTools.hmacbase.should.equal( hmacbase );
+                        SpecTools.checkHMAC( res1, res2 ).should.be.true;
+
+                        var testres = crypto
                             .createHmac( algo_lo, key )
                             .update( hmacbase )
                             .digest();
 
-                    SpecTools.checkHMAC( res1, testres ).should.be.true;
-                    testres
-                        .toString( 'hex' )
-                        .should.equal(
-                            res1.toString( 'hex' )
-                        );
-                } );
-            })( i );
-        }
-    });
-}
-});
+                        SpecTools.checkHMAC( res1, testres ).should.be.true;
+                        testres
+                            .toString( 'hex' )
+                            .should.equal(
+                                res1.toString( 'hex' )
+                            );
+                    } );
+                } )( i );
+            }
+        } );
+    }
+} );

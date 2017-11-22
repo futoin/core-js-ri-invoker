@@ -117,5 +117,25 @@ module.exports = {
             },
             files: [ "PingFace.js" ],
         },
+        {
+            env : {
+                es6: true,
+                node: true,
+                commonjs: true,
+                mocha: true,
+            },
+            files: [ "test/**/*.js" ],
+            rules: {
+                "no-console" : ["off"],
+                "no-unused-vars": ["off"],
+                "require-jsdoc": ["off"],
+                "no-empty": ["off"],
+                "no-fallthrough": ["off"],
+            },
+            globals: {
+                "FutoInInvoker" : true,
+                "chai" : true,
+            },
+        },
     ]
 };

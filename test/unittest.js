@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require( 'lodash' );
 var common = require( '../lib/common' );
 var isNode = common._isNode;
@@ -18,232 +20,287 @@ if ( !isNode )
     // Browser test
     chai.should();
     assert = chai.assert;
-    
-    createTestHttpServer = function( cb ){
+
+    createTestHttpServer = function( cb )
+    {
         cb();
     };
-    
-    closeTestHttpServer = function( done ){
+
+    closeTestHttpServer = function( done )
+    {
         done();
     };
-    
+
     thisDir = '.';
-    
+
     invoker = FutoInInvoker;
 }
 else
 {
     // Node test
     var chai_module = module.require( 'chai' );
+
     chai_module.should();
     assert = chai_module.assert;
-    
-    var node_server = module.require('./node_server.js');
+
+    var node_server = module.require( './node_server.js' );
+
     createTestHttpServer = node_server.createTestHttpServer;
     closeTestHttpServer = node_server.closeTestHttpServer;
-    
+
     thisDir = __dirname;
-    
-    invoker = module.require('../lib/invoker.js');
+
+    invoker = module.require( '../lib/invoker.js' );
 }
 
 describe( 'Invoker Basic', function()
 {
-    it( 'should create Simple CCM', function(){
+    it( 'should create Simple CCM', function()
+    {
         var sccm = new invoker.SimpleCCM();
-    });
-    
-    it( 'should create Advanced CCM', function(){
+    } );
+
+    it( 'should create Advanced CCM', function()
+    {
         var sccm = new invoker.SimpleCCM();
-    });
+    } );
 } );
 
 describe( 'SimpleCCM', function()
 {
-    beforeEach(function(){
+    beforeEach( function()
+    {
         as = async_steps();
         ccm = new invoker.SimpleCCM();
-    });
-    
-    it('should register interface',
-        function( done ){
+    } );
+
+    it( 'should register interface',
+        function( done )
+        {
             as
                 .add(
-                    function( as ){
-                        try {
+                    function( as )
+                    {
+                        try
+                        {
                             as.state.reg_fired = false;
-                            ccm.once( 'register', function(){
+                            ccm.once( 'register', function()
+                            {
                                 as.state.reg_fired = true;
-                            });
-                            ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-                        } catch ( e ) {
+                            } );
+                            ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+                        }
+                        catch ( e )
+                        {
                             done( e );
                         }
                     },
-                     function( as, err ){
+                    function( as, err )
+                    {
                         done( new Error( err + ": " + as.state.error_info ) );
                     }
                 )
-                .add( function(as){
+                .add( function( as )
+                {
                     as.state.reg_fired.should.be.true;
                     done();
-                })
+                } )
                 .execute();
         }
     );
-    
-    it('should unregister interface', function( done ){
-        ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-        ccm.register( as , 'otherface', 'iface.b:1.2', 'http://localhost:23456' );
-        
+
+    it( 'should unregister interface', function( done )
+    {
+        ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+        ccm.register( as, 'otherface', 'iface.b:1.2', 'http://localhost:23456' );
+
         as.add(
-            function(as){try{
-                ccm.assertIface( 'myiface', 'iface.a:1.1' );
-                ccm.assertIface( 'otherface', 'iface.b:1.2' );
-                
-                as.state.reg_fired = false;
-                ccm.once('unregister', function()
+            function( as )
+            {
+                try
                 {
-                    as.state.reg_fired = true;
-                });
-                ccm.unRegister( 'myiface' );
-                ccm.assertIface( 'otherface', 'iface.b:1.2' );
-                
-                assert.throws( function(){
                     ccm.assertIface( 'myiface', 'iface.a:1.1' );
-                }, 'InvokerError' );
-            } catch ( e ){
-                console.dir( e.stack );
-                console.log( as.state.error_info );
-                throw e;
-            }},
+                    ccm.assertIface( 'otherface', 'iface.b:1.2' );
+
+                    as.state.reg_fired = false;
+                    ccm.once( 'unregister', function()
+                    {
+                        as.state.reg_fired = true;
+                    } );
+                    ccm.unRegister( 'myiface' );
+                    ccm.assertIface( 'otherface', 'iface.b:1.2' );
+
+                    assert.throws( function()
+                    {
+                        ccm.assertIface( 'myiface', 'iface.a:1.1' );
+                    }, 'InvokerError' );
+                }
+                catch ( e )
+                {
+                    console.dir( e.stack );
+                    console.log( as.state.error_info );
+                    throw e;
+                }
+            },
             function( as, err )
             {
                 console.log( err + ": " + as.state.error_info );
             }
         )
-        .add( function( as )
-        {
-            as.state.reg_fired.should.be.true;
-            done();
-        } )
-        .execute();
-    });
-    
-    it('should create interface alias', function( done ){
-        ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-        ccm.register( as , 'otherface', 'iface.b:1.2', 'http://localhost:23456' );
-        
-        as.add(
-            function(as){try{
-                ccm.assertIface( 'myiface', 'iface.a:1.0' );
-                ccm.assertIface( 'otherface', 'iface.b:1.2' );
-                
-                ccm.alias( 'myiface', 'newname' );
-
-                ccm.assertIface( 'newname', 'iface.a:1.0' );
-
-                assert.throws( function(){
-                    ccm.assertIface( 'myiface', 'iface.a:1.3' );
-                }, 'InvokerError' );
-                
-                assert.throws( function(){
-                    ccm.assertIface( 'myiface', 'iface.a:2.0' );
-                }, 'InvokerError' );
-
-                assert.strictEqual( ccm.iface('myiface'), ccm.iface('newname') );
-                
-                as.success();
+            .add( function( as )
+            {
+                as.state.reg_fired.should.be.true;
                 done();
-            } catch ( e ){
-                console.dir( e.stack );
-                console.log( as.state.error_info );
-                throw e;
-            }},
+            } )
+            .execute();
+    } );
+
+    it( 'should create interface alias', function( done )
+    {
+        ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+        ccm.register( as, 'otherface', 'iface.b:1.2', 'http://localhost:23456' );
+
+        as.add(
+            function( as )
+            {
+                try
+                {
+                    ccm.assertIface( 'myiface', 'iface.a:1.0' );
+                    ccm.assertIface( 'otherface', 'iface.b:1.2' );
+
+                    ccm.alias( 'myiface', 'newname' );
+
+                    ccm.assertIface( 'newname', 'iface.a:1.0' );
+
+                    assert.throws( function()
+                    {
+                        ccm.assertIface( 'myiface', 'iface.a:1.3' );
+                    }, 'InvokerError' );
+
+                    assert.throws( function()
+                    {
+                        ccm.assertIface( 'myiface', 'iface.a:2.0' );
+                    }, 'InvokerError' );
+
+                    assert.strictEqual( ccm.iface( 'myiface' ), ccm.iface( 'newname' ) );
+
+                    as.success();
+                    done();
+                }
+                catch ( e )
+                {
+                    console.dir( e.stack );
+                    console.log( as.state.error_info );
+                    throw e;
+                }
+            },
             function( as, err )
             {
                 console.log( err + ": " + as.state.error_info );
             }
         );
         as.execute();
-    });
+    } );
 
-    it('should fail on double registration', function( done ){
+    it( 'should fail on double registration', function( done )
+    {
         as.state.fire_reg = false;
         as.add(
-            function( as ){
-                ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+            function( as )
+            {
+                ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
                 as.state.fire_reg = true;
-                ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+                ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
                 as.successStep();
             },
-            function( as, err ){try{
-                as.state.fire_reg.should.be.true;
-                err.should.equal('InvokerError');
-                as.state.error_info.should.equal('Already registered');
-                done();
-            }catch( e ){
-                console.log( e.message );
-                console.dir( e.stack );
-            }}
+            function( as, err )
+            {
+                try
+                {
+                    as.state.fire_reg.should.be.true;
+                    err.should.equal( 'InvokerError' );
+                    as.state.error_info.should.equal( 'Already registered' );
+                    done();
+                }
+                catch( e )
+                {
+                    console.log( e.message );
+                    console.dir( e.stack );
+                }
+            }
         );
-        
+
         as.execute();
-    });
-    
-    it('should fail on invalid ifacever at registration/assert', function(){
-        
-        assert.throws(function(){
-            ccm.register( as , 'myiface', 'iface.a:1.', 'http://localhost:23456' );
+    } );
+
+    it( 'should fail on invalid ifacever at registration/assert', function()
+    {
+        assert.throws( function()
+        {
+            ccm.register( as, 'myiface', 'iface.a:1.', 'http://localhost:23456' );
         }, 'InvokerError' );
-        
-        assert.throws(function(){
-            ccm.register( as , 'myiface', 'iface.a.1.0', 'http://localhost:23456' );
+
+        assert.throws( function()
+        {
+            ccm.register( as, 'myiface', 'iface.a.1.0', 'http://localhost:23456' );
         }, 'InvokerError' );
-        
-        assert.throws(function(){
-            ccm.register( as , 'myiface', 'iface$%$%.a.1.0', 'http://localhost:23456' );
+
+        assert.throws( function()
+        {
+            ccm.register( as, 'myiface', 'iface$%$%.a.1.0', 'http://localhost:23456' );
         }, 'InvokerError' );
-        
-        ccm.register( as , 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
-        
-        assert.throws(function(){
+
+        ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
+
+        assert.throws( function()
+        {
             ccm.assertIface( 'myiface', 'iface.a' );
         }, 'InvokerError' );
-    });
-    
-    it('should return iface impls', function(){
-        var deff, logf, cl1f, cl2f, cl3f;
-        
-        ccm.register( as, ccm.SVC_DEFENSE, 'futoin.defense:1.0', function( ccmimpl, rawinfo ){
+    } );
+
+    it( 'should return iface impls', function()
+    {
+        var deff;
+        var logf;
+        var cl1f;
+        var cl2f;
+        var cl3f;
+
+        ccm.register( as, ccm.SVC_DEFENSE, 'futoin.defense:1.0', function( ccmimpl, rawinfo )
+        {
             deff = new invoker.NativeIface( ccmimpl, rawinfo );
             return deff;
-        });
-        ccm.register( as, ccm.SVC_LOG, 'futoin.log:1.0', function( ccmimpl, rawinfo ){
+        } );
+        ccm.register( as, ccm.SVC_LOG, 'futoin.log:1.0', function( ccmimpl, rawinfo )
+        {
             logf = new invoker.NativeIface( ccmimpl, rawinfo );
             return logf;
-        });
-        ccm.register( as, ccm.SVC_CACHE_ + 'default', 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        } );
+        ccm.register( as, ccm.SVC_CACHE_ + 'default', 'futoin.cache:1.0', function( ccmimpl, rawinfo )
+        {
             cl1f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl1f;
-        });
-        ccm.register( as, ccm.SVC_CACHE_ + "L2", 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        } );
+        ccm.register( as, ccm.SVC_CACHE_ + "L2", 'futoin.cache:1.0', function( ccmimpl, rawinfo )
+        {
             cl2f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl2f;
-        });
-        ccm.register( as, ccm.SVC_CACHE_ + "L3", 'futoin.cache:1.0', function( ccmimpl, rawinfo ){
+        } );
+        ccm.register( as, ccm.SVC_CACHE_ + "L3", 'futoin.cache:1.0', function( ccmimpl, rawinfo )
+        {
             cl3f = new invoker.NativeIface( ccmimpl, rawinfo );
             return cl3f;
-        });
-        
+        } );
+
         ccm.defense().should.equal( deff );
         ccm.log().should.equal( logf );
         ccm.cache().should.equal( cl1f );
         ccm.cache( "L2" ).should.equal( cl2f );
         ccm.cache( "L3" ).should.equal( cl3f );
-    });
-    
-    it('should marked endpoints as secure', function(){
+    } );
+
+    it( 'should marked endpoints as secure', function()
+    {
         ccm.register( as, 'myhttp', 'a:1.0', 'http://localhost:23456' );
         ccm._iface_info.myhttp.secure_channel.should.be.false;
         ccm.register( as, 'myhttps', 'a:1.0', 'https://localhost:23456' );
@@ -258,131 +315,153 @@ describe( 'SimpleCCM', function()
         ccm._iface_info.mysecws.secure_channel.should.be.true;
         ccm.register( as, 'myunix', 'a:1.0', 'unix://localhost:23456' );
         ccm._iface_info.myunix.secure_channel.should.be.true;
-    });
-    
-    it('should fail on missing iface registration', function(){
-        assert.throws( function(){
-            ccm.iface( 'missing' )
+    } );
+
+    it( 'should fail on missing iface registration', function()
+    {
+        assert.throws( function()
+        {
+            ccm.iface( 'missing' );
         }, 'InvokerError' );
-    });
-    
-    it('should fail on missing iface unregistration', function(){
-        assert.throws( function(){
-            ccm.unRegister( 'missing' )
+    } );
+
+    it( 'should fail on missing iface unregistration', function()
+    {
+        assert.throws( function()
+        {
+            ccm.unRegister( 'missing' );
         }, 'InvokerError' );
-    });
-    
-    it('should properly properly manage aliases', function(){
-        ccm.register( as , 'myifacea', 'iface.a:1.0', 'http://localhost:23456' );
-        ccm.register( as , 'myifaceb', 'iface.b:1.1', 'http://localhost:23456' );
-        
+    } );
+
+    it( 'should properly properly manage aliases', function()
+    {
+        ccm.register( as, 'myifacea', 'iface.a:1.0', 'http://localhost:23456' );
+        ccm.register( as, 'myifaceb', 'iface.b:1.1', 'http://localhost:23456' );
+
         ccm.alias( 'myifacea', 'aiface1' );
         ccm.alias( 'myifacea', 'aiface2' );
         ccm.alias( 'myifacea', 'aiface3' );
-        
-        assert.throws( function(){
+
+        assert.throws( function()
+        {
             ccm.alias( 'myifacea', 'aiface3' );
         }, 'InvokerError' );
-        
-        assert.throws( function(){
+
+        assert.throws( function()
+        {
             ccm.alias( 'myifacec', 'aiface4' );
         }, 'InvokerError' );
-        
+
         ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface1' ) );
         ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface2' ) );
         ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface3' ) );
-        
+
         ccm.unRegister( 'aiface3' );
-        
-        assert.throws( function(){
-            ccm.iface( 'aiface3' )
+
+        assert.throws( function()
+        {
+            ccm.iface( 'aiface3' );
         }, 'InvokerError' );
-        
+
         ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface2' ) );
-        
+
         ccm.unRegister( 'myifacea' );
-        
-        assert.throws( function(){
-            ccm.iface( 'myifacea' )
+
+        assert.throws( function()
+        {
+            ccm.iface( 'myifacea' );
         }, 'InvokerError' );
-        
-        assert.throws( function(){
-            ccm.iface( 'aiface2' )
+
+        assert.throws( function()
+        {
+            ccm.iface( 'aiface2' );
         }, 'InvokerError' );
-    });
-    
-    it('should use "-internal" credentials', function(done){
+    } );
+
+    it( 'should use "-internal" credentials', function( done )
+    {
         var ifacedef = {
             iface: 'internal.test',
             version: '1.0',
             ftn3rev: '1.7',
         };
-        
-        as.add(function(as){
+
+        as.add( function( as )
+        {
             as.add(
-                function(as)
+                function( as )
                 {
-                    ccm.register( as , 'mf', 'internal.test:1.0',
-                                { onInternalRequest: function(){} }, null,
-                                { specDirs: [ ifacedef ] } );
+                    ccm.register( as, 'mf', 'internal.test:1.0',
+                        { onInternalRequest: function()
+                        {} }, null,
+                        { specDirs: [ ifacedef ] } );
                 },
-                function(as, err)
+                function( as, err )
                 {
-                    done(err);
+                    done( err );
                 }
             );
 
             as.add(
-                function(as)
+                function( as )
                 {
-                    ccm.register( as , 'mf2', 'internal.test:1.0',
-                                'http://localhost:23456', null,
-                                { specDirs: [ ifacedef ] } );
+                    ccm.register( as, 'mf2', 'internal.test:1.0',
+                        'http://localhost:23456', null,
+                        { specDirs: [ ifacedef ] } );
                 },
-                function(as, err)
+                function( as, err )
                 {
-                    if (err === 'SecurityError')
+                    if ( err === 'SecurityError' )
                     {
                         as.success();
-                    } else {
-                        console.log(as.state.error_info);
-                        done(err);
+                    }
+                    else
+                    {
+                        console.log( as.state.error_info );
+                        done( err );
                     }
                 }
-            );            
-        })
-        as.add(function(as) { done(); });
+            );
+        } );
+        as.add( function( as )
+        {
+            done();
+        } );
         as.execute();
-    });
+    } );
 } );
 
 describe( 'AdvancedCCM', function()
 {
-    beforeEach(function(){
+    beforeEach( function()
+    {
         as = async_steps();
         var opts = {};
+
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
-    });
-    
-    it('should register interface',
-        function( done ){
+    } );
+
+    it( 'should register interface',
+        function( done )
+        {
             as.add(
                 function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
                 },
                 function( as, err )
                 {
                     done( as.state.last_exception );
                 }
-            ).add( function( as ){
+            ).add( function( as )
+            {
                 done();
             } ).execute();
         }
     );
-    
-    it('should behave as cache miss on initFromCache',
+
+    it( 'should behave as cache miss on initFromCache',
         function( done )
         {
             as.add(
@@ -393,69 +472,79 @@ describe( 'AdvancedCCM', function()
                 },
                 function( as, err )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
                     ccm.cacheInit( as );
                     as.successStep();
                     done();
                 }
             );
-            
+
             as.execute();
         }
     );
-    
-    it('should handle inheritted interface assert',
-        function( done ){
+
+    it( 'should handle inheritted interface assert',
+        function( done )
+        {
             as.add(
                 function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
-                    
-                    as.add( function(as) {
-                        ccm.assertIface('myiface', 'fileface.a:1.1');
-                        ccm.assertIface('myiface', 'fileface.a:1.0');
-                        ccm.assertIface('myiface', 'fileface.b:3.1');
-                        ccm.assertIface('myiface', 'fileface.b:3.0');
-                    });
-                    as.forEach([
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
+
+                    as.add( function( as )
+                    {
+                        ccm.assertIface( 'myiface', 'fileface.a:1.1' );
+                        ccm.assertIface( 'myiface', 'fileface.a:1.0' );
+                        ccm.assertIface( 'myiface', 'fileface.b:3.1' );
+                        ccm.assertIface( 'myiface', 'fileface.b:3.0' );
+                    } );
+                    as.forEach( [
                         'fileface.a:1.2', 'fileface.a:0.1',
                         'fileface.b:3.2', 'fileface.b:2.1' ],
-                        function(as, i, v) {
-                            as.add(
-                                function(as) {
-                                    ccm.assertIface('myiface', v);
-                                    as.error('Fail');
-                                },
-                                function(as, err) {
-                                    if ( err !== 'Fail' ) {
-                                        as.success();
-                                    }
+                    function( as, i, v )
+                    {
+                        as.add(
+                            function( as )
+                            {
+                                ccm.assertIface( 'myiface', v );
+                                as.error( 'Fail' );
+                            },
+                            function( as, err )
+                            {
+                                if ( err !== 'Fail' )
+                                {
+                                    as.success();
                                 }
-                            );
-                        }
+                            }
+                        );
+                    }
                     );
                 },
                 function( as, err )
                 {
                     done( as.state.last_exception );
                 }
-            ).add( function( as ){
+            ).add( function( as )
+            {
                 done();
             } ).execute();
         }
     );
-});
+} );
 
 //============================================================================
 
 var call_remotes_model_as = async_steps();
-call_remotes_model_as.add(
-    function(as){
-        var iface = ccm.iface( 'myiface' );
-        var is_ws = ( iface._raw_info.endpoint.split(':')[0] === 'ws' );
-        var is_browser = ( iface._raw_info.endpoint.split(':')[0] === 'browser' );
 
-        as.add(function(as){
+call_remotes_model_as.add(
+    function( as )
+    {
+        var iface = ccm.iface( 'myiface' );
+        var is_ws = ( iface._raw_info.endpoint.split( ':' )[0] === 'ws' );
+        var is_browser = ( iface._raw_info.endpoint.split( ':' )[0] === 'browser' );
+
+        as.add( function( as )
+        {
             as.state.step = "testFunc";
 
             iface.call(
@@ -465,13 +554,15 @@ call_remotes_model_as.add(
                     a : "1",
                     n : 2.8,
                     o : { m : 3 },
-                    i : 4
+                    i : 4,
                 }
             );
-            as.add(function(as, res){
-                res.res.should.equal('MY_RESULT');
-            });
-        }).add(function(as, res){
+            as.add( function( as, res )
+            {
+                res.res.should.equal( 'MY_RESULT' );
+            } );
+        } ).add( function( as, res )
+        {
             if ( is_browser )
             {
                 return;
@@ -486,24 +577,26 @@ call_remotes_model_as.add(
                     a : "1",
                     n : 2.8,
                     o : { m : 3 },
-                    i : 4
+                    i : 4,
                 }
             );
-            as.add(function(as, res){
-                res.res.should.equal('MY_RESULT');
-            });
-        }).add(function(as){
-           
+            as.add( function( as, res )
+            {
+                res.res.should.equal( 'MY_RESULT' );
+            } );
+        } ).add( function( as )
+        {
             as.state.step = "noResult";
-            
+
             iface.call(
                 as,
                 "noResult",
                 {
-                    a : "123"
+                    a : "123",
                 }
             );
-            as.add(function(as, res){
+            as.add( function( as, res )
+            {
                 if ( iface._raw_info.funcs.noResult )
                 {
                     assert.strictEqual( undefined, res );
@@ -512,28 +605,30 @@ call_remotes_model_as.add(
                 {
                     res.should.be.empty;
                 }
-            });
-        }).add(function(as){
-
+            } );
+        } ).add( function( as )
+        {
             as.state.step = "customResult";
-            
+
             iface.call(
                 as,
                 "customResult"
             );
-            as.add(function(as, res){
+            as.add( function( as, res )
+            {
                 assert.strictEqual( true, res );
-            });
-        }).add(function(as){
-
+            } );
+        } ).add( function( as )
+        {
             as.state.step = "call";
 
             iface.call(
                 as,
                 "call"
             );
-            
-            as.add(function(as, res) {
+
+            as.add( function( as, res )
+            {
                 if ( iface._raw_info.funcs.call )
                 {
                     assert.strictEqual( undefined, res );
@@ -542,10 +637,11 @@ call_remotes_model_as.add(
                 {
                     res.should.be.empty;
                 }
-            });
-        }).add(function(as){
+            } );
+        } ).add( function( as )
+        {
             as.state.step = "rawUploadFunc";
-            
+
             if ( is_browser )
             {
                 as.success( { ok : 'OK' } );
@@ -558,15 +654,15 @@ call_remotes_model_as.add(
                 {},
                 "MY_UPLOAD"
             );
-            
-            as.add(function(as, res) {
-                res.ok.should.equal("OK");
-            });
-            
-        } ).add(function(as){
-            
+
+            as.add( function( as, res )
+            {
+                res.ok.should.equal( "OK" );
+            } );
+        } ).add( function( as )
+        {
             as.state.step = "rawUploadFuncParams";
-            
+
             if ( is_browser )
             {
                 return;
@@ -578,37 +674,40 @@ call_remotes_model_as.add(
                 {
                     a : "123",
                     o : {
-                        b : false
-                    }
+                        b : false,
+                    },
                 },
                 "MY_UPLOAD",
                 null,
                 3e3
             );
-            
-            as.add(function(as, res) {
-                res.ok.should.equal("OK");
-            });
-        }).add(function(as){
 
+            as.add( function( as, res )
+            {
+                res.ok.should.equal( "OK" );
+            } );
+        } ).add( function( as )
+        {
             if ( is_ws || is_browser )
             {
                 return;
             }
-            
+
             as.state.step = "rawDownload";
 
             iface.call(
                 as,
-                "rawDownload"                
+                "rawDownload"
             );
-            
-            
-            as.add(function(as, res) {
-                res.should.equal("MY_DOWNLOAD");
-            });
-        }).add(
-            function(as){
+
+
+            as.add( function( as, res )
+            {
+                res.should.equal( "MY_DOWNLOAD" );
+            } );
+        } ).add(
+            function( as )
+            {
                 as.state.step = "triggerError";
 
                 iface.call(
@@ -618,20 +717,21 @@ call_remotes_model_as.add(
             },
             function( as, err )
             {
-                err.should.equal("MY_ERROR");
+                err.should.equal( "MY_ERROR" );
                 as.success( "YES" );
             }
         ).add(
-            function(as, res){
-                res.should.equal("YES");
-                
+            function( as, res )
+            {
+                res.should.equal( "YES" );
+
                 as.state.step = "wrongDataResult";
-                
+
                 if ( is_ws || is_browser )
                 {
                     return;
                 }
-                
+
                 iface.call(
                     as,
                     "wrongDataResult"
@@ -645,18 +745,19 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.wrongDataResult )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else if ( !is_ws && !is_browser )
                 {
-                    res.should.equal("MY_DOWNLOAD");
+                    res.should.equal( "MY_DOWNLOAD" );
                 }
-                
+
                 as.state.step = "missingResultVar";
-                
+
                 iface.call(
                     as,
                     "missingResultVar"
@@ -670,23 +771,24 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.wrongDataResult )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "rawResultExpected";
-                
+
                 if ( is_ws || is_browser )
                 {
                     return;
                 }
-                
+
                 iface.call(
                     as,
                     "rawResultExpected"
@@ -700,18 +802,19 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.rawResultExpected )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else if ( !is_ws && !is_browser )
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "wrongException";
-                
+
                 iface.call(
                     as,
                     "wrongException"
@@ -732,11 +835,12 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 assert.strictEqual( undefined, res );
-                
+
                 as.state.step = "unknownFunc";
-                
+
                 iface.call(
                     as,
                     "unknownFunc"
@@ -757,11 +861,12 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 assert.strictEqual( undefined, res );
-                
+
                 as.state.step = "unexpectedUpload";
-                
+
                 iface.call(
                     as,
                     "unexpectedUpload",
@@ -772,6 +877,7 @@ call_remotes_model_as.add(
             function( as, err )
             {
                 err.should.equal( "InvokerError" );
+
                 if ( is_browser && !iface._raw_info.funcs.unexpectedUpload )
                 {
                     as.state.error_info.should.equal( "Upload data is allowed only for HTTP/WS endpoints" );
@@ -780,23 +886,24 @@ call_remotes_model_as.add(
                 {
                     as.state.error_info.should.equal( "Raw upload is not allowed" );
                 }
-                    
+
 
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.unexpectedUpload || is_browser )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "noParams";
-                
+
                 iface.call(
                     as,
                     "noParams",
@@ -811,22 +918,24 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.noParams )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "unknownParam";
-                
+
                 iface.call(
                     as,
                     "unknownParam",
-                    { a : "a", b : "b" }
+                    { a : "a",
+                        b : "b" }
                 );
             },
             function( as, err )
@@ -837,18 +946,19 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.noParams )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "missingParam";
-                
+
                 iface.call(
                     as,
                     "unknownParam",
@@ -863,18 +973,19 @@ call_remotes_model_as.add(
                 as.success();
             }
         ).add(
-            function(as, res){
+            function( as, res )
+            {
                 if ( iface._raw_info.funcs.noParams )
                 {
                     assert.strictEqual( undefined, res );
                 }
                 else
                 {
-                    res.ok.should.equal("OK");
+                    res.ok.should.equal( "OK" );
                 }
-                
+
                 as.state.step = "testUnicode";
-                
+
                 iface.call(
                     as,
                     "pingPong",
@@ -882,7 +993,8 @@ call_remotes_model_as.add(
                 );
             }
         ).add(
-            function( as, res ){
+            function( as, res )
+            {
                 res.pong.should.equal( "Мои данные на русском un latviešu valodā" );
             }
         ).add(
@@ -891,14 +1003,16 @@ call_remotes_model_as.add(
                 as.state.close_called = false;
                 as.state.iface_close_called = false;
 
-                ccm.once( 'close', function(){
+                ccm.once( 'close', function()
+                {
                     as.state.close_called = true;
-                });
-                
-                iface.once( 'close', function(){
+                } );
+
+                iface.once( 'close', function()
+                {
                     as.state.iface_close_called = true;
-                });
-                
+                } );
+
                 ccm.close();
             }
         ).add(
@@ -914,40 +1028,51 @@ call_remotes_model_as.add(
         console.log( as.state.last_exception.stack );
         as.state.done( new Error( err + ": " + as.state.error_info + " at "+as.state.step ) );
     }
-).add( function( as ){
+).add( function( as )
+{
     as.state.done();
-});;
+} );
 
 
 var call_interceptors_model_as = async_steps();
+
 call_interceptors_model_as.add(
-    function(as){
+    function( as )
+    {
         var iface = ccm.iface( 'myiface' );
 
-        as.add(function(as){try{
-            as.state.step = "testFunc";
+        as.add( function( as )
+        {
+            try
+            {
+                as.state.step = "testFunc";
 
-            iface.testFunc(
-                as,
-                "1",
-                2.8,
-                { m : 3 },
-                4
-            );
-        } catch ( e ){
-            console.dir( e.stack );
-            console.log( as.state.error_info );
-            throw e;
-        }}).add(function(as, res){
-            res.res.should.equal('MY_RESULT');
-            
+                iface.testFunc(
+                    as,
+                    "1",
+                    2.8,
+                    { m : 3 },
+                    4
+                );
+            }
+            catch ( e )
+            {
+                console.dir( e.stack );
+                console.log( as.state.error_info );
+                throw e;
+            }
+        } ).add( function( as, res )
+        {
+            res.res.should.equal( 'MY_RESULT' );
+
             as.state.step = "noResult";
-            
+
             iface.noResult(
                 as,
                 "123"
             );
-        }).add(function(as, res){
+        } ).add( function( as, res )
+        {
             if ( iface._raw_info.funcs.noResult )
             {
                 assert.strictEqual( undefined, res );
@@ -956,51 +1081,58 @@ call_interceptors_model_as.add(
             {
                 res.should.be.empty;
             }
-            
+
             as.state.step = "rawDownload";
 
             iface.rawDownload( as );
-        }).add(
-            function(as, res){
-                res.should.equal("MY_DOWNLOAD");
-                
+        } ).add(
+            function( as, res )
+            {
+                res.should.equal( "MY_DOWNLOAD" );
+
                 as.state.step = "triggerError";
 
                 iface.triggerError( as );
             },
             function( as, err )
             {
-                err.should.equal("MY_ERROR");
+                err.should.equal( "MY_ERROR" );
                 as.success( "YES" );
             }
-        ).add(function(as, res){
-            res.should.equal("YES");
+        ).add( function( as, res )
+        {
+            res.should.equal( "YES" );
             as.state.incomming_msg.length.should.equal( 4 );
             as.state.outgoing_msg.length.should.equal( 4 );
             as.success();
-        });
+        } );
     },
     function( as, err )
     {
         console.log( err + ": " + as.state.error_info + "("+as.state.step+")" );
         as.state.done( as.state.last_exception );
     }
-).add( function( as ){
+).add( function( as )
+{
     as.state.done();
-});;
+} );
 
 //============================================================================
 describe( 'NativeIface', function()
 {
-    describe('#ifaceInfo() - SimpleCCM', function(){
-        beforeEach(function(){
+    describe( '#ifaceInfo() - SimpleCCM', function()
+    {
+        beforeEach( function()
+        {
             as = async_steps();
-            
+
             as.state.incomming_msg = [];
             as.state.outgoing_msg = [];
-            
+
             var opts = {};
-            opts.commConfigCallback = function( proto, agent_opts ) {
+
+            opts.commConfigCallback = function( proto, agent_opts )
+            {
                 if ( proto === 'http' )
                 {
                     agent_opts.maxSockets = 3;
@@ -1017,49 +1149,61 @@ describe( 'NativeIface', function()
                     as.state.outgoing_msg.push( msg );
                 }
             };
-            
+
             ccm = new invoker.SimpleCCM( opts );
-        });
-        
-        afterEach(function( done ){
+        } );
+
+        afterEach( function( done )
+        {
             closeTestHttpServer( done );
-        });
-        
-        it( 'should return ifaceInfo without details', function(done){
-            ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
-            
+        } );
+
+        it( 'should return ifaceInfo without details', function( done )
+        {
+            ccm.register( as, 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
+
             as.add( function( as )
             {
                 var info = ccm.iface( 'myiface' ).ifaceInfo();
+
                 ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
-                
+
                 info.name().should.equal( 'fileface.a' );
                 info.version().should.equal( '1.1' );
                 info.inherits().length.should.equal( 0 );
                 _.isEmpty( info.funcs() ).should.be.true;
                 _.isEmpty( info.constraints() ).should.be.true;
-                
+
                 var iface = ccm.iface( 'myiface' );
-                
+
                 iface.should.not.have.property( 'testFunc' );
                 iface.should.not.have.property( 'rawUploadFunc' );
                 done();
             } );
             as.execute();
-        });
-        
-        it( 'should call HTTP remotes', function( done ){
+        } );
+
+        it( 'should call HTTP remotes', function( done )
+        {
             this.timeout( 5000 );
             as.add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
-                        
-                        as.add(function( as ){
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
                             as.setTimeout( 100 );
-                            createTestHttpServer( function(){ as.success(); } );
-                        });
-                    } catch ( e ){
+                            createTestHttpServer( function()
+                            {
+                                as.success();
+                            } );
+                        } );
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1073,20 +1217,29 @@ describe( 'NativeIface', function()
             as.copyFrom( call_remotes_model_as );
             as.state.done = done;
             as.execute();
-        });
-        
-        it( 'should call WS remotes', function( done ){
+        } );
+
+        it( 'should call WS remotes', function( done )
+        {
             this.timeout( 5000 );
             as.add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
-                        
-                        as.add(function( as ){
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
                             as.setTimeout( 100 );
-                            createTestHttpServer( function(){ as.success(); } );
-                        });
-                    } catch ( e ){
+                            createTestHttpServer( function()
+                            {
+                                as.success();
+                            } );
+                        } );
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1100,40 +1253,47 @@ describe( 'NativeIface', function()
             as.copyFrom( call_remotes_model_as );
             as.state.done = done;
             as.execute();
-        });
-        
-    if ( typeof window !== 'undefined' )
-    {
-        it( 'should call browser:// remotes', function( done ){
-            this.timeout( 5000 );
-            as.add(
-                function(as){
-                    try {
-                        ccm.register(
-                                as , 'myiface', 'fileface.a:1.1',
+        } );
+
+        if ( typeof window !== 'undefined' )
+        {
+            it( 'should call browser:// remotes', function( done )
+            {
+                this.timeout( 5000 );
+                as.add(
+                    function( as )
+                    {
+                        try
+                        {
+                            ccm.register(
+                                as, 'myiface', 'fileface.a:1.1',
                                 'browser://server_frame', null,
                                 { targetOrigin: 'http://localhost:8000' } );
-                    } catch ( e ){
-                        console.dir( e.stack );
-                        console.log( as.state.error_info );
-                        throw e;
+                        }
+                        catch ( e )
+                        {
+                            console.dir( e.stack );
+                            console.log( as.state.error_info );
+                            throw e;
+                        }
+                    },
+                    function( as, err )
+                    {
+                        as.state.done( new Error( err + ": " + as.state.error_info ) );
                     }
-                },
-                function( as, err )
-                {
-                    as.state.done( new Error( err + ": " + as.state.error_info ) );
-                }
-            );
-            as.copyFrom( call_remotes_model_as );
-            as.state.done = done;
-            as.execute();
-        });
-    }
-        
-        it( 'should fail with unknown scheme', function( done ){
+                );
+                as.copyFrom( call_remotes_model_as );
+                as.state.done = done;
+                as.execute();
+            } );
+        }
+
+        it( 'should fail with unknown scheme', function( done )
+        {
             as.add(
-                function(as){
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'unknown://localhost:23456/ftn' );
+                function( as )
+                {
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'unknown://localhost:23456/ftn' );
                 },
                 function( as, err )
                 {
@@ -1150,17 +1310,20 @@ describe( 'NativeIface', function()
                 }
             );
             as.execute();
-        });
-    });
-    
-    describe('#ifaceInfo() - AdvancedCCM', function(){
-        beforeEach(function(){
+        } );
+    } );
+
+    describe( '#ifaceInfo() - AdvancedCCM', function()
+    {
+        beforeEach( function()
+        {
             as = async_steps();
-            
+
             as.state.incomming_msg = [];
             as.state.outgoing_msg = [];
-            
+
             var opts = {};
+
             opts.specDirs = thisDir + '/specs';
             opts.messageSniffer = function( info, msg, is_incomming )
             {
@@ -1174,34 +1337,41 @@ describe( 'NativeIface', function()
                 }
             };
             ccm = new invoker.AdvancedCCM( opts );
-        });
-        
-        afterEach(function( done ){
+        } );
+
+        afterEach( function( done )
+        {
             closeTestHttpServer( done );
-        });
-        
-        it( 'should return ifaceInfo with details', function( done ){
+        } );
+
+        it( 'should return ifaceInfo with details', function( done )
+        {
             as.add(
                 function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'http://localhost:23456' );
                 },
                 function( as, err )
                 {
                     if ( ( err === 'SecurityError' ) &&
-                         ( as.state.error_info === "SecureChannel is required" )  )
+                         ( as.state.error_info === "SecureChannel is required" ) )
                     {
                         as.success();
                         return;
                     }
+
                     done( as.state.last_exception );
                 }
             ).add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
                         as.successStep();
-                    } catch ( e ){
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1212,31 +1382,37 @@ describe( 'NativeIface', function()
                     console.log( err + ": " + as.state.error_info );
                 }
             ).add(
-                function(as){
-                    try {
+                function( as )
+                {
+                    try
+                    {
                         var info = ccm.iface( 'myiface' ).ifaceInfo();
+
                         ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
-                        ccm.assertIface('myiface', 'fileface.b:3.1');
-                        ccm.assertIface('myiface', 'fileface.b:3.0');
-                        
+                        ccm.assertIface( 'myiface', 'fileface.b:3.1' );
+                        ccm.assertIface( 'myiface', 'fileface.b:3.0' );
+
                         info.name().should.equal( 'fileface.a' );
                         info.version().should.equal( '1.1' );
                         info.inherits().length.should.equal( 1 );
                         _.isEmpty( info.funcs() ).should.be.false;
                         _.isEmpty( info.constraints() ).should.be.false;
-                        
+
                         var iface = ccm.iface( 'myiface' );
-                        
+
                         iface.should.have.property( 'testFunc' );
                         iface.should.not.have.property( 'rawUploadFunc' );
-                        
-                        assert.throws( function(){
+
+                        assert.throws( function()
+                        {
                             iface.bindDerivedKey();
                         }, 'InvokerError' );
-                        
+
                         done();
                         as.success();
-                    } catch ( e ){
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1248,20 +1424,29 @@ describe( 'NativeIface', function()
                 }
             );
             as.execute();
-        });
-        
-        it( 'should call HTTP remotes', function( done ){
+        } );
+
+        it( 'should call HTTP remotes', function( done )
+        {
             this.timeout( 5000 );
             as.add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
-                        
-                        as.add(function( as ){
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
                             as.setTimeout( 100 );
-                            createTestHttpServer( function(){ as.success(); } );
-                        });
-                    } catch ( e ){
+                            createTestHttpServer( function()
+                            {
+                                as.success();
+                            } );
+                        } );
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1275,20 +1460,29 @@ describe( 'NativeIface', function()
             as.copyFrom( call_remotes_model_as );
             as.state.done = done;
             as.execute();
-        });
-        
-        it( 'should call WS remotes', function( done ){
+        } );
+
+        it( 'should call WS remotes', function( done )
+        {
             this.timeout( 5000 );
             as.add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
-                        
-                        as.add(function( as ){
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
                             as.setTimeout( 100 );
-                            createTestHttpServer( function(){ as.success(); } );
-                        });
-                    } catch ( e ){
+                            createTestHttpServer( function()
+                            {
+                                as.success();
+                            } );
+                        } );
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1302,49 +1496,62 @@ describe( 'NativeIface', function()
             as.copyFrom( call_remotes_model_as );
             as.state.done = done;
             as.execute();
-        });
-        
-    if ( typeof window !== 'undefined' )
-    {
-        it( 'should call browser:// remotes', function( done ){
-            this.timeout( 5000 );
-            as.add(
-                function(as){
-                    try {
-                        ccm.register(
-                                as , 'myiface', 'fileface.a:1.1',
+        } );
+
+        if ( typeof window !== 'undefined' )
+        {
+            it( 'should call browser:// remotes', function( done )
+            {
+                this.timeout( 5000 );
+                as.add(
+                    function( as )
+                    {
+                        try
+                        {
+                            ccm.register(
+                                as, 'myiface', 'fileface.a:1.1',
                                 'browser://server_frame', null,
                                 { targetOrigin: 'http://localhost:8000' } );
-
-                    } catch ( e ){
-                        console.dir( e.stack );
-                        console.log( as.state.error_info );
-                        throw e;
+                        }
+                        catch ( e )
+                        {
+                            console.dir( e.stack );
+                            console.log( as.state.error_info );
+                            throw e;
+                        }
+                    },
+                    function( as, err )
+                    {
+                        as.state.done( new Error( err + ": " + as.state.error_info ) );
                     }
-                },
-                function( as, err )
-                {
-                    as.state.done( new Error( err + ": " + as.state.error_info ) );
-                }
-            );
-            as.copyFrom( call_remotes_model_as );
-            as.state.done = done;
-            as.execute();
-        });
-    }
-        
-        it( 'should call WS remotes through interceptors', function( done ){
+                );
+                as.copyFrom( call_remotes_model_as );
+                as.state.done = done;
+                as.execute();
+            } );
+        }
+
+        it( 'should call WS remotes through interceptors', function( done )
+        {
             this.timeout( 5000 );
             as.add(
-                function(as){
-                    try {
-                        ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
-                        
-                        as.add(function( as ){
+                function( as )
+                {
+                    try
+                    {
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
                             as.setTimeout( 100 );
-                            createTestHttpServer( function(){ as.success(); } );
-                        });
-                    } catch ( e ){
+                            createTestHttpServer( function()
+                            {
+                                as.success();
+                            } );
+                        } );
+                    }
+                    catch ( e )
+                    {
                         console.dir( e.stack );
                         console.log( as.state.error_info );
                         throw e;
@@ -1358,45 +1565,54 @@ describe( 'NativeIface', function()
             as.copyFrom( call_interceptors_model_as );
             as.state.done = done;
             as.execute();
-        });
-        
-        it( 'should check secure channel', function( done ){
+        } );
+
+        it( 'should check secure channel', function( done )
+        {
             as.add(
-                function(as){
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
-                    
-                    as.add(function( as ){
+                function( as )
+                {
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'ws://localhost:23456/ftn' );
+
+                    as.add( function( as )
+                    {
                         as.setTimeout( 100 );
-                        createTestHttpServer( function(){ as.success(); } );
-                    });
-                    as.add(function( as ) {
-                        ccm.iface('myiface').call( as, 'missingResultVar' );
-                    });
+                        createTestHttpServer( function()
+                        {
+                            as.success();
+                        } );
+                    } );
+                    as.add( function( as )
+                    {
+                        ccm.iface( 'myiface' ).call( as, 'missingResultVar' );
+                    } );
                 },
                 function( as, err )
                 {
                     try
                     {
                         err.should.equal( 'SecurityError' );
-                        as.state.error_info.should.equal( "SecureChannel is required"  );
+                        as.state.error_info.should.equal( "SecureChannel is required" );
                         done();
                     }
                     catch ( ex )
                     {
                         done( ex );
                     }
+
                     as.state.done( new Error( err + ": " + as.state.error_info ) );
                 }
             );
 
             as.execute();
-        });
-        
-        it( 'should throw on not implemented UNIX transport', function( done ){
+        } );
+
+        it( 'should throw on not implemented UNIX transport', function( done )
+        {
             as.add(
-                function(as)
+                function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', 'unix://tmp.sock/' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'unix://tmp.sock/' );
                     as.successStep();
                 },
                 function( as, err )
@@ -1404,13 +1620,13 @@ describe( 'NativeIface', function()
                     done( new Error( err + ": " + as.state.error_info ) );
                 }
             ).add(
-                function(as)
+                function( as )
                 {
-                    ccm.iface('myiface').call(
+                    ccm.iface( 'myiface' ).call(
                         as,
                         "noResult",
                         {
-                            a : "123"
+                            a : "123",
                         }
                     );
                 },
@@ -1421,13 +1637,14 @@ describe( 'NativeIface', function()
                 }
             );
             as.execute();
-        });
-        
-        it( 'should throw on missing spec', function( done ){
+        } );
+
+        it( 'should throw on missing spec', function( done )
+        {
             as.add(
-                function(as)
+                function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.missign:1.1', 'unix://tmp.sock/' );
+                    ccm.register( as, 'myiface', 'fileface.missign:1.1', 'unix://tmp.sock/' );
                     as.successStep();
                 },
                 function( as, err )
@@ -1437,26 +1654,28 @@ describe( 'NativeIface', function()
                 }
             );
             as.execute();
-        });
-        
-        it( 'should call internal effectively', function( done ){
+        } );
+
+        it( 'should call internal effectively', function( done )
+        {
             as.add(
-                function(as)
+                function( as )
                 {
-                    ccm.register( as , 'myiface', 'fileface.a:1.1', {
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', {
                         onInternalRequest : function( as, info, ftnreq )
                         {
-                            as.add( function( as ){
+                            as.add( function( as )
+                            {
                                 as.success(
                                     {
                                         r: {
-                                            res : 'MY_RESULT'
-                                        }
+                                            res : 'MY_RESULT',
+                                        },
                                     },
                                     true
                                 );
                             } );
-                        }
+                        },
                     } );
                 },
                 function( as, err )
@@ -1467,8 +1686,13 @@ describe( 'NativeIface', function()
                 function( as )
                 {
                     var iface = ccm.iface( 'myiface' );
-                    iface.call( as, 'testFunc', { a : '1', n : 2.8, i : 4, o : { m : 3 } } );
-                    as.add( function( as, res ){
+
+                    iface.call( as, 'testFunc', { a : '1',
+                        n : 2.8,
+                        i : 4,
+                        o : { m : 3 } } );
+                    as.add( function( as, res )
+                    {
                         res.res.should.equal( 'MY_RESULT' );
                         done();
                     } );
@@ -1479,242 +1703,284 @@ describe( 'NativeIface', function()
                 }
             );
             as.execute();
-        });
-    });
-});
+        } );
+    } );
+} );
 
 //============================================================================
 describe( 'LogFace', function()
 {
-    before(function( done ){
+    before( function( done )
+    {
         as = async_steps();
-        
+
         var opts = {};
+
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
-        
-        as
-        .add(
-            function( as ) {
-                logface.register( as, ccm, 'secure+ws://localhost:23456/ftn' );
-                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
 
-                as.add( function( as ){
-                    createTestHttpServer( function(){ done(); } );
-                } );
-            },
-            function( as, err )
-            {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .execute();
-    });
-    
-    after(function( done ){
+        as
+            .add(
+                function( as )
+                {
+                    logface.register( as, ccm, 'secure+ws://localhost:23456/ftn' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                    as.add( function( as )
+                    {
+                        createTestHttpServer( function()
+                        {
+                            done();
+                        } );
+                    } );
+                },
+                function( as, err )
+                {
+                    console.log( as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .execute();
+    } );
+
+    after( function( done )
+    {
         closeTestHttpServer( done );
-    });
+    } );
 
     it( 'should call futoin.log through native interface', function( done )
     {
         this.timeout( 30e3 );
-        
+
         as
-        .add(
-            function( as ){
-                ccm.log().debug( 'DEBUGMSG' );
-                ccm.log().info( 'INFOMSG' );
-                ccm.log().warn( 'WARNMSG' );
-                ccm.log().error( 'ERRORMSG' );
-                ccm.log().security( 'SECURITYMSG' );
-                ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
-                ccm.log().call( as, 'msg', { txt: 'sync', lvl : 'debug', ts : '12345678901234.123' } );
-                
-                as.state.waits = 0;
-                
-                as.loop(function(as){
-                    as.add(function( as )
+            .add(
+                function( as )
+                {
+                    ccm.log().debug( 'DEBUGMSG' );
+                    ccm.log().info( 'INFOMSG' );
+                    ccm.log().warn( 'WARNMSG' );
+                    ccm.log().error( 'ERRORMSG' );
+                    ccm.log().security( 'SECURITYMSG' );
+                    ccm.log().hexdump( 'debug', 'DEBUGMSG', 'HEXDATA' );
+                    ccm.log().call( as, 'msg', { txt: 'sync',
+                        lvl : 'debug',
+                        ts : '12345678901234.123' } );
+
+                    as.state.waits = 0;
+
+                    as.loop( function( as )
                     {
-                        as.setTimeout(1e3);
-                        setTimeout(function(){
-                            setTimeout(function(){
-                                as.success();
-                            }, 300);
-                        }, 1);
-                    })
-                    .add( function(as) {
-                        ccm.iface( 'myiface' ).getLogCount( as );
-                    })
-                    .add( function( as, res )
-                    {
-                        if (res.count === 7)
+                        as.add( function( as )
                         {
-                            as.break();
-                        }
-                        
-                        as.state.waits += 1;
-                        
-                        if (as.state.waits > 50) {
-                            res.count.should.equal(7);
-                        }
+                            as.setTimeout( 1e3 );
+                            setTimeout( function()
+                            {
+                                setTimeout( function()
+                                {
+                                    as.success();
+                                }, 300 );
+                            }, 1 );
+                        } )
+                            .add( function( as )
+                            {
+                                ccm.iface( 'myiface' ).getLogCount( as );
+                            } )
+                            .add( function( as, res )
+                            {
+                                if ( res.count === 7 )
+                                {
+                                    as.break();
+                                }
+
+                                as.state.waits += 1;
+
+                                if ( as.state.waits > 50 )
+                                {
+                                    res.count.should.equal( 7 );
+                                }
+                            } );
                     } );
-                    
-                });
-            },
-            function( as, err )
+                },
+                function( as, err )
+                {
+                    console.log( as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .add( function( as, res )
             {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .add( function( as, res )
-        {
-            done();
-        } )
-        .execute();
-    });
+                done();
+            } )
+            .execute();
+    } );
 } );
 
 //============================================================================
 describe( 'CacheFace', function()
 {
-    before(function( done ){
+    before( function( done )
+    {
         as = async_steps();
-        
+
         var opts = {};
+
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
-        
-        as
-        .add(
-            function( as ) {
-                cacheface.register( as, ccm, 'my', 'secure+ws://localhost:23456/ftn', 'login:pass' );
-                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
 
-                as.add( function( as ){
-                    createTestHttpServer( function(){ done(); } );
-                } );
-            },
-            function( as, err )
-            {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .execute();
-    });
-    
-    after(function( done ){
+        as
+            .add(
+                function( as )
+                {
+                    cacheface.register( as, ccm, 'my', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+                    ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                    as.add( function( as )
+                    {
+                        createTestHttpServer( function()
+                        {
+                            done();
+                        } );
+                    } );
+                },
+                function( as, err )
+                {
+                    console.log( as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .execute();
+    } );
+
+    after( function( done )
+    {
         closeTestHttpServer( done );
-    });
+    } );
 
     it( 'should call futoin.cache through native interface', function( done )
     {
         as
-        .add(
-            function( as ){
-                var cface = ccm.cache( 'my' );
-                var call_count = 0;
-                var cb = function( as, a, b )
+            .add(
+                function( as )
                 {
-                    call_count += 1;
-                    as.add( function( as ){
-                        as.success( a + b || 100 );
-                    });
-                };
-                
-                cface.getOrSet( as, 'mykey', cb, [1,2], 10 );
-                
-                as.add( function(as, value) {
-                    value.should.equal( 3 );
-                    cface.getOrSet( as, 'mykey', cb, [1,2], 10 );
-                });
-                
-                as.add( function( as, value ){
-                    value.should.equal( 3 );
-                    call_count.should.equal( 1 );
-                });
-                
-                cface.getOrSet( as, 'mykey', cb );
-                
-                as.add( function( as, value ){
-                    value.should.equal( 100 );
-                    call_count.should.equal( 2 );
-                });
-            },
-            function( as, err )
+                    var cface = ccm.cache( 'my' );
+                    var call_count = 0;
+                    var cb = function( as, a, b )
+                    {
+                        call_count += 1;
+                        as.add( function( as )
+                        {
+                            as.success( a + b || 100 );
+                        } );
+                    };
+
+                    cface.getOrSet( as, 'mykey', cb, [ 1, 2 ], 10 );
+
+                    as.add( function( as, value )
+                    {
+                        value.should.equal( 3 );
+                        cface.getOrSet( as, 'mykey', cb, [ 1, 2 ], 10 );
+                    } );
+
+                    as.add( function( as, value )
+                    {
+                        value.should.equal( 3 );
+                        call_count.should.equal( 1 );
+                    } );
+
+                    cface.getOrSet( as, 'mykey', cb );
+
+                    as.add( function( as, value )
+                    {
+                        value.should.equal( 100 );
+                        call_count.should.equal( 2 );
+                    } );
+                },
+                function( as, err )
+                {
+                    console.log( as.state.error_info );
+                    done( as.state.last_exception );
+                }
+            )
+            .add( function( as, res )
             {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .add( function( as, res )
-        {
-            done();
-        } )
-        .execute();
-    });
+                done();
+            } )
+            .execute();
+    } );
 } );
 
 
 //============================================================================
-if (isNode) describe( 'PingFace', function()
+if ( isNode )
 {
-    var PingFace = module.require( '../PingFace' );
-    
-    before(function( done ){
-        as = async_steps();
-        
-        var opts = {};
-        opts.specDirs = thisDir + '/specs';
-        ccm = new invoker.AdvancedCCM( opts );
-        
-        as
-        .add(
-            function( as ) {
-                PingFace.register( as, ccm, 'ping', 'secure+ws://localhost:23456/ftn', 'login:pass' );
-                ccm.register( as , 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
-
-                as.add( function( as ){
-                    createTestHttpServer( function(){ done(); } );
-                } );
-            },
-            function( as, err )
-            {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .execute();
-    });
-    
-    after(function( done ){
-        closeTestHttpServer( done );
-    });
-
-    it( 'should call futoin.ping through native interface', function( done )
+    describe( 'PingFace', function()
     {
-        as
-        .add(
-            function( as ){
-                var pface = ccm.iface( 'ping' );
-                pface.ping(as, 123);
-                
-                as.add( function( as, echo ){
-                    echo.should.equal( 123 );
-                });
-            },
-            function( as, err )
-            {
-                console.log( as.state.error_info );
-                done( as.state.last_exception );
-            }
-        )
-        .add( function( as, res )
+        var PingFace = module.require( '../PingFace' );
+
+        before( function( done )
         {
-            done();
-        } )
-        .execute();
-    });
-} );
+            as = async_steps();
+
+            var opts = {};
+
+            opts.specDirs = thisDir + '/specs';
+            ccm = new invoker.AdvancedCCM( opts );
+
+            as
+                .add(
+                    function( as )
+                    {
+                        PingFace.register( as, ccm, 'ping', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+                        ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
+
+                        as.add( function( as )
+                        {
+                            createTestHttpServer( function()
+                            {
+                                done();
+                            } );
+                        } );
+                    },
+                    function( as, err )
+                    {
+                        console.log( as.state.error_info );
+                        done( as.state.last_exception );
+                    }
+                )
+                .execute();
+        } );
+
+        after( function( done )
+        {
+            closeTestHttpServer( done );
+        } );
+
+        it( 'should call futoin.ping through native interface', function( done )
+        {
+            as
+                .add(
+                    function( as )
+                    {
+                        var pface = ccm.iface( 'ping' );
+
+                        pface.ping( as, 123 );
+
+                        as.add( function( as, echo )
+                        {
+                            echo.should.equal( 123 );
+                        } );
+                    },
+                    function( as, err )
+                    {
+                        console.log( as.state.error_info );
+                        done( as.state.last_exception );
+                    }
+                )
+                .add( function( as, res )
+                {
+                    done();
+                } )
+                .execute();
+        } );
+    } );
+}
