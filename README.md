@@ -280,6 +280,9 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 <dd></dd>
 <dt><a href="#NativeIface">NativeIface</a></dt>
 <dd></dd>
+<dt><a href="#PingFace">PingFace</a></dt>
+<dd><p>Base for FTN4 ping-based interfaces</p>
+</dd>
 <dt><a href="#SimpleCCM">SimpleCCM</a></dt>
 <dd></dd>
 <dt><a href="#SpecTools">SpecTools</a></dt>
@@ -1005,6 +1008,30 @@ Get hardcoded iface definition, if available.
 | Param | Type | Description |
 | --- | --- | --- |
 | version | <code>string</code> | iface version |
+
+<a name="PingFace"></a>
+
+## PingFace
+Base for FTN4 ping-based interfaces
+
+**Kind**: global class  
+<a name="PingFace.register"></a>
+
+### PingFace.register(as, ccm, name, endpoint, [credentials], [options])
+Register ping interface
+
+**Kind**: static method of [<code>PingFace</code>](#PingFace)  
+**Note**: Iface spec is embedded  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| as | <code>AsyncSteps</code> |  | step interface |
+| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
+| name | <code>string</code> |  | registration name for CCM |
+| endpoint | <code>string</code> |  | endpoint URL |
+| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
+| [options] | <code>object</code> | <code>{}</code> | registration options |
+| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
 
 <a name="SimpleCCM"></a>
 
