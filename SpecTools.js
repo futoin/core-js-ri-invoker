@@ -64,7 +64,7 @@ var spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 7,
+    _max_supported_v1_minor : 8,
 
     /**
      * Load FutoIn iface definition.
@@ -694,6 +694,18 @@ var spectools =
 
             if ( mnr < 8 )
             {
+                for ( f in funcs )
+                {
+                    if ( funcs[f].maxreqsize || funcs[f].maxrspsize )
+                    {
+                        as.error( FutoInError.InternalError,
+                            "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
+                    }
+                }
+            }
+
+            if ( mnr < 9 )
+            {
                 // TODO
             }
 
@@ -844,6 +856,33 @@ var spectools =
             {
                 finfo.throws = {};
             }
+
+            finfo._max_req_size = this._maxSize( finfo.maxreqsize );
+            finfo._max_rsp_size = this._maxSize( finfo.maxrspsize );
+        }
+    },
+
+    /**
+     * @private
+     * @param {string} ms - max size value
+     * @return {integer} size in bytes
+     */
+    _maxSize : function( ms )
+    {
+        if ( ms )
+        {
+            var res = parseInt( ms );
+
+            switch( ms[ ms.length ? ms.length - 1 : 0 ] )
+            {
+            case 'K': return res << 10;
+            case 'M': return res << 20;
+            default: return res;
+            }
+        }
+        else
+        {
+            return common.Options.SAFE_PAYLOAD_LIMIT;
         }
     },
 

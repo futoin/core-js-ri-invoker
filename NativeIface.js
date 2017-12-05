@@ -24,7 +24,8 @@ var futoin_error = common.FutoInError;
 var _zipObject = require( 'lodash/zipObject' );
 var ee = require( 'event-emitter' );
 var InterfaceInfo = require( './InterfaceInfo' );
-var FUTOIN_CONTENT_TYPE = common.Options.FUTOIN_CONTENT_TYPE;
+var Options = common.Options;
+var FUTOIN_CONTENT_TYPE = Options.FUTOIN_CONTENT_TYPE;
 
 /**
  * Native Interface for FutoIn ifaces
@@ -137,6 +138,8 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
         endpoint : raw_info.endpoint,
         expect_response : true,
         signMessage : this._signMessageDummy,
+        max_rsp_size: Options.SAFE_PAYLOAD_LIMIT,
+        max_req_size: Options.SAFE_PAYLOAD_LIMIT,
     };
 
     var ccmimpl = this._ccmimpl;

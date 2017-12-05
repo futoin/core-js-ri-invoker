@@ -497,6 +497,99 @@ describe( 'SpecTools', function()
                     var iface = {
                         iface : info.iface,
                         version: info.version,
+                        ftn3rev: "1.6",
+                        funcs: {
+                            f: {
+                                result: "string",
+                            },
+                        },
+                    };
+
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Custom result type FTN3 v1.7 feature" );
+                        as.success( 'OK' );
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.7",
+                        funcs: {
+                            f: {
+                                maxreqsize: '1M',
+                            },
+                        },
+                    };
+
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
+                        as.success( 'OK' );
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.7",
+                        funcs: {
+                            f: {
+                                maxrspsize: '1K',
+                            },
+                        },
+                    };
+
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err )
+                {
+                    try
+                    {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
+                        as.success( 'OK' );
+                    }
+                    catch ( e )
+                    {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok )
+                {
+                    ok.should.equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
                         ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
 
