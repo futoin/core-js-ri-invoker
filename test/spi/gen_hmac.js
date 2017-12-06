@@ -31,8 +31,7 @@ var req = {
 // ---
 start = performance_now();
 
-for ( let i = 0; i < count; ++i )
-{
+for ( let i = 0; i < count; ++i ) {
     spectools._genHMACU( 'sha256', key, req );
 }
 
@@ -42,8 +41,7 @@ console.log( 'Update method: ' + diff + ' @' + ( count/diff*1e3 ) + '/sec' );
 // ---
 start = performance_now();
 
-for ( let i = 0; i < count; ++i )
-{
+for ( let i = 0; i < count; ++i ) {
     spectools._genHMACJ( 'sha256', key, req );
 }
 
@@ -52,12 +50,10 @@ console.log( 'Join method: ' + diff + ' @' + ( count/diff*1e3 ) + '/sec' );
 
 
 // ---
-[ 'md5', 'sha224', 'sha256', 'sha384', 'sha512' ].forEach( function( algo )
-{
+[ 'md5', 'sha224', 'sha256', 'sha384', 'sha512' ].forEach( function( algo ) {
     start = performance_now();
 
-    for ( let i = 0; i < count; ++i )
-    {
+    for ( let i = 0; i < count; ++i ) {
         spectools.genHMACRaw( algo, key, req );
     }
 

@@ -34,8 +34,7 @@ var FUTOIN_CONTENT_TYPE = Options.FUTOIN_CONTENT_TYPE;
  * @param {InterfaceInfo} info - interface info
  * @alias NativeIface
  */
-function NativeIface( ccmimpl, info )
-{
+function NativeIface( ccmimpl, info ) {
     this._ccmimpl = ccmimpl;
     this._raw_info = info;
     this._iface_info = null;
@@ -43,18 +42,15 @@ function NativeIface( ccmimpl, info )
 
     ee( this );
 
-    for ( var fn in this._raw_info.funcs )
-    {
+    for ( var fn in this._raw_info.funcs ) {
         var finfo = this._raw_info.funcs[ fn ];
 
         // Not allowed
-        if ( finfo.rawupload )
-        {
+        if ( finfo.rawupload ) {
             continue;
         }
 
-        if ( fn in this )
-        {
+        if ( fn in this ) {
             continue;
         }
 
@@ -87,17 +83,14 @@ NativeIface._specs_module_prefix = null;
  * @note this helper is designed for derived native interfaces
  *      which define _specs or _specs_module_prefix static members.
  */
-NativeIface.spec = function( version )
-{
+NativeIface.spec = function( version ) {
     var iface;
 
-    if ( this._specs )
-    {
+    if ( this._specs ) {
         iface = this._specs[version];
     }
 
-    if ( !iface && this._specs_module_prefix )
-    {
+    if ( !iface && this._specs_module_prefix ) {
         var mod = this._specs_module_prefix + version.replace( '.', '_' );
 
         iface = module.require( mod );
@@ -121,8 +114,7 @@ NativeIface.prototype = NativeIfaceProto;
  * @param {int=} timeout - if provided, overrides the default. <=0 - disables timeout
  * @alias NativeIface#call
  */
-NativeIfaceProto.call = function( as, name, params, upload_data, download_stream, timeout )
-{
+NativeIfaceProto.call = function( as, name, params, upload_data, download_stream, timeout ) {
     params = params || {};
     var raw_info = this._raw_info;
 
@@ -147,8 +139,7 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
     // Create message
     // ---
     as.add(
-        function( as )
-        {
+        function( as ) {
             ccmimpl.createMessage( as, ctx, params );
         }
     );
@@ -156,109 +147,74 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
     // Perform request
     // ---
     as.add(
-        function( as, req )
-        {
-            if ( ctx.expect_response )
-            {
-                if ( typeof timeout !== 'number' )
-                {
+        function( as, req ) {
+            if ( ctx.expect_response ) {
+                if ( typeof timeout !== 'number' ) {
                     timeout = ctx.info.options.callTimeoutMS;
                 }
 
-                if ( timeout > 0 )
-                {
+                if ( timeout > 0 ) {
                     as.setTimeout( timeout );
                 }
             }
 
             var scheme = raw_info.endpoint_scheme;
 
-            if ( scheme === '#internal#' )
-            {
+            if ( scheme === '#internal#' ) {
                 ctx.endpoint.onInternalRequest( as, raw_info, req, upload_data, download_stream );
-            }
-            else if ( ( scheme === 'http' ) ||
-                        ( scheme === 'https' ) )
-            {
+            } else if ( ( scheme === 'http' ) ||
+                        ( scheme === 'https' ) ) {
                 ccmimpl.perfomHTTP( as, ctx, req );
-            }
-            else if ( ( scheme === 'ws' ) ||
-                        ( scheme === 'wss' ) )
-            {
+            } else if ( ( scheme === 'ws' ) ||
+                        ( scheme === 'wss' ) ) {
                 var finfo;
                 var rawresult = ctx.download_stream || ( ctx.info.funcs &&
                         ( finfo = ctx.info.funcs[ name ] ) &&
                         finfo.rawresult );
 
                 if ( ctx.upload_data ||
-                        rawresult )
-                {
+                        rawresult ) {
                     ctx.endpoint = ctx.endpoint.replace( 'ws', 'http' );
                     ctx.rawresult = rawresult;
                     ccmimpl.perfomHTTP( as, ctx, req );
-                }
-                else
-                {
+                } else {
                     ccmimpl.perfomWebSocket( as, ctx, req );
                 }
-            }
-            else if ( ctx.upload_data )
-            {
+            } else if ( ctx.upload_data ) {
                 as.error(
                     futoin_error.InvokerError,
                     'Upload data is allowed only for HTTP/WS endpoints' );
-            }
-            else if ( ctx.download_stream )
-            {
+            } else if ( ctx.download_stream ) {
                 as.error(
                     futoin_error.InvokerError,
                     'Download stream is allowed only for HTTP/WS endpoints' );
-            }
-            else if ( scheme === 'browser' )
-            {
+            } else if ( scheme === 'browser' ) {
                 ccmimpl.perfomBrowser( as, ctx, req );
-            }
-            else if ( scheme === 'unix' )
-            {
+            } else if ( scheme === 'unix' ) {
                 ccmimpl.perfomUNIX( as, ctx, req );
-            }
-            else if ( scheme === 'callback' )
-            {
+            } else if ( scheme === 'callback' ) {
                 ctx.endpoint( as, ctx, req );
-            }
-            else
-            {
+            } else {
                 as.error( futoin_error.InvokerError, 'Unknown endpoint scheme' );
             }
 
-            if ( ctx.expect_response )
-            {
+            if ( ctx.expect_response ) {
                 as.add(
-                    function( as, rsp, content_type )
-                    {
-                        if ( ctx.download_stream )
-                        {
+                    function( as, rsp, content_type ) {
+                        if ( ctx.download_stream ) {
                             as.success( true );
-                        }
-                        else if ( ( content_type === FUTOIN_CONTENT_TYPE ) ||
-                                    ( content_type === true ) )
-                        {
-                            if ( typeof rsp === 'string' )
-                            {
-                                try
-                                {
+                        } else if ( ( content_type === FUTOIN_CONTENT_TYPE ) ||
+                                    ( content_type === true ) ) {
+                            if ( typeof rsp === 'string' ) {
+                                try {
                                     rsp = JSON.parse( rsp );
-                                }
-                                catch ( e )
-                                {
+                                } catch ( e ) {
                                     as.error( futoin_error.CommError, "JSON:" + e.message );
                                 }
                             }
 
                             ccmimpl.onMessageResponse( as, ctx, rsp );
-                        }
-                        else
-                        {
+                        } else {
                             ccmimpl.onDataResponse( as, ctx, rsp );
                         }
                     }
@@ -275,21 +231,15 @@ NativeIfaceProto.call = function( as, name, params, upload_data, download_stream
  * @param {object} finfo - _
  * @param {array} args - _
  */
-NativeIfaceProto._member_call_intercept = function( as, name, finfo, args )
-{
+NativeIfaceProto._member_call_intercept = function( as, name, finfo, args ) {
     var arginfo = finfo.params;
     var keys = Object.keys( arginfo );
 
-    if ( args.length > keys.length )
-    {
+    if ( args.length > keys.length ) {
         as.error( futoin_error.InvokerError, "Unknown parameters" );
-    }
-    else if ( args.length < finfo.min_args )
-    {
+    } else if ( args.length < finfo.min_args ) {
         as.error( futoin_error.InvokerError, "Missing parameters" );
-    }
-    else if ( args.length < keys.length )
-    {
+    } else if ( args.length < keys.length ) {
         keys = keys.splice( 0, args.length );
     }
 
@@ -304,10 +254,8 @@ NativeIfaceProto._member_call_intercept = function( as, name, finfo, args )
  * @param {InterfaceInfo} finfo - interface info
  * @returns {function} call generator with bound parameters
  */
-NativeIfaceProto._member_call_generate = function( name, finfo )
-{
-    return function( as )
-    {
+NativeIfaceProto._member_call_generate = function( name, finfo ) {
+    return function( as ) {
         this._member_call_intercept(
             as,
             name,
@@ -322,10 +270,8 @@ NativeIfaceProto._member_call_generate = function( name, finfo )
  * @returns {InterfaceInfo} - interface info
  * @alias NativeIface#ifaceInfo
  */
-NativeIfaceProto.ifaceInfo = function()
-{
-    if ( !this._iface_info )
-    {
+NativeIfaceProto.ifaceInfo = function() {
+    if ( !this._iface_info ) {
         this._iface_info = new InterfaceInfo( this._raw_info );
     }
 
@@ -337,8 +283,7 @@ NativeIfaceProto.ifaceInfo = function()
  * @param {AsyncSteps} as - step interface
  * @alias NativeIface#bindDerivedKey
  */
-NativeIfaceProto.bindDerivedKey = function( as )
-{
+NativeIfaceProto.bindDerivedKey = function( as ) {
     void as;
     throw new Error( futoin_error.InvokerError, "Not Implemented" );
 };
@@ -347,12 +292,10 @@ NativeIfaceProto.bindDerivedKey = function( as )
  * Shutdow interface
  * @private
  */
-NativeIfaceProto._close = function()
-{
+NativeIfaceProto._close = function() {
     var comms = this._comms;
 
-    for ( var k in comms )
-    {
+    for ( var k in comms ) {
         comms[ k ].close();
     }
 
@@ -363,8 +306,7 @@ NativeIfaceProto._close = function()
  * Dummy sign function
  * @private
  */
-NativeIfaceProto._signMessageDummy = function()
-{};
+NativeIfaceProto._signMessageDummy = function() {};
 
 module.exports = NativeIface;
 

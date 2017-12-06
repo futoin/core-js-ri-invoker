@@ -3,7 +3,7 @@
   "version": "1.6.0",
   "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
-  "browser": "lib/browser.js",
+  "browser": "dist/futoin-invoker.js",
   "engines": {
     "node": ">=6"
   },
@@ -43,6 +43,10 @@
     "request": "^2.83.0"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-object-assign": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "eslint": "^4.12.1",
     "futoin-asyncsteps": "^1.10.1",

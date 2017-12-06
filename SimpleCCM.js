@@ -43,8 +43,7 @@ var SimpleCCMPublic = common.Options;
  * @param {object=} options - map of options
  * @see SimpleCCMOptions
  */
-function SimpleCCM( options )
-{
+function SimpleCCM( options ) {
     ee( this );
     this._iface_info = {};
     this._iface_impl = {};
@@ -74,8 +73,7 @@ SimpleCCMProto._secure_test = /^(https|wss|unix):\/\//;
  * @param {InterfaceInfo} info - interface info
  * @returns {NativeIface} new instance of native face
  */
-SimpleCCMProto._native_iface_builder = function( ccmimpl, info )
-{
+SimpleCCMProto._native_iface_builder = function( ccmimpl, info ) {
     return new NativeIface( ccmimpl, info );
 };
 
@@ -96,22 +94,19 @@ SimpleCCMProto._native_iface_builder = function( ccmimpl, info )
  * @alias SimpleCCM#register
  * @fires SimpleCCM#register
  */
-SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, options )
-{
+SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, options ) {
     var is_channel_reg = ( name === null );
 
     // Unregister First
     if ( !is_channel_reg &&
-         ( name in this._iface_info ) )
-    {
+         ( name in this._iface_info ) ) {
         as.error( futoin_error.InvokerError, "Already registered" );
     }
 
     // Check ifacever
     var m = ifacever.match( common._ifacever_pattern );
 
-    if ( m === null )
-    {
+    if ( m === null ) {
         as.error( futoin_error.InvokerError, "Invalid ifacever" );
     }
 
@@ -126,20 +121,14 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
     var is_bidirect = false;
 
     // ---
-    if ( is_channel_reg )
-    {
+    if ( is_channel_reg ) {
         endpoint_scheme = 'callback';
         is_bidirect = true;
-    }
-    else if ( typeof endpoint === "string" )
-    {
-        if ( this._secure_replace.test( endpoint ) )
-        {
+    } else if ( typeof endpoint === "string" ) {
+        if ( this._secure_replace.test( endpoint ) ) {
             secure_channel = true;
             endpoint = endpoint.replace( this._secure_replace, '' );
-        }
-        else if ( this._secure_test.test( endpoint ) )
-        {
+        } else if ( this._secure_test.test( endpoint ) ) {
             secure_channel = true;
         }
 
@@ -148,8 +137,7 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
         // ---
         endpoint_scheme = endpoint.split( ':' )[ 0 ];
 
-        switch ( endpoint_scheme )
-        {
+        switch ( endpoint_scheme ) {
         case 'http':
         case 'https':
             break;
@@ -161,8 +149,7 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
             break;
 
         case 'browser':
-            if ( options && options.targetOrigin )
-            {
+            if ( options && options.targetOrigin ) {
                 secure_channel = true;
             }
 
@@ -172,17 +159,13 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
         default:
             as.error( futoin_error.InvokerError, "Unknown endpoint schema" );
         }
-    }
-    else if ( 'onInternalRequest' in endpoint )
-    {
+    } else if ( 'onInternalRequest' in endpoint ) {
         secure_channel = true;
         impl = this._native_iface_builder;
         endpoint_scheme = '#internal#';
         is_bidirect = true;
         credentials = credentials || '-internal';
-    }
-    else
-    {
+    } else {
         secure_channel = true;
         impl = endpoint;
         endpoint = null;
@@ -216,72 +199,60 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
     };
 
     if ( info.creds_hmac &&
-         ( !options.hmacKey || !options.hmacAlgo ) )
-    {
+         ( !options.hmacKey || !options.hmacAlgo ) ) {
         as.error( futoin_error.InvokerError, "Missing options.hmacKey or options.hmacAlgo" );
     }
 
-    if ( name )
-    {
+    if ( name ) {
         this._iface_info[ name ] = info;
     }
 
     var _this = this;
 
     as.add(
-        function( as )
-        {
+        function( as ) {
             _this._impl.onRegister( as, info );
 
-            as.add( function( as )
-            {
+            as.add( function( as ) {
                 // error checks
                 // ---
-                if ( !info.simple_req )
-                {
+                if ( !info.simple_req ) {
                     if ( !( 'AllowAnonymous' in info.constraints ) &&
-                        !info.creds )
-                    {
+                        !info.creds ) {
                         as.error( futoin_error.SecurityError, "Requires authenticated user" );
                     }
 
                     if ( ( 'SecureChannel' in info.constraints ) &&
-                        !secure_channel )
-                    {
+                        !secure_channel ) {
                         as.error( futoin_error.SecurityError, "SecureChannel is required" );
                     }
 
                     if ( ( 'MessageSignature' in info.constraints ) &&
                         !info.creds_master &&
-                        !info.creds_hmac )
-                    {
+                        !info.creds_hmac ) {
                         as.error( futoin_error.SecurityError, "SecureChannel is required" );
                     }
 
                     if ( ( 'BiDirectChannel' in info.constraints ) &&
-                        !is_bidirect )
-                    {
+                        !is_bidirect ) {
                         as.error( futoin_error.InvokerError, "BiDirectChannel is required" );
                     }
                 }
 
                 // Must be last
                 // ---
-                if ( is_channel_reg )
-                {
+                if ( is_channel_reg ) {
                     as.success( info, _this._native_iface_builder( _this._impl, info ) );
                 }
 
                 _this.emit( 'register', name, ifacever, info );
             } );
         },
-        function( as, err )
-        {
+        function( as, err ) {
             void as;
             void err;
 
-            if ( name )
-            {
+            if ( name ) {
                 delete _this._iface_info[ name ];
             }
         }
@@ -294,28 +265,22 @@ SimpleCCMProto.register = function( as, name, ifacever, endpoint, credentials, o
  * @returns {NativeInterface} - native interface
  * @alias SimpleCCM#iface
  */
-SimpleCCMProto.iface = function( name )
-{
+SimpleCCMProto.iface = function( name ) {
     var info = this._iface_info[ name ];
 
-    if ( !info )
-    {
+    if ( !info ) {
         throw new Error( futoin_error.InvokerError );
     }
 
     var regname = info.regname;
     var impl = this._iface_impl[ regname ];
 
-    if ( !impl )
-    {
+    if ( !impl ) {
         var NativeImpl = info.options.nativeImpl;
 
-        if ( NativeImpl )
-        {
+        if ( NativeImpl ) {
             impl = new NativeImpl( this._impl, info );
-        }
-        else
-        {
+        } else {
             impl = info.impl( this._impl, info );
         }
 
@@ -331,40 +296,32 @@ SimpleCCMProto.iface = function( name )
  * @alias SimpleCCM#unRegister
  * @fires SimpleCCM#unregister
  */
-SimpleCCMProto.unRegister = function( name )
-{
+SimpleCCMProto.unRegister = function( name ) {
     var info = this._iface_info[ name ];
 
-    if ( !info )
-    {
+    if ( !info ) {
         throw new Error( futoin_error.InvokerError );
     }
 
     var regname = info.regname;
 
-    if ( regname === name )
-    {
+    if ( regname === name ) {
         delete this._iface_info[ regname ];
         var impl = this._iface_impl[ regname ];
 
-        if ( impl )
-        {
+        if ( impl ) {
             impl._close();
             delete this._iface_impl[ regname ];
         }
 
-        if ( info.aliases )
-        {
+        if ( info.aliases ) {
             var aliases = info.aliases;
 
-            for ( var i = 0; i < aliases.length; ++i )
-            {
+            for ( var i = 0; i < aliases.length; ++i ) {
                 delete this._iface_info[ aliases[ i ] ];
             }
         }
-    }
-    else
-    {
+    } else {
         delete this._iface_info[ name ];
         info.aliases.splice( info.aliases.indexOf( name ), 0 );
     }
@@ -377,8 +334,7 @@ SimpleCCMProto.unRegister = function( name )
  * @returns {object} native defense interface
  * @alias SimpleCCM#defense
  */
-SimpleCCMProto.defense = function()
-{
+SimpleCCMProto.defense = function() {
     return this.iface( this.SVC_DEFENSE );
 };
 
@@ -387,8 +343,7 @@ SimpleCCMProto.defense = function()
  * @returns {object} FTN9 native face
  * @alias SimpleCCM#log
  */
-SimpleCCMProto.log = function()
-{
+SimpleCCMProto.log = function() {
     return this.iface( this.SVC_LOG );
 };
 
@@ -398,8 +353,7 @@ SimpleCCMProto.log = function()
  * @returns {object} FTN14 native face
  * @alias SimpleCCM#cache
  */
-SimpleCCMProto.cache = function( bucket )
-{
+SimpleCCMProto.cache = function( bucket ) {
     return this.iface( this.SVC_CACHE_ + ( bucket || "default" ) );
 };
 
@@ -410,19 +364,16 @@ SimpleCCMProto.cache = function( bucket )
  * @param {string} ifacever - interface identifier and its version separated by colon
  * @alias SimpleCCM#assertIface
  */
-SimpleCCMProto.assertIface = function( name, ifacever )
-{
+SimpleCCMProto.assertIface = function( name, ifacever ) {
     var info = this._iface_info[ name ];
 
-    if ( !info )
-    {
+    if ( !info ) {
         throw new Error( futoin_error.InvokerError );
     }
 
     var m = ifacever.match( common._ifacever_pattern );
 
-    if ( m === null )
-    {
+    if ( m === null ) {
         throw new Error( futoin_error.InvokerError );
     }
 
@@ -432,23 +383,19 @@ SimpleCCMProto.assertIface = function( name, ifacever )
 
     if ( ( info.iface === iface ) &&
          ( info.mjrver === mjr ) &&
-         ( info.mnrver >= mnr ) )
-    {
+         ( info.mnrver >= mnr ) ) {
         return;
     }
 
     var inherits = info.inherits;
 
-    if ( inherits )
-    {
-        for ( var i = inherits.length - 1; i >= 0; --i )
-        {
+    if ( inherits ) {
+        for ( var i = inherits.length - 1; i >= 0; --i ) {
             m = inherits[i].match( common._ifacever_pattern );
 
             if ( ( m[ common._ifacever_pattern_name ] === iface ) &&
                 ( m[ common._ifacever_pattern_mjr ] === mjr ) &&
-                ( m[ common._ifacever_pattern_mnr ] >= mnr ) )
-            {
+                ( m[ common._ifacever_pattern_mnr ] >= mnr ) ) {
                 return;
             }
         }
@@ -464,24 +411,19 @@ SimpleCCMProto.assertIface = function( name, ifacever )
  * @alias SimpleCCM#alias
  * @fires SimpleCCM#register
  */
-SimpleCCMProto.alias = function( name, alias )
-{
+SimpleCCMProto.alias = function( name, alias ) {
     var info = this._iface_info[ name ];
 
     if ( !info ||
-         this._iface_info[ alias ] )
-    {
+         this._iface_info[ alias ] ) {
         throw new Error( futoin_error.InvokerError );
     }
 
     this._iface_info[ alias ] = info;
 
-    if ( !info.aliases )
-    {
+    if ( !info.aliases ) {
         info.aliases = [ alias ];
-    }
-    else
-    {
+    } else {
         info.aliases.push( alias );
     }
 
@@ -493,20 +435,17 @@ SimpleCCMProto.alias = function( name, alias )
  * @alias SimpleCCM#close
  * @fires SimpleCCM#close
  */
-SimpleCCMProto.close = function()
-{
+SimpleCCMProto.close = function() {
     var impls = this._iface_impl;
 
-    for ( var n in impls )
-    {
+    for ( var n in impls ) {
         impls[ n ]._close();
     }
 
     // ---
     var comms = this._impl.comms;
 
-    for ( var k in comms )
-    {
+    for ( var k in comms ) {
         comms[ k ].close();
     }
 

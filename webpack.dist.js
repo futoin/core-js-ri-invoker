@@ -1,11 +1,19 @@
 'use strict';
 
+const UglifyJsPlugin = require( 'uglifyjs-webpack-plugin' );
+
 module.exports = {
     entry: {
-        unittest : './test/unittest.js',
-        spectooltest : './test/spectooltest.js',
+        'futoin-invoker': './lib/browser.js',
+        'futoin-invoker-lite': './lib/browser_lite.js',
     },
     output: {
+        library: {
+            root: "FutoInInvoker",
+            amd: "futoin-invoker",
+            commonjs: "futoin-invoker",
+        },
+        libraryTarget: "umd",
         filename: "[name].js",
         path: __dirname + '/dist',
     },
@@ -25,4 +33,9 @@ module.exports = {
             },
         ],
     },
+    plugins: [
+        new UglifyJsPlugin( {
+            sourceMap: true,
+        } ),
+    ],
 };

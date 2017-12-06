@@ -1,6 +1,6 @@
 module.exports = {
     "env": {
-        "es6": false,
+        "es6": true,
         "node": true,
         commonjs: true,
     },
@@ -29,7 +29,7 @@ module.exports = {
         "array-bracket-spacing": ["error", "always"],
         //"array-element-newline": ["error", { "multiline": true, "minItems": 3 }],
         "block-spacing": ["error"],
-        "brace-style": ["error", "allman"],
+        "brace-style": ["error", "1tbs"],
         "no-trailing-spaces": "error",
         "no-unused-vars": [
             "error",
@@ -44,7 +44,7 @@ module.exports = {
         "no-useless-escape": "error",
         // "object-curly-newline": ["error", { "multiline": true }],
         "object-curly-spacing": ["error", "always"],
-        "object-property-newline": "error",
+        //"object-property-newline": "error",
         "one-var": ["error", "never"],
         "padded-blocks": ["error", "never"],
         "padding-line-between-statements": [
@@ -68,7 +68,6 @@ module.exports = {
     overrides: [
         {
             env: {
-                es6: false,
                 browser: true,
             },
             files: [ "lib/browser*.js" ],
@@ -80,7 +79,6 @@ module.exports = {
         },
         {
             env: {
-                es6: false,
                 commonjs: true,
                 browser: true,
             },
@@ -92,7 +90,6 @@ module.exports = {
         },
         {
             env: {
-                es6: false,
                 node: true,
                 browser: true,
             },
@@ -103,7 +100,6 @@ module.exports = {
         },
         {
             env: {
-                es6: true,
                 node: true,
                 commonjs: true,
             },
@@ -111,7 +107,6 @@ module.exports = {
         },
         {
             env: {
-                es6: true,
                 node: true,
                 browser: true,
             },
@@ -119,7 +114,6 @@ module.exports = {
         },
         {
             env : {
-                es6: true,
                 node: true,
                 commonjs: true,
                 mocha: true,

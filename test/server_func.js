@@ -2,12 +2,9 @@
 
 var expect;
 
-if ( typeof chai !== 'undefined' )
-{
+if ( typeof chai !== 'undefined' ) {
     expect = chai.expect;
-}
-else
-{
+} else {
     expect = require( 'chai' ).expect;
 }
 
@@ -16,77 +13,53 @@ var fail_next = false;
 var log_count = 0;
 var cached_value;
 
-function processServerRequest( freq, data )
-{
+function processServerRequest( freq, data ) {
     var func = freq.f.split( ':' );
 
-    if ( func.length !== 3 )
-    {
+    if ( func.length !== 3 ) {
         return { e : 'InvalidRequest' };
-    }
-    else if ( func[0] === 'futoin.log' &&
-              func[1] === '1.0' )
-    {
-        if ( freq.p.txt === 'sync' )
-        {
-            if ( freq.p.lvl !== 'debug' )
-            {
+    } else if ( func[0] === 'futoin.log' &&
+              func[1] === '1.0' ) {
+        if ( freq.p.txt === 'sync' ) {
+            if ( freq.p.lvl !== 'debug' ) {
                 return null;
             }
-        }
-        else if ( freq.p.txt.toLowerCase() !== freq.p.lvl + 'msg' )
-        {
+        } else if ( freq.p.txt.toLowerCase() !== freq.p.lvl + 'msg' ) {
             return null;
-        }
-        else if ( func[2] === 'hexdump' &&
-                freq.p.data !== new Buffer( 'HEXDATA' ).toString( 'base64' ) )
-        {
+        } else if ( func[2] === 'hexdump' &&
+                freq.p.data !== new Buffer( 'HEXDATA' ).toString( 'base64' ) ) {
             return null;
         }
 
         ++log_count;
 
         return '';
-    }
-    else if ( func[0] === 'futoin.cache' &&
-              func[1] === '1.0' )
-    {
+    } else if ( func[0] === 'futoin.cache' &&
+              func[1] === '1.0' ) {
         if ( freq.p.key === 'mykey1_2' &&
-             ( func[2] === 'get' || freq.p.ttl === 10 ) )
-        {}
-        else if ( freq.p.key === 'mykey' &&
-             ( func[2] === 'get' || freq.p.ttl === 1000 ) )
-        {
+             ( func[2] === 'get' || freq.p.ttl === 10 ) ) {} else if ( freq.p.key === 'mykey' &&
+             ( func[2] === 'get' || freq.p.ttl === 1000 ) ) {
             cached_value = null;
-        }
-        else
-        {
+        } else {
             return { e : 'InvalidRequest',
                 edesc: JSON.stringify( freq ) };
         }
 
-        switch ( func[2] )
-        {
+        switch ( func[2] ) {
         case 'set':
             cached_value = freq.p.value;
             return {};
 
         case 'get':
-            if ( cached_value )
-            {
+            if ( cached_value ) {
                 return { value: cached_value };
-            }
-            else
-            {
+            } else {
                 return { e: 'CacheMiss' };
             }
         }
-    }
-    else if ( func[0] === 'futoin.ping' &&
-            func[1] === '1.0' )
-    {
-        switch ( func[2] )
-        {
+    } else if ( func[0] === 'futoin.ping' &&
+            func[1] === '1.0' ) {
+        switch ( func[2] ) {
         case "ping":
             freq.p.echo.should.equal( 123 );
             return { echo : freq.p.echo };
@@ -94,23 +67,17 @@ function processServerRequest( freq, data )
         default:
             return { e : 'UnknownInterface' };
         }
-    }
-    else if ( func[0] !== 'fileface.a' )
-    {
+    } else if ( func[0] !== 'fileface.a' ) {
         return { e : 'UnknownInterface' };
-    }
-    else if ( func[1] !== '1.1' )
-    {
+    } else if ( func[1] !== '1.1' ) {
         return { e : 'NotSupportedVersion' };
     }
 
-    switch ( func[2] )
-    {
+    switch ( func[2] ) {
     case 'testFuncRetry' :
         fail_next = !fail_next;
 
-        if ( fail_next )
-        {
+        if ( fail_next ) {
             return null;
         }
 
@@ -176,7 +143,6 @@ function processServerRequest( freq, data )
     return { e : 'InvalidFunction' };
 }
 
-if ( typeof module !== 'undefined' )
-{
+if ( typeof module !== 'undefined' ) {
     module.exports = processServerRequest;
 }

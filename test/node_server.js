@@ -10,12 +10,10 @@ var wssrv = null;
 
 require( 'chai' ).should();
 
-function processTestServerRequest( request, data )
-{
+function processTestServerRequest( request, data ) {
     var freq;
 
-    if ( request && request.url !== '/ftn' )
-    {
+    if ( request && request.url !== '/ftn' ) {
         var parsed_url = url.parse( request.url, true );
         var path = parsed_url.pathname.split( '/' );
 
@@ -24,19 +22,13 @@ function processTestServerRequest( request, data )
             p : parsed_url.query,
         };
 
-        if ( path[5] )
-        {
+        if ( path[5] ) {
             freq.sec = path[5];
         }
-    }
-    else
-    {
-        try
-        {
+    } else {
+        try {
             freq = JSON.parse( data );
-        }
-        catch ( e )
-        {
+        } catch ( e ) {
             return { e : 'InvalidReuquest' };
         }
     }
@@ -44,82 +36,59 @@ function processTestServerRequest( request, data )
     return processServerRequest( freq, data );
 }
 
-function createTestHttpServer( cb )
-{
-    if ( httpsrv )
-    {
+function createTestHttpServer( cb ) {
+    if ( httpsrv ) {
         cb();
         return;
     }
 
-    httpsrv = http.createServer( function( request, response )
-    {
+    httpsrv = http.createServer( function( request, response ) {
         var freq = [];
 
         request.connection.setTimeout( 100 );
 
-        request.on( "data", function( chunk )
-        {
+        request.on( "data", function( chunk ) {
             freq.push( chunk );
         } );
-        request.on( "end", function()
-        {
-            if ( freq.length )
-            {
-                if ( freq.length > 1 )
-                {
+        request.on( "end", function() {
+            if ( freq.length ) {
+                if ( freq.length > 1 ) {
                     freq = Buffer.concat( freq ).toString( 'utf8' );
-                }
-                else
-                {
+                } else {
                     freq = freq[0].toString( 'utf8' );
                 }
-            }
-            else
-            {
+            } else {
                 freq = '';
             }
 
             var frsp;
 
-            if ( request.method !== 'OPTIONS' )
-            {
+            if ( request.method !== 'OPTIONS' ) {
                 frsp = processTestServerRequest( request, freq );
 
-                if ( frsp === null )
-                {
+                if ( frsp === null ) {
                     request.socket.destroy();
                     return;
                 }
-            }
-            else
-            {
+            } else {
                 frsp = '';
             }
 
             var content_type;
 
-            if ( typeof frsp !== 'string' )
-            {
-                if ( typeof frsp === 'boolean' )
-                {
+            if ( typeof frsp !== 'string' ) {
+                if ( typeof frsp === 'boolean' ) {
                     frsp = { r : frsp };
-                }
-                else if ( typeof frsp !== "object" )
-                {
+                } else if ( typeof frsp !== "object" ) {
                     request.socket.destroy();
                     return;
-                }
-                else if ( !( 'e' in frsp ) )
-                {
+                } else if ( !( 'e' in frsp ) ) {
                     frsp = { r : frsp };
                 }
 
                 frsp = JSON.stringify( frsp );
                 content_type = 'application/futoin+json';
-            }
-            else
-            {
+            } else {
                 content_type = 'application/octet-stream';
             }
 
@@ -137,58 +106,45 @@ function createTestHttpServer( cb )
     } );
     httpsrv.listen( 23456, '127.0.0.1', 10, cb );
 
-    httpsrv.on( 'upgrade', function( req, sock, body )
-    {
-        if ( !httpsrv )
-        {
+    httpsrv.on( 'upgrade', function( req, sock, body ) {
+        if ( !httpsrv ) {
             return;
         }
 
-        if ( !req.url.match( /^\/ftn/ ) )
-        {
+        if ( !req.url.match( /^\/ftn/ ) ) {
             return;
         }
 
         var ws = new WebSocket( req, sock, body );
 
-        var req_close = function()
-        {
+        var req_close = function() {
             ws.close();
         };
 
         httpsrv.once( 'close', req_close );
         httpsrv.once( 'preclose', req_close );
-        ws.on( 'close', function()
-        {
-            if ( httpsrv )
-            {
+        ws.on( 'close', function() {
+            if ( httpsrv ) {
                 httpsrv.removeListener( 'close', req_close );
                 httpsrv.removeListener( 'preclose', req_close );
             }
         } );
 
-        ws.on( 'message', function( event )
-        {
+        ws.on( 'message', function( event ) {
             var msg = event.data;
             var frsp = processTestServerRequest( null, msg );
 
-            if ( frsp === null )
-            {
+            if ( frsp === null ) {
                 sock.destroy();
                 return;
             }
 
-            if ( typeof frsp === 'boolean' )
-            {
+            if ( typeof frsp === 'boolean' ) {
                 frsp = { r : frsp };
-            }
-            else if ( typeof frsp !== "object" )
-            {
+            } else if ( typeof frsp !== "object" ) {
                 sock.destroy();
                 return;
-            }
-            else if ( !( 'e' in frsp ) )
-            {
+            } else if ( !( 'e' in frsp ) ) {
                 frsp = { r : frsp };
             }
 
@@ -203,29 +159,21 @@ function createTestHttpServer( cb )
     enableDestroy( httpsrv );
 }
 
-function closeTestHttpServer( done )
-{
-    if ( httpsrv )
-    {
-        try
-        {
+function closeTestHttpServer( done ) {
+    if ( httpsrv ) {
+        try {
             httpsrv.emit( 'preclose' );
-            httpsrv.close( function()
-            {
+            httpsrv.close( function() {
                 done();
             } );
             httpsrv.destroy();
             httpsrv = null;
-        }
-        catch ( e )
-        {
+        } catch ( e ) {
             httpsrv = null;
             console.dir( e );
             done( e );
         }
-    }
-    else
-    {
+    } else {
         done();
     }
 }
@@ -233,10 +181,8 @@ function closeTestHttpServer( done )
 exports.createTestHttpServer = createTestHttpServer;
 exports.closeTestHttpServer = closeTestHttpServer;
 
-if ( require.main === module )
-{
-    createTestHttpServer( function()
-    {
+if ( require.main === module ) {
+    createTestHttpServer( function() {
         console.log( 'LISTENING' );
     } );
     var hidereq = require;

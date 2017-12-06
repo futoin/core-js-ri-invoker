@@ -25,8 +25,7 @@
  * @param {object} raw_info - futoin spec as is
  * @class
  */
-function InterfaceInfo( raw_info )
-{
+function InterfaceInfo( raw_info ) {
     this._raw_info = raw_info;
 }
 
@@ -39,8 +38,7 @@ InterfaceInfo.prototype = InterfaceInfoProto;
  * @returns {string} name
  * @alias InterfaceInfo#name
  */
-InterfaceInfoProto.name = function()
-{
+InterfaceInfoProto.name = function() {
     return this._raw_info.iface;
 };
 
@@ -49,8 +47,7 @@ InterfaceInfoProto.name = function()
  * @returns {string} version
  * @alias InterfaceInfo#version
  */
-InterfaceInfoProto.version = function()
-{
+InterfaceInfoProto.version = function() {
     return this._raw_info.version;
 };
 
@@ -59,8 +56,7 @@ InterfaceInfoProto.version = function()
  * @returns {string} inherited interface name-ver
  * @alias InterfaceInfo#inherits
  */
-InterfaceInfoProto.inherits = function()
-{
+InterfaceInfoProto.inherits = function() {
     return this._raw_info.inherits;
 };
 
@@ -69,8 +65,7 @@ InterfaceInfoProto.inherits = function()
  * @returns {object} list of functions
  * @alias InterfaceInfo#funcs
  */
-InterfaceInfoProto.funcs = function()
-{
+InterfaceInfoProto.funcs = function() {
     return this._raw_info.funcs;
 };
 
@@ -79,8 +74,7 @@ InterfaceInfoProto.funcs = function()
  * @returns {array} list of constraints
  * @alias InterfaceInfo#constraints
  */
-InterfaceInfoProto.constraints = function()
-{
+InterfaceInfoProto.constraints = function() {
     return this._raw_info.constraints;
 };
 

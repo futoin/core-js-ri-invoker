@@ -25,8 +25,7 @@ var common = require( './lib/common' );
 var async_steps = require( 'futoin-asyncsteps' );
 
 var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
-    function( str )
-    {
+    function( str ) {
         return new Buffer( str ).toString( 'base64' );
     };
 
@@ -41,8 +40,7 @@ var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
  * @alias LogFace
  * @augments NativeIface
  */
-function LogFace()
-{
+function LogFace() {
     NativeIface.apply( this, arguments );
     this._log_queue = [];
     this._active_runner = false;
@@ -58,8 +56,7 @@ function LogFace()
  * @param {string} [options.version=1.0] - iface version
  * @alias LogFace.register
  */
-LogFace.register = function( as, ccm, endpoint, credentials, options )
-{
+LogFace.register = function( as, ccm, endpoint, credentials, options ) {
     options = options || {};
     var ifacever = options.version || '1.0';
     var iface = LogFace.spec( ifacever );
@@ -126,8 +123,7 @@ LogFaceProto.LVL_SECURITY = 'security';
  * @private
  * @returns {string} current timestamp
  */
-LogFaceProto._ts = function()
-{
+LogFaceProto._ts = function() {
     var d = new Date();
 
     return d.getUTCFullYear().toString() +
@@ -145,8 +141,7 @@ LogFaceProto._ts = function()
  * @param {string} txt - message to log
  * @alias LogFace#msg
  */
-LogFaceProto.msg = function( lvl, txt )
-{
+LogFaceProto.msg = function( lvl, txt ) {
     this._add_queue(
         'msg', {
             lvl : lvl,
@@ -162,8 +157,7 @@ LogFaceProto.msg = function( lvl, txt )
  * @param {string} data - raw data
  * @alias LogFace#hexdump
  */
-LogFaceProto.hexdump = function( lvl, txt, data )
-{
+LogFaceProto.hexdump = function( lvl, txt, data ) {
     this._add_queue(
         'hexdump', {
             lvl : lvl,
@@ -178,8 +172,7 @@ LogFaceProto.hexdump = function( lvl, txt, data )
  * @param {string} txt - message to log
  * @alias LogFace#debug
  */
-LogFaceProto.debug = function( txt )
-{
+LogFaceProto.debug = function( txt ) {
     this.msg( 'debug', txt );
 };
 
@@ -188,8 +181,7 @@ LogFaceProto.debug = function( txt )
  * @param {string} txt - message to log
  * @alias LogFace#info
  */
-LogFaceProto.info = function( txt )
-{
+LogFaceProto.info = function( txt ) {
     this.msg( 'info', txt );
 };
 
@@ -198,8 +190,7 @@ LogFaceProto.info = function( txt )
  * @param {string} txt - message to log
  * @alias LogFace#warn
  */
-LogFaceProto.warn = function( txt )
-{
+LogFaceProto.warn = function( txt ) {
     this.msg( 'warn', txt );
 };
 
@@ -208,8 +199,7 @@ LogFaceProto.warn = function( txt )
  * @param {string} txt - message to log
  * @alias LogFace#error
  */
-LogFaceProto.error = function( txt )
-{
+LogFaceProto.error = function( txt ) {
     this.msg( 'error', txt );
 };
 
@@ -218,8 +208,7 @@ LogFaceProto.error = function( txt )
  * @param {string} txt - message to log
  * @alias LogFace#security
  */
-LogFaceProto.security = function( txt )
-{
+LogFaceProto.security = function( txt ) {
     this.msg( 'security', txt );
 };
 
@@ -229,14 +218,12 @@ LogFaceProto.security = function( txt )
  * @param {string} func - log/hexdump
  * @param {object} args - call args
  */
-LogFaceProto._add_queue = function( func, args )
-{
+LogFaceProto._add_queue = function( func, args ) {
     var log_queue = this._log_queue;
 
     log_queue.push( [ func, args ] );
 
-    if ( this._active_runner )
-    {
+    if ( this._active_runner ) {
         return;
     }
 
@@ -246,12 +233,9 @@ LogFaceProto._add_queue = function( func, args )
 
     async_steps()
         .add(
-            function( as )
-            {
-                as.loop( function( as )
-                {
-                    if ( !log_queue.length )
-                    {
+            function( as ) {
+                as.loop( function( as ) {
+                    if ( !log_queue.length ) {
                         _this._active_runner = false;
                         as.break();
                     }
@@ -259,14 +243,12 @@ LogFaceProto._add_queue = function( func, args )
                     as.state.log_item = log_queue.shift();
 
                     as.add(
-                        function( as )
-                        {
+                        function( as ) {
                             var item = as.state.log_item;
 
                             _this.call( as, item[0], item[1] );
                         },
-                        function( as, err )
-                        {
+                        function( as, err ) {
                             console.log( 'LOGFAIL:' + as.state.log_item );
                             console.log( 'ERROR:' + err + ':' + as.state.error_info );
                             console.log( as.state.last_exception.stack );

@@ -24,13 +24,10 @@ const NativeFace = require( './NativeIface' );
 /**
  * Base for FTN4 ping-based interfaces
  */
-class PingFace extends NativeFace
-{
-    ping( as, echo )
-    {
+class PingFace extends NativeFace {
+    ping( as, echo ) {
         this.call( as, 'ping', { echo } );
-        as.add( function( as, rsp )
-        {
+        as.add( function( as, rsp ) {
             as.success( rsp.echo );
         } );
     }
@@ -46,8 +43,7 @@ class PingFace extends NativeFace
      * @param {string} [options.version=1.0] - iface version
      * @note Iface spec is embedded
      */
-    static register( as, ccm, name, endpoint, credentials=null, options={} )
-    {
+    static register( as, ccm, name, endpoint, credentials=null, options={} ) {
         const ifacever = options.version || '1.0';
         const iface = this.spec( ifacever );
 

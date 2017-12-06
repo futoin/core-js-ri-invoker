@@ -42,8 +42,7 @@ var AdvancedCCMPublic = common.Options;
  * @extends SimpleCCM
  * @see AdvancedCCMOptions
  */
-function AdvancedCCM( options )
-{
+function AdvancedCCM( options ) {
     ee( this );
     this._iface_info = {};
     this._iface_impl = {};
@@ -68,8 +67,7 @@ AdvancedCCM.prototype = AdvancedCCMProto;
  * @alias AdvancedCCM#initFromCache
  * @ignore
  */
-AdvancedCCMProto.initFromCache = function( as, cache_l1_endpoint )
-{
+AdvancedCCMProto.initFromCache = function( as, cache_l1_endpoint ) {
     void cache_l1_endpoint;
     as.error( futoin_error.NotImplemented, "Caching is not supported yet" );
 };
@@ -81,8 +79,7 @@ AdvancedCCMProto.initFromCache = function( as, cache_l1_endpoint )
  * @alias AdvancedCCM#cacheInit
  * @ignore
  */
-AdvancedCCMProto.cacheInit = function( as )
-{
+AdvancedCCMProto.cacheInit = function( as ) {
     void as;
     // Fail silently
 };

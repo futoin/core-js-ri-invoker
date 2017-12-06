@@ -36,8 +36,7 @@ var common = require( './lib/common' );
  * @param {SimpleCCM} _ccm - CCM instance
  * @param {object} info - internal info
  */
-function CacheFace( _ccm, info )
-{
+function CacheFace( _ccm, info ) {
     NativeIface.apply( this, arguments );
     this._ttl_ms = info.options.ttl_ms || 1000;
 }
@@ -54,8 +53,7 @@ function CacheFace( _ccm, info )
  * @param {integer} [options.ttl_ms=1000] - default TTL
  * @alias CacheFace.register
  */
-CacheFace.register = function( as, ccm, name, endpoint, credentials, options )
-{
+CacheFace.register = function( as, ccm, name, endpoint, credentials, options ) {
     options = options || {};
     var ifacever = options.version || '1.0';
     var iface = this.spec( ifacever );
@@ -97,8 +95,7 @@ CacheFace.spec = NativeIface.spec;
  *
  * @alias CacheFace#getOrSet
  */
-CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
-{
+CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms ) {
     params = params || [];
     ttl_ms = ttl_ms || this._ttl_ms;
 
@@ -106,41 +103,32 @@ CacheFaceProto.getOrSet = function( as, key_prefix, callable, params, ttl_ms )
     var _this = this;
 
     as.add(
-        function( as )
-        {
+        function( as ) {
             _this.call( as, 'get', { key : key } );
         },
-        function( as, err )
-        {
-            if ( err === 'CacheMiss' )
-            {
+        function( as, err ) {
+            if ( err === 'CacheMiss' ) {
                 as.success();
             }
         }
     ).add(
-        function( as, res )
-        {
-            if ( res )
-            {
+        function( as, res ) {
+            if ( res ) {
                 as.success( res.value );
-            }
-            else
-            {
+            } else {
                 // TODO: implement cache hammering protection
                 var p = [ as ].concat( params ); // avoid side-effect
 
                 callable.apply( null, p );
 
-                as.add( function( as, value )
-                {
+                as.add( function( as, value ) {
                     _this.call( as, 'set', {
                         key : key,
                         value : value,
                         ttl : ttl_ms,
                     } );
 
-                    as.add( function( as )
-                    {
+                    as.add( function( as ) {
                         as.success( value );
                     } );
                 } );
