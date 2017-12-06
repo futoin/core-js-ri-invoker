@@ -1129,7 +1129,7 @@ var spectools =
                         ( val_len < tdef.minlen ) )
             {
                 spectools.emit( 'error',
-                    'Value min length' + val_len+ ' mismatch for ' + top_type );
+                    'Value min length ' + val_len+ ' mismatch for ' + top_type );
 
                 return false;
             }
@@ -1138,7 +1138,7 @@ var spectools =
                         ( val_len > tdef.maxlen ) )
             {
                 spectools.emit( 'error',
-                    'Value max length' + val_len + ' mismatch for ' + top_type );
+                    'Value max length ' + val_len + ' mismatch for ' + top_type );
 
                 return false;
             }

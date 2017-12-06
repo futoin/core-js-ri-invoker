@@ -123,6 +123,7 @@ module.exports = {
                 node: true,
                 commonjs: true,
                 mocha: true,
+                browser: true,
             },
             files: [ "test/**/*.js" ],
             rules: {
