@@ -231,8 +231,8 @@ class LogFace extends NativeIface {
         this._active_runner = true;
 
         async_steps()
-            .add( ( as ) => {
-                as.loop( ( as ) => {
+            .add(
+                ( as ) => as.loop( ( as ) => {
                     if ( !log_queue.length ) {
                         this._active_runner = false;
                         as.break();
@@ -253,8 +253,11 @@ class LogFace extends NativeIface {
                             as.success();
                         }
                     );
-                } );
-            } )
+                } ),
+                ( as, err ) => {
+                    this._active_runner = false;
+                }
+            )
             .execute();
     }
 }

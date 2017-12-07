@@ -13,7 +13,7 @@
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.6
+    Version: 1.7
     
     FTN3: FutoIn Interface Definition
     Version: 1.8
@@ -66,6 +66,7 @@ It has the following advantages:
     static names like "mymodule.some.service" in code. The rest is hidden in CCM configuration.
 * Easy HMAC-based message signature and user authentication
 * Security enforcement
+* CCM-wide request limit zones with both requests/period and max simultaneous limits
 
 The primary communication channel is WebSockets. Large raw data upload and download
 is also supported through automatic fallback to HTTP(S).
@@ -103,7 +104,10 @@ var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 
 # Browser installation
 
+Pre-built `dist/futoin-invoker.js` and `dist/futoin-invoker-lite.js` are available.
 The module can be used with `webpack` or any other CommonJS packer.
+
+*Warning: older browsers require WeakMap polyfill*
 
 *Note: there are the following globals available*:
 

@@ -120,7 +120,8 @@ class NativeIface {
 
         // Perform request
         // ---
-        as.add(
+        as.sync(
+            ccmimpl.limiters[raw_info.limitZone],
             ( as, req ) => {
                 if ( ctx.expect_response ) {
                     if ( typeof timeout !== 'number' ) {

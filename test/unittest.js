@@ -16,6 +16,7 @@ var closeTestHttpServer;
 var thisDir;
 
 if ( !isNode ) {
+    require( 'babel-polyfill/dist/polyfill.js' );
     // Browser test
     chai.should();
     assert = chai.assert;
@@ -62,6 +63,10 @@ describe( 'SimpleCCM', function() {
     beforeEach( function() {
         as = async_steps();
         ccm = new invoker.SimpleCCM();
+        ccm.limitZone( 'default', {
+            concurrent: 0xFFFF,
+            rate: 0xFFFF,
+        } );
     } );
 
     it( 'should register interface',
@@ -364,6 +369,10 @@ describe( 'AdvancedCCM', function() {
 
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
+        ccm.limitZone( 'default', {
+            concurrent: 0xFFFF,
+            rate: 0xFFFF,
+        } );
     } );
 
     it( 'should register interface',
@@ -948,6 +957,10 @@ describe( 'NativeIface', function() {
             };
 
             ccm = new invoker.SimpleCCM( opts );
+            ccm.limitZone( 'default', {
+                concurrent: 0xFFFF,
+                rate: 0xFFFF,
+            } );
         } );
 
         afterEach( function( done ) {
@@ -1096,6 +1109,10 @@ describe( 'NativeIface', function() {
                 }
             };
             ccm = new invoker.AdvancedCCM( opts );
+            ccm.limitZone( 'default', {
+                concurrent: 0xFFFF,
+                rate: 0xFFFF,
+            } );
         } );
 
         afterEach( function( done ) {
@@ -1403,6 +1420,10 @@ describe( 'LogFace', function() {
 
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
+        ccm.limitZone( 'default', {
+            concurrent: 0xFFFF,
+            rate: 0xFFFF,
+        } );
 
         as
             .add(
@@ -1429,7 +1450,7 @@ describe( 'LogFace', function() {
     } );
 
     it( 'should call futoin.log through native interface', function( done ) {
-        this.timeout( 30e3 );
+        this.timeout( 10e3 );
 
         as
             .add(
@@ -1465,7 +1486,7 @@ describe( 'LogFace', function() {
 
                                 as.state.waits += 1;
 
-                                if ( as.state.waits > 50 ) {
+                                if ( as.state.waits > 20 ) {
                                     res.count.should.equal( 7 );
                                 }
                             } );
@@ -1492,6 +1513,10 @@ describe( 'CacheFace', function() {
 
         opts.specDirs = thisDir + '/specs';
         ccm = new invoker.AdvancedCCM( opts );
+        ccm.limitZone( 'default', {
+            concurrent: 0xFFFF,
+            rate: 0xFFFF,
+        } );
 
         as
             .add(
@@ -1574,6 +1599,10 @@ if ( isNode ) {
 
             opts.specDirs = thisDir + '/specs';
             ccm = new invoker.AdvancedCCM( opts );
+            ccm.limitZone( 'default', {
+                concurrent: 0xFFFF,
+                rate: 0xFFFF,
+            } );
 
             as
                 .add(

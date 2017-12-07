@@ -13,7 +13,7 @@
 Reference implementation of:
  
     FTN7: FutoIn Invoker Concept
-    Version: 1.6
+    Version: 1.7
     
     FTN3: FutoIn Interface Definition
     Version: 1.8
@@ -66,6 +66,7 @@ It has the following advantages:
     static names like "mymodule.some.service" in code. The rest is hidden in CCM configuration.
 * Easy HMAC-based message signature and user authentication
 * Security enforcement
+* CCM-wide request limit zones with both requests/period and max simultaneous limits
 
 The primary communication channel is WebSockets. Large raw data upload and download
 is also supported through automatic fallback to HTTP(S).
@@ -103,7 +104,10 @@ var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 
 # Browser installation
 
+Pre-built `dist/futoin-invoker.js` and `dist/futoin-invoker-lite.js` are available.
 The module can be used with `webpack` or any other CommonJS packer.
+
+*Warning: older browsers require WeakMap polyfill*
 
 *Note: there are the following globals available*:
 
@@ -353,6 +357,7 @@ Advanced CCM - Reference Implementation
     * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
     * [.alias(name, alias)](#SimpleCCM+alias)
     * [.close()](#SimpleCCM+close)
+    * [.limitZone(name, options)](#SimpleCCM+limitZone)
     * ["register"](#SimpleCCM+event_register)
     * ["unregister"](#SimpleCCM+event_unregister)
     * ["close"](#SimpleCCM+event_close)
@@ -465,6 +470,18 @@ Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### advancedCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
 <a name="SimpleCCM+event_register"></a>
 
 ### "register"
@@ -1068,6 +1085,7 @@ Base Connection and Credentials Manager with limited error control
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
+        * [.limitZone(name, options)](#SimpleCCM+limitZone)
         * ["register"](#SimpleCCM+event_register)
         * ["unregister"](#SimpleCCM+event_unregister)
         * ["close"](#SimpleCCM+event_close)
@@ -1188,6 +1206,18 @@ Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### simpleCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
 <a name="SimpleCCM+event_register"></a>
 
 ### "register"
@@ -1544,6 +1574,7 @@ Useful for audit logging.
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
+        * [.limitZone(name, options)](#SimpleCCM+limitZone)
         * ["register"](#SimpleCCM+event_register)
         * ["unregister"](#SimpleCCM+event_unregister)
         * ["close"](#SimpleCCM+event_close)
@@ -1664,6 +1695,18 @@ Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### simpleCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
 <a name="SimpleCCM+event_register"></a>
 
 ### "register"
@@ -1746,6 +1789,7 @@ cache v1.x iface name prefix
         * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
         * [.alias(name, alias)](#SimpleCCM+alias)
         * [.close()](#SimpleCCM+close)
+        * [.limitZone(name, options)](#SimpleCCM+limitZone)
         * ["register"](#SimpleCCM+event_register)
         * ["unregister"](#SimpleCCM+event_unregister)
         * ["close"](#SimpleCCM+event_close)
@@ -1866,6 +1910,18 @@ Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### simpleCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
 <a name="SimpleCCM+event_register"></a>
 
 ### "register"
@@ -1947,6 +2003,7 @@ cache v1.x iface name prefix
     * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
     * [.alias(name, alias)](#SimpleCCM+alias)
     * [.close()](#SimpleCCM+close)
+    * [.limitZone(name, options)](#SimpleCCM+limitZone)
     * ["register"](#SimpleCCM+event_register)
     * ["unregister"](#SimpleCCM+event_unregister)
     * ["close"](#SimpleCCM+event_close)
@@ -2059,6 +2116,18 @@ Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### advancedCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
 <a name="SimpleCCM+event_register"></a>
 
 ### "register"

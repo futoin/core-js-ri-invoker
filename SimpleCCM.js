@@ -26,6 +26,7 @@ const _extend = require( 'lodash/extend' );
 const _defaults = require( 'lodash/defaults' );
 const SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
 const ee = require( 'event-emitter' );
+const Limiter = require( `futoin-asyncsteps/Limiter` );
 
 /**
  * SimpleCCM public properties
@@ -48,6 +49,28 @@ class SimpleCCM {
         this._iface_info = {};
         this._iface_impl = {};
         this._impl = impl || new SimpleCCMImpl( options );
+
+        this.limitZone(
+            "default",
+            {
+                concurrent: 8,
+                max_queue: 32,
+                rate: 10,
+                period_ms: 1e3,
+                burst: null,
+            }
+        );
+
+        this.limitZone(
+            "unlimited",
+            {
+                concurrent: 0xFFFFFFFF,
+                max_queue: null,
+                rate: 0xFFFFFFFF,
+                period_ms: 1e3,
+                burst: null,
+            }
+        );
     }
 
     /** @ignore */
@@ -112,6 +135,7 @@ class SimpleCCM {
         let impl = null;
         let endpoint_scheme;
         let is_bidirect = false;
+        let limitZone = 'default';
 
         // ---
         if ( is_channel_reg ) {
@@ -158,6 +182,7 @@ class SimpleCCM {
             endpoint_scheme = '#internal#';
             is_bidirect = true;
             credentials = credentials || '-internal';
+            limitZone = 'unlimited';
         } else {
             secure_channel = true;
             impl = endpoint;
@@ -170,17 +195,29 @@ class SimpleCCM {
         options = options || {};
         _defaults( options, this._impl.options );
 
+        // ---
+        limitZone = options.limitZone || limitZone;
+
+        if ( !( limitZone in this._impl.limiters ) ) {
+            as.error(
+                futoin_error.InvokerError,
+                `Unknown limit zone ${limitZone}`
+            );
+        }
+
+        // ---
+
         const info = {
-            iface : iface,
+            iface,
             version : mjrmnr,
             mjrver : mjr,
             mnrver : mnr,
-            endpoint : endpoint,
-            endpoint_scheme : endpoint_scheme,
+            endpoint,
+            endpoint_scheme,
             creds : credentials || null,
             creds_master : credentials === 'master',
             creds_hmac : credentials && ( credentials.substr( 0, 6 ) === '-hmac:' ),
-            secure_channel : secure_channel,
+            secure_channel,
             impl : impl,
             regname : name,
             inherits : null,
@@ -189,6 +226,7 @@ class SimpleCCM {
             options : options,
             _invoker_use : true,
             _user_info : null,
+            limitZone,
         };
 
         if ( info.creds_hmac &&
@@ -440,6 +478,16 @@ class SimpleCCM {
 
         // ---
         this.emit( 'close' );
+    }
+
+    /**
+     * Configure named AsyncSteps Limiter instance
+     * @alias SimpleCCM#limitZone
+     * @param {string} name - zone name
+     * @param {object} options - options to pass to Limiter c-tor
+     */
+    limitZone( name, options ) {
+        this._impl.limiters[name] = new Limiter( options );
     }
 }
 
