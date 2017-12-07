@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.7.0 (2017-12-07) ===
 BREAKING CHANGE: converted all code to ES6
 BREAKING CHANGE: introduced FTN7 v1.7 request limit zones
 NEW: webpack-based UMD dist entry point
