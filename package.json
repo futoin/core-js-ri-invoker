@@ -4,6 +4,19 @@
   "description": "FutoIn Invoker - Reference Implementation. Transparently and efficiently invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
   "browser": "dist/futoin-invoker.js",
+  "files" : [
+    "dist/",
+    "examples/",
+    "lib/",
+    "AdvancedCCM.js",
+    "CacheFace.js",
+    "InterfaceInfo.js",
+    "LogFace.js",
+    "NativeIface.js",
+    "PingFace.js",
+    "SimpleCCM.js",
+    "SpecTools.js"
+  ],
   "engines": {
     "node": ">=6"
   },
@@ -64,9 +77,6 @@
     "server-destroy": "^1.0.1",
     "webpack": "^3.10.0"
   },
-  "eslintIgnore": [
-    "test/**"
-  ],
   "peerDependencies": {
     "futoin-asyncsteps": "^1.10.1"
   }

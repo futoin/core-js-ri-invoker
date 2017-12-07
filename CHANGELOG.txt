@@ -1,4 +1,8 @@
 
+=== (next) ===
+BREAKING CHANGE: converted all code to E6
+NEW: webpack-based UMD dist entry point
+
 === 1.6.0 (2017-12-05) ===
 NEW: FTN3 v1.8 "maxreqsize" & "maxrspsize" function definition attribute
 

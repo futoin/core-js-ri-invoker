@@ -19,19 +19,11 @@
  * limitations under the License.
  */
 
-var _clone = require( 'lodash/clone' );
-var common = require( './lib/common' );
-var futoin_error = common.FutoInError;
-var _extend = require( 'lodash/extend' );
-var AdvancedCCMImpl = require( './lib/AdvancedCCMImpl' );
-var SimpleCCM = require( './SimpleCCM' );
-var ee = require( 'event-emitter' );
-
-/**
- * AdvancedCCM public properties
- * @ignore
- */
-var AdvancedCCMPublic = common.Options;
+const common = require( './lib/common' );
+const futoin_error = common.FutoInError;
+const _extend = require( 'lodash/extend' );
+const AdvancedCCMImpl = require( './lib/AdvancedCCMImpl' );
+const SimpleCCM = require( './SimpleCCM' );
 
 /**
  * Advanced CCM - Reference Implementation
@@ -42,47 +34,37 @@ var AdvancedCCMPublic = common.Options;
  * @extends SimpleCCM
  * @see AdvancedCCMOptions
  */
-function AdvancedCCM( options ) {
-    ee( this );
-    this._iface_info = {};
-    this._iface_impl = {};
-    this._impl = new AdvancedCCMImpl( options );
+class AdvancedCCM extends SimpleCCM {
+    constructor( options ) {
+        super( options, new AdvancedCCMImpl( options ) );
+    }
+
+    /**
+    * Try to load internal registration info from cache
+    * DO NOT USE, this is only a compliance with the spec.
+    * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
+    * @param {string} cache_l1_endpoint - URI or any other resource identifier of iface implementing peer, accepted by CCM implementation
+    * @alias AdvancedCCM#initFromCache
+    * @ignore
+    */
+    initFromCache( as, cache_l1_endpoint ) {
+        void cache_l1_endpoint;
+        as.error( futoin_error.NotImplemented, "Caching is not supported yet" );
+    }
+
+    /**
+    * Save internal registration info to cache
+    * DO NOT USE, this is only a compliance with the spec.
+    * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
+    * @alias AdvancedCCM#cacheInit
+    * @ignore
+    */
+    cacheInit( as ) {
+        void as;
+        // Fail silently
+    }
 }
 
-_extend( AdvancedCCM, AdvancedCCMPublic );
-
-/**
- * AdvancedCCM proto
- * @ignore
- */
-var AdvancedCCMProto = _clone( SimpleCCM.prototype );
-
-AdvancedCCM.prototype = AdvancedCCMProto;
-
-/**
- * Try to load internal registration info from cache
- * DO NOT USE, this is only a compliance with the spec.
- * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
- * @param {string} cache_l1_endpoint - URI or any other resource identifier of iface implementing peer, accepted by CCM implementation
- * @alias AdvancedCCM#initFromCache
- * @ignore
- */
-AdvancedCCMProto.initFromCache = function( as, cache_l1_endpoint ) {
-    void cache_l1_endpoint;
-    as.error( futoin_error.NotImplemented, "Caching is not supported yet" );
-};
-
-/**
- * Save internal registration info to cache
- * DO NOT USE, this is only a compliance with the spec.
- * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
- * @alias AdvancedCCM#cacheInit
- * @ignore
- */
-AdvancedCCMProto.cacheInit = function( as ) {
-    void as;
-    // Fail silently
-};
-/* --- */
+_extend( AdvancedCCM, common.Options );
 
 module.exports = AdvancedCCM;

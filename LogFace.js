@@ -19,12 +19,11 @@
  * limitations under the License.
  */
 
-var _clone = require( 'lodash/clone' );
-var NativeIface = require( './NativeIface' );
-var common = require( './lib/common' );
-var async_steps = require( 'futoin-asyncsteps' );
+const NativeIface = require( './NativeIface' );
+const common = require( './lib/common' );
+const async_steps = require( 'futoin-asyncsteps' );
 
-var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
+const btoa = ( typeof window !== 'undefined' ) ? window.btoa :
     function( str ) {
         return new Buffer( str ).toString( 'base64' );
     };
@@ -40,215 +39,214 @@ var btoa = ( typeof window !== 'undefined' ) ? window.btoa :
  * @alias LogFace
  * @augments NativeIface
  */
-function LogFace() {
-    NativeIface.apply( this, arguments );
-    this._log_queue = [];
-    this._active_runner = false;
-}
-
-/**
- * AuditLog Native interface registration helper
- * @param {AsyncSteps} as - step interface
- * @param {AdvancedCCM} ccm - CCM instance
- * @param {string} endpoint - endpoint URL
- * @param {*} [credentials=null] - see CCM register()
- * @param {object} [options={}] - registration options
- * @param {string} [options.version=1.0] - iface version
- * @alias LogFace.register
- */
-LogFace.register = function( as, ccm, endpoint, credentials, options ) {
-    options = options || {};
-    var ifacever = options.version || '1.0';
-    var iface = LogFace.spec( ifacever );
-
-    options.nativeImpl = this;
-    options.specDirs = [ iface ];
-
-    ccm.register(
-        as,
-        common.Options.SVC_LOG,
-        iface.iface + ':' + iface.version,
-        endpoint,
-        credentials,
-        options
-    );
-};
-
-/**
- * LogFace prototype
- * @ignore
- */
-var LogFaceProto = _clone( NativeIface.prototype );
-
-LogFace.prototype = LogFaceProto;
-LogFace.spec = NativeIface.spec;
-
-/**
- * Debug log level
- * @const
- * @alias LogFace.LVL_DEBUG
- */
-LogFaceProto.LVL_DEBUG = 'debug';
-
-/**
- * Info log level
- * @const
- * @alias LogFace.LVL_INFO
- */
-LogFaceProto.LVL_INFO = 'info';
-
-/**
- * Warn log level
- * @const
- * @alias LogFace.LVL_WARN
- */
-LogFaceProto.LVL_WARN = 'warn';
-
-/**
- * Error log level
- * @const
- * @alias LogFace.LVL_ERROR
- */
-LogFaceProto.LVL_ERROR = 'error';
-
-/**
- * Security log level
- * @const
- * @alias LogFace.LVL_SECURITY
- */
-LogFaceProto.LVL_SECURITY = 'security';
-
-/**
- * Generate 'ts' field log messages
- * @private
- * @returns {string} current timestamp
- */
-LogFaceProto._ts = function() {
-    var d = new Date();
-
-    return d.getUTCFullYear().toString() +
-        ( '0' + ( d.getUTCMonth() + 1 ).toString() ).slice( -2 ) +
-        ( '0' + d.getUTCDate().toString() ).slice( -2 ) +
-        ( '0' + d.getUTCHours().toString() ).slice( -2 ) +
-        ( '0' + d.getUTCMinutes().toString() ).slice( -2 ) +
-        ( '0' + d.getUTCSeconds().toString() ).slice( -2 ) +
-        '.' + d.getUTCMilliseconds().toString();
-};
-
-/**
- * Log message
- * @param {string} lvl - debug|info|warn|error|security
- * @param {string} txt - message to log
- * @alias LogFace#msg
- */
-LogFaceProto.msg = function( lvl, txt ) {
-    this._add_queue(
-        'msg', {
-            lvl : lvl,
-            txt : txt,
-            ts : this._ts(),
-        } );
-};
-
-/**
- * Log message
- * @param {string} lvl - debug|info|warn|error|security
- * @param {string} txt - message to log
- * @param {string} data - raw data
- * @alias LogFace#hexdump
- */
-LogFaceProto.hexdump = function( lvl, txt, data ) {
-    this._add_queue(
-        'hexdump', {
-            lvl : lvl,
-            txt : txt,
-            ts : this._ts(),
-            data : btoa( data ),
-        } );
-};
-
-/**
- * Log message in debug level
- * @param {string} txt - message to log
- * @alias LogFace#debug
- */
-LogFaceProto.debug = function( txt ) {
-    this.msg( 'debug', txt );
-};
-
-/**
- * Log message in info level
- * @param {string} txt - message to log
- * @alias LogFace#info
- */
-LogFaceProto.info = function( txt ) {
-    this.msg( 'info', txt );
-};
-
-/**
- * Log message in warn level
- * @param {string} txt - message to log
- * @alias LogFace#warn
- */
-LogFaceProto.warn = function( txt ) {
-    this.msg( 'warn', txt );
-};
-
-/**
- * Log message in error level
- * @param {string} txt - message to log
- * @alias LogFace#error
- */
-LogFaceProto.error = function( txt ) {
-    this.msg( 'error', txt );
-};
-
-/**
- * Log message in security level
- * @param {string} txt - message to log
- * @alias LogFace#security
- */
-LogFaceProto.security = function( txt ) {
-    this.msg( 'security', txt );
-};
-
-/**
- * Make sure to keep only one pending async request
- * @private
- * @param {string} func - log/hexdump
- * @param {object} args - call args
- */
-LogFaceProto._add_queue = function( func, args ) {
-    var log_queue = this._log_queue;
-
-    log_queue.push( [ func, args ] );
-
-    if ( this._active_runner ) {
-        return;
+class LogFace extends NativeIface {
+    constructor( ...args ) {
+        super( ...args );
+        this._log_queue = [];
+        this._active_runner = false;
     }
 
-    var _this = this;
+    /**
+    * AuditLog Native interface registration helper
+    * @param {AsyncSteps} as - step interface
+    * @param {AdvancedCCM} ccm - CCM instance
+    * @param {string} endpoint - endpoint URL
+    * @param {*} [credentials=null] - see CCM register()
+    * @param {object} [options={}] - registration options
+    * @param {string} [options.version=1.0] - iface version
+    * @alias LogFace.register
+    */
+    static register( as, ccm, endpoint, credentials, options ) {
+        options = options || {};
+        const ifacever = options.version || '1.0';
+        const iface = LogFace.spec( ifacever );
 
-    this._active_runner = true;
+        options.nativeImpl = this;
+        options.specDirs = [ iface ];
 
-    async_steps()
-        .add(
-            function( as ) {
-                as.loop( function( as ) {
+        ccm.register(
+            as,
+            common.Options.SVC_LOG,
+            iface.iface + ':' + iface.version,
+            endpoint,
+            credentials,
+            options
+        );
+    }
+
+    /**
+    * Debug log level
+    * @const
+    * @alias LogFace.LVL_DEBUG
+    */
+    get LVL_DEBUG() {
+        return 'debug';
+    }
+
+    /**
+    * Info log level
+    * @const
+    * @alias LogFace.LVL_INFO
+    */
+    get LVL_INFO() {
+        return 'info';
+    }
+
+    /**
+    * Warn log level
+    * @const
+    * @alias LogFace.LVL_WARN
+    */
+    get LVL_WARN() {
+        return 'warn';
+    }
+
+    /**
+    * Error log level
+    * @const
+    * @alias LogFace.LVL_ERROR
+    */
+    get LVL_ERROR() {
+        return 'error';
+    }
+
+    /**
+    * Security log level
+    * @const
+    * @alias LogFace.LVL_SECURITY
+    */
+    get LVL_SECURITY() {
+        return 'security';
+    }
+
+    /**
+    * Generate 'ts' field log messages
+    * @private
+    * @returns {string} current timestamp
+    */
+    _ts() {
+        const d = new Date();
+
+        return d.getUTCFullYear().toString() +
+            ( '0' + ( d.getUTCMonth() + 1 ).toString() ).slice( -2 ) +
+            ( '0' + d.getUTCDate().toString() ).slice( -2 ) +
+            ( '0' + d.getUTCHours().toString() ).slice( -2 ) +
+            ( '0' + d.getUTCMinutes().toString() ).slice( -2 ) +
+            ( '0' + d.getUTCSeconds().toString() ).slice( -2 ) +
+            '.' + d.getUTCMilliseconds().toString();
+    }
+
+    /**
+    * Log message
+    * @param {string} lvl - debug|info|warn|error|security
+    * @param {string} txt - message to log
+    * @alias LogFace#msg
+    */
+    msg( lvl, txt ) {
+        this._add_queue(
+            'msg', {
+                lvl : lvl,
+                txt : txt,
+                ts : this._ts(),
+            } );
+    }
+
+    /**
+    * Log message
+    * @param {string} lvl - debug|info|warn|error|security
+    * @param {string} txt - message to log
+    * @param {string} data - raw data
+    * @alias LogFace#hexdump
+    */
+    hexdump( lvl, txt, data ) {
+        this._add_queue(
+            'hexdump', {
+                lvl : lvl,
+                txt : txt,
+                ts : this._ts(),
+                data : btoa( data ),
+            } );
+    }
+
+    /**
+    * Log message in debug level
+    * @param {string} txt - message to log
+    * @alias LogFace#debug
+    */
+    debug( txt ) {
+        this.msg( 'debug', txt );
+    }
+
+    /**
+    * Log message in info level
+    * @param {string} txt - message to log
+    * @alias LogFace#info
+    */
+    info( txt ) {
+        this.msg( 'info', txt );
+    }
+
+    /**
+    * Log message in warn level
+    * @param {string} txt - message to log
+    * @alias LogFace#warn
+    */
+    warn( txt ) {
+        this.msg( 'warn', txt );
+    }
+
+    /**
+    * Log message in error level
+    * @param {string} txt - message to log
+    * @alias LogFace#error
+    */
+    error( txt ) {
+        this.msg( 'error', txt );
+    }
+
+    /**
+    * Log message in security level
+    * @param {string} txt - message to log
+    * @alias LogFace#security
+    */
+    security( txt ) {
+        this.msg( 'security', txt );
+    }
+
+    /**
+    * Make sure to keep only one pending async request
+    * @private
+    * @param {string} func - log/hexdump
+    * @param {object} args - call args
+    */
+    _add_queue( func, args ) {
+        const log_queue = this._log_queue;
+
+        log_queue.push( [ func, args ] );
+
+        if ( this._active_runner ) {
+            return;
+        }
+
+        this._active_runner = true;
+
+        async_steps()
+            .add( ( as ) => {
+                as.loop( ( as ) => {
                     if ( !log_queue.length ) {
-                        _this._active_runner = false;
+                        this._active_runner = false;
                         as.break();
                     }
 
                     as.state.log_item = log_queue.shift();
 
                     as.add(
-                        function( as ) {
+                        ( as ) => {
                             var item = as.state.log_item;
 
-                            _this.call( as, item[0], item[1] );
+                            this.call( as, item[0], item[1] );
                         },
-                        function( as, err ) {
+                        ( as, err ) => {
                             console.log( 'LOGFAIL:' + as.state.log_item );
                             console.log( 'ERROR:' + err + ':' + as.state.error_info );
                             console.log( as.state.last_exception.stack );
@@ -256,14 +254,14 @@ LogFaceProto._add_queue = function( func, args ) {
                         }
                     );
                 } );
-            }
-        )
-        .execute();
-};
+            } )
+            .execute();
+    }
+}
 
 module.exports = LogFace;
 
-var specs = {};
+const specs = {};
 
 LogFace._specs = specs;
 

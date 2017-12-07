@@ -271,20 +271,33 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 
 <dl>
 <dt><a href="#AdvancedCCM">AdvancedCCM</a> ⇐ <code><a href="#SimpleCCM">SimpleCCM</a></code></dt>
-<dd></dd>
+<dd><p>Advanced CCM - Reference Implementation</p>
+</dd>
 <dt><a href="#CacheFace">CacheFace</a> ⇐ <code><a href="#NativeIface">NativeIface</a></code></dt>
-<dd></dd>
+<dd><p>Cache Native interface</p>
+<p>Register with CacheFace.register()</p>
+<p>NOTE: it is not directly available in Invoker module
+interface, include separately</p>
+</dd>
 <dt><a href="#InterfaceInfo">InterfaceInfo</a></dt>
-<dd></dd>
+<dd><p>FutoIn interface info</p>
+</dd>
 <dt><a href="#LogFace">LogFace</a> ⇐ <code><a href="#NativeIface">NativeIface</a></code></dt>
-<dd></dd>
+<dd><p>AuditLog Native interface</p>
+<p>Register with LogFace.register().</p>
+<p>NOTE: it is not directly available Invoker module
+interface, include separately</p>
+</dd>
 <dt><a href="#NativeIface">NativeIface</a></dt>
-<dd></dd>
+<dd><p>Native Interface for FutoIn ifaces</p>
+</dd>
 <dt><a href="#PingFace">PingFace</a></dt>
 <dd><p>Base for FTN4 ping-based interfaces</p>
 </dd>
 <dt><a href="#SimpleCCM">SimpleCCM</a></dt>
-<dd></dd>
+<dd><p>Simple CCM - Reference Implementation</p>
+<p>Base Connection and Credentials Manager with limited error control</p>
+</dd>
 <dt><a href="#SpecTools">SpecTools</a></dt>
 <dd></dd>
 <dt><a href="#AdvancedCCMOptions">AdvancedCCMOptions</a> ⇐ <code><a href="#SimpleCCMOptions">SimpleCCMOptions</a></code></dt>
@@ -319,6 +332,8 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 <a name="AdvancedCCM"></a>
 
 ## AdvancedCCM ⇐ [<code>SimpleCCM</code>](#SimpleCCM)
+Advanced CCM - Reference Implementation
+
 **Kind**: global class  
 **Extends**: [<code>SimpleCCM</code>](#SimpleCCM)  
 **See**
@@ -345,8 +360,6 @@ The concept is described in FutoIn specification: [FTN7: Interface Invoker Conce
 <a name="new_AdvancedCCM_new"></a>
 
 ### new AdvancedCCM(options)
-Advanced CCM - Reference Implementation
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -475,6 +488,13 @@ CCM close event. Fired on CCM shutdown.
 <a name="CacheFace"></a>
 
 ## CacheFace ⇐ [<code>NativeIface</code>](#NativeIface)
+Cache Native interface
+
+Register with CacheFace.register()
+
+NOTE: it is not directly available in Invoker module
+interface, include separately
+
 **Kind**: global class  
 **Extends**: [<code>NativeIface</code>](#NativeIface)  
 
@@ -495,13 +515,6 @@ CCM close event. Fired on CCM shutdown.
 <a name="new_CacheFace_new"></a>
 
 ### new CacheFace(_ccm, info)
-Cache Native interface
-
-Register with CacheFace.register()
-
-NOTE: it is not directly available in Invoker module
-interface, include separately
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -607,6 +620,8 @@ Cache Native interface registration helper
 <a name="InterfaceInfo"></a>
 
 ## InterfaceInfo
+FutoIn interface info
+
 **Kind**: global class  
 
 * [InterfaceInfo](#InterfaceInfo)
@@ -620,8 +635,6 @@ Cache Native interface registration helper
 <a name="new_InterfaceInfo_new"></a>
 
 ### new InterfaceInfo(raw_info)
-FutoIn interface info
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -665,11 +678,17 @@ Get list of interface constraints, may be null
 <a name="LogFace"></a>
 
 ## LogFace ⇐ [<code>NativeIface</code>](#NativeIface)
+AuditLog Native interface
+
+Register with LogFace.register().
+
+NOTE: it is not directly available Invoker module
+interface, include separately
+
 **Kind**: global class  
 **Extends**: [<code>NativeIface</code>](#NativeIface)  
 
 * [LogFace](#LogFace) ⇐ [<code>NativeIface</code>](#NativeIface)
-    * [new LogFace()](#new_LogFace_new)
     * _instance_
         * [.msg(lvl, txt)](#LogFace+msg)
         * [.hexdump(lvl, txt, data)](#LogFace+hexdump)
@@ -692,16 +711,6 @@ Get list of interface constraints, may be null
         * [.LVL_ERROR](#LogFace.LVL_ERROR)
         * [.LVL_SECURITY](#LogFace.LVL_SECURITY)
         * [.register(as, ccm, endpoint, [credentials], [options])](#LogFace.register)
-
-<a name="new_LogFace_new"></a>
-
-### new LogFace()
-AuditLog Native interface
-
-Register with LogFace.register().
-
-NOTE: it is not directly available Invoker module
-interface, include separately
 
 <a name="LogFace+msg"></a>
 
@@ -892,6 +901,8 @@ AuditLog Native interface registration helper
 <a name="NativeIface"></a>
 
 ## NativeIface
+Native Interface for FutoIn ifaces
+
 **Kind**: global class  
 
 * [NativeIface](#NativeIface)
@@ -912,8 +923,6 @@ AuditLog Native interface registration helper
 <a name="new_NativeIface_new"></a>
 
 ### new NativeIface(ccmimpl, info)
-Native Interface for FutoIn ifaces
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1036,6 +1045,10 @@ Register ping interface
 <a name="SimpleCCM"></a>
 
 ## SimpleCCM
+Simple CCM - Reference Implementation
+
+Base Connection and Credentials Manager with limited error control
+
 **Kind**: global class  
 **See**
 
@@ -1070,10 +1083,6 @@ Register ping interface
 <a name="new_SimpleCCM_new"></a>
 
 ### new SimpleCCM([options])
-Simple CCM - Reference Implementation
-
-Base Connection and Credentials Manager with limited error control
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1550,10 +1559,6 @@ Useful for audit logging.
 <a name="new_SimpleCCM_new"></a>
 
 ### new SimpleCCM([options])
-Simple CCM - Reference Implementation
-
-Base Connection and Credentials Manager with limited error control
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1756,10 +1761,6 @@ cache v1.x iface name prefix
 <a name="new_SimpleCCM_new"></a>
 
 ### new SimpleCCM([options])
-Simple CCM - Reference Implementation
-
-Base Connection and Credentials Manager with limited error control
-
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1953,8 +1954,6 @@ cache v1.x iface name prefix
 <a name="new_AdvancedCCM_new"></a>
 
 ### new AdvancedCCM(options)
-Advanced CCM - Reference Implementation
-
 
 | Param | Type | Description |
 | --- | --- | --- |
