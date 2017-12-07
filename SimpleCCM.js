@@ -454,7 +454,7 @@ class SimpleCCM {
             info.aliases.push( alias );
         }
 
-        this.emit( 'register', alias, info.iface + ':' + info.version, info );
+        this.emit( 'register', alias, `${info.iface}:${info.version}`, info );
     }
 
     /**

@@ -64,7 +64,7 @@ class CacheFace extends NativeIface {
         ccm.register(
             as,
             common.Options.SVC_CACHE_ + name,
-            iface.iface + ':' + iface.version,
+            `${iface.iface}:${iface.version}`,
             endpoint,
             credentials,
             options

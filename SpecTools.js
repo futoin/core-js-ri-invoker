@@ -19,17 +19,17 @@
  * limitations under the License.
  */
 
-var common = require( './lib/common' );
-var FutoInError = common.FutoInError;
+const common = require( './lib/common' );
+const FutoInError = common.FutoInError;
 
-var fs;
-var request;
-var isNode = common._isNode;
-var _cloneDeep = require( 'lodash/cloneDeep' );
-var _zipObject = require( 'lodash/zipObject' );
-var _difference = require( 'lodash/difference' );
-var _extend = require( 'lodash/extend' );
-var ee = require( 'event-emitter' );
+let fs;
+let request;
+const isNode = common._isNode;
+const _cloneDeep = require( 'lodash/cloneDeep' );
+const _zipObject = require( 'lodash/zipObject' );
+const _difference = require( 'lodash/difference' );
+const _extend = require( 'lodash/extend' );
+const ee = require( 'event-emitter' );
 
 if ( isNode ) {
     fs = module.require( 'fs' );
@@ -41,7 +41,7 @@ if ( isNode ) {
  * @class
  * @alias SpecTools
  */
-var spectools =
+const spectools =
 {
     /**
      * Enumeration of standard errors
@@ -76,13 +76,13 @@ var spectools =
      * @alias SpecTools.loadIface
      */
     loadIface : function( as, info, specdirs, load_cache ) {
-        var raw_spec = null;
-        var fn = info.iface + '-' + info.version + '-iface.json';
-        var cached_info;
-        var cache_key;
+        let raw_spec = null;
+        const fn = `${info.iface}-${info.version}-iface.json`;
+        let cached_info;
+        let cache_key;
 
         if ( load_cache ) {
-            cache_key = info.iface + ':' + info.version;
+            cache_key = `${info.iface}:${info.version}`;
 
             if ( info._import_use ) {
                 cache_key += ':r';
@@ -107,17 +107,16 @@ var spectools =
             cached_info = info;
         }
 
-        as.forEach( specdirs, function( as, _k, v ) {
+        as.forEach( specdirs, ( as, _k, v ) => {
             // Check Node.js fs
-            as.add( function( read_as ) {
-                if ( ( typeof v !== 'string' ) ||
-                     !isNode ) {
+            as.add( ( read_as ) => {
+                if ( ( typeof v !== 'string' ) || !isNode ) {
                     return;
                 }
 
-                var uri = v + '/' + fn;
+                const uri = `${v}/${fn}`;
 
-                var on_read = function( data, err ) {
+                const on_read = ( data, err ) => {
                     if ( !read_as ) {
                         return;
                     }
@@ -141,92 +140,89 @@ var spectools =
                 };
 
                 if ( uri.substr( 0, 4 ) === 'http' ) {
-                    request( uri, function( error, _response, body ) {
+                    request( uri, ( error, _response, body ) => {
                         on_read( body, error );
                     } );
                 } else {
                     fs.readFile(
                         uri,
                         { encoding : 'utf8' },
-                        function( err, data ) {
+                        ( err, data ) => {
                             on_read( data, err );
                         }
                     );
                 }
 
-                read_as.setCancel( function( as ) {
-                    void as;
+                read_as.setCancel( ( as ) => {
                     read_as = null; // see readFile above
                 } );
-            } )
+            } );
             // Check remote URL in browser
-                .add( function( as ) {
-                    if ( ( typeof v !== 'string' ) ||
-                     isNode ) {
+            as.add( ( as ) => {
+                if ( ( typeof v !== 'string' ) || isNode ) {
+                    return;
+                }
+
+                const uri = `${v}/${fn}`;
+
+                const httpreq = new XMLHttpRequest(); // jshint ignore:line
+
+                httpreq.onreadystatechange = function() {
+                    if ( this.readyState !== this.DONE ) {
                         return;
                     }
 
-                    var uri = v + '/' + fn;
+                    var response = this.responseText;
 
-                    var httpreq = new XMLHttpRequest(); // jshint ignore:line
-
-                    httpreq.onreadystatechange = function() {
-                        if ( this.readyState !== this.DONE ) {
-                            return;
-                        }
-
-                        var response = this.responseText;
-
-                        if ( response ) {
-                            try {
-                                v = JSON.parse( response );
-                                v._just_loaded = true;
-                                as.success();
-                                return;
-                            } catch ( e ) {
-                                // ignore
-                            }
-                        }
-
+                    if ( response ) {
                         try {
-                            as.continue();
-                        } catch ( ex ) {
+                            v = JSON.parse( response );
+                            v._just_loaded = true;
+                            as.success();
+                            return;
+                        } catch ( e ) {
                             // ignore
                         }
-                    };
-
-                    httpreq.open( "GET", uri, true );
-                    httpreq.send();
-
-                    as.setCancel( function( as ) {
-                        void as;
-                        httpreq.abort();
-                    } );
-                } )
-            // Check object spec
-                .add( function( as ) {
-                    if ( ( typeof v === 'object' ) &&
-                    ( v.iface === info.iface ) &&
-                    ( v.version === info.version ) ) {
-                        raw_spec = v;
-                        as.break();
                     }
-                } );
-        } )
-            .add( function( as ) {
-                if ( raw_spec === null ) {
-                    as.error(
-                        FutoInError.InternalError,
-                        "Failed to load valid spec for " + info.iface + ":" + info.version
-                    );
-                }
 
-                spectools.parseIface( as, cached_info, specdirs, raw_spec, load_cache );
+                    try {
+                        as.continue();
+                    } catch ( ex ) {
+                        // ignore
+                    }
+                };
+
+                httpreq.open( "GET", uri, true );
+                httpreq.send();
+
+                as.setCancel( ( as ) => {
+                    httpreq.abort();
+                } );
             } );
+            // Check object spec
+            as.add( ( as ) => {
+                if ( ( typeof v === 'object' ) &&
+                    ( v.iface === info.iface ) &&
+                    ( v.version === info.version )
+                ) {
+                    raw_spec = v;
+                    as.break();
+                }
+            } );
+        } );
+        as.add( ( as ) => {
+            if ( raw_spec === null ) {
+                as.error(
+                    FutoInError.InternalError,
+                    `Failed to load valid spec for ${info.iface}:${info.version}`
+                );
+            }
+
+            spectools.parseIface( as, cached_info, specdirs, raw_spec, load_cache );
+        } );
 
         if ( load_cache ) {
-            as.add( function( as ) {
-                void as;
+            as.add( ( as ) => {
                 load_cache[ cache_key ] = cached_info;
                 _extend( info, cached_info );
             } );
@@ -298,7 +294,7 @@ var spectools =
             sup_info._invoker_use = info._invoker_use;
             spectools.loadIface( as, sup_info, specdirs, load_cache );
 
-            as.add( function( as ) {
+            as.add( ( as ) => {
                 spectools._parseImportInherit( as, info, raw_spec, sup_info );
 
                 info.inherits.push( raw_spec.inherit );
@@ -314,7 +310,7 @@ var spectools =
 
             info.imports = raw_spec.imports.slice();
 
-            as.forEach( raw_spec.imports, function( as, _k, v ) {
+            as.forEach( raw_spec.imports, ( as, _k, v ) => {
                 var m = v.match( iface_pattern );
 
                 if ( m === null ) {
@@ -328,14 +324,13 @@ var spectools =
                 imp_info._import_use = true;
                 spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
-                as.add( function( as ) {
-                    void as;
+                as.add( ( as ) => {
                     info.imports = info.imports.concat( imp_info.imports );
                 } );
             } );
 
             if ( !info._import_use ) {
-                as.add( function( as ) {
+                as.add( ( as ) => {
                     // 1. Use each imported interface only once
                     // 2. Merge compatible interface versions
                     var import_candidates = {};
@@ -368,7 +363,7 @@ var spectools =
 
                     info.imports = [];
 
-                    as.forEach( import_candidates, function( as, iface, ver ) {
+                    as.forEach( import_candidates, ( as, iface, ver ) => {
                         info.imports.push( iface + ':' + ver );
 
                         var imp_info = {};
@@ -378,7 +373,7 @@ var spectools =
                         imp_info._import_use = true;
                         spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
-                        as.add( function( as ) {
+                        as.add( ( as ) => {
                             spectools._parseImportInherit( as, info, raw_spec, imp_info );
                         } );
                     } );
@@ -774,7 +769,7 @@ var spectools =
 
         for ( var t in sup_info.types ) {
             if ( t in info.types ) {
-                as.error( FutoInError.InternalError, "Iface type redifintion: " + t );
+                as.error( FutoInError.InternalError, `Iface type redifintion: ${t}` );
                 continue;
             }
 
@@ -796,7 +791,7 @@ var spectools =
             var params_keys = Object.keys( params );
 
             if ( params_keys.length < sup_params_keys.length ) {
-                as.error( FutoInError.InternalError, "Invalid param count for '" + f + "'" );
+                as.error( FutoInError.InternalError, `Invalid param count for "${f}"` );
             }
 
             // Verify parameters are correctly duplicated
@@ -804,11 +799,11 @@ var spectools =
                 pn = sup_params_keys[ i ];
 
                 if ( pn !== params_keys[ i ] ) {
-                    as.error( FutoInError.InternalError, "Invalid param order for '" + f + "/" + pn + "'" );
+                    as.error( FutoInError.InternalError, `Invalid param order for "${f}/${pn}"` );
                 }
 
                 if ( sup_params[ pn ].type !== params[ pn ].type ) {
-                    as.error( FutoInError.InternalError, "Param type mismatch '" + f + "/" + pn + "'" );
+                    as.error( FutoInError.InternalError, `Param type mismatch "${f}/${pn}"` );
                 }
             }
 
@@ -819,21 +814,21 @@ var spectools =
                 if ( !( pn in sup_params ) &&
                      !( 'default' in params[ pn ] ||
                         params[ pn ] === null ) ) {
-                    as.error( FutoInError.InternalError, "Missing default for '" + f + "/" + pn + "'" );
+                    as.error( FutoInError.InternalError, `Missing default for "${f}/${pn}"` );
                 }
             }
 
             if ( fdef.rawresult !== info.funcs[ f ].rawresult ) {
-                as.error( FutoInError.InternalError, "'rawresult' flag mismatch for '" + f + "'" );
+                as.error( FutoInError.InternalError, `'rawresult' flag mismatch for "${f}"` );
             }
 
             if ( fdef.seclvl !== info.funcs[ f ].seclvl ) {
-                as.error( FutoInError.InternalError, "'seclvl' mismatch for '" + f + "'" );
+                as.error( FutoInError.InternalError, `'seclvl' mismatch for "${f}"` );
             }
 
             if ( fdef.rawupload &&
                  !info.funcs[ f ].rawupload ) {
-                as.error( FutoInError.InternalError, "'rawupload' flag is missing for '" + f + "'" );
+                as.error( FutoInError.InternalError, `'rawupload' flag is missing for "${f}"` );
             }
         }
 
@@ -853,7 +848,6 @@ var spectools =
      * @alias SpecTools.checkConsistency
      */
     checkConsistency : function( as, info ) {
-        void as;
         void info;
     },
 
@@ -915,7 +909,7 @@ var spectools =
 
                 if ( val.match( comp_regex[ top_type ] ) === null ) {
                     spectools.emit( 'error',
-                        'Regex mismatch mismatch for ' + top_type );
+                        `Regex mismatch mismatch for ${top_type}` );
 
                     return false;
                 }
@@ -926,7 +920,7 @@ var spectools =
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
                 spectools.emit( 'error',
-                    'Value min length ' + val_len+ ' mismatch for ' + top_type );
+                    `Value min length "${val_len}" mismatch for ${top_type}` );
 
                 return false;
             }
@@ -934,7 +928,7 @@ var spectools =
             if ( ( 'maxlen' in tdef ) &&
                         ( val_len > tdef.maxlen ) ) {
                 spectools.emit( 'error',
-                    'Value max length ' + val_len + ' mismatch for ' + top_type );
+                    `Value max length "${val_len}" mismatch for ${top_type}` );
 
                 return false;
             }
@@ -969,8 +963,7 @@ var spectools =
 
                     if ( !this._checkType( info, field_def.type, val[ f ], null ) ) {
                         spectools.emit( 'error',
-                            'Field ' + f + ' value ' + val[ f ] +
-                            ' mismatch for ' + top_type );
+                            `Field "${f}" value "${val[ f ]}" mismatch for ${top_type}` );
 
                         return false;
                     }
@@ -983,7 +976,7 @@ var spectools =
                 for ( var ft in val ) {
                     if ( !this._checkType( info, elemtype, val[ ft ], null ) ) {
                         spectools.emit( 'error',
-                            'Value ' + val[ ft ] + ' mismatch for ' + top_type );
+                            `Value "${val[ ft ]}" mismatch for ${top_type}` );
 
                         return false;
                     }
@@ -1005,7 +998,7 @@ var spectools =
             if ( ( 'min' in tdef ) &&
                         ( val < tdef.min ) ) {
                 spectools.emit( 'error',
-                    'Value min range mismatch for ' + top_type );
+                    `Value min range mismatch for ${top_type}` );
 
                 return false;
             }
@@ -1013,7 +1006,7 @@ var spectools =
             if ( ( 'max' in tdef ) &&
                         ( val > tdef.max ) ) {
                 spectools.emit( 'error',
-                    'Value max range mismatch for ' + top_type );
+                    `Value max range mismatch for ${top_type}` );
 
                 return false;
             }
@@ -1030,15 +1023,14 @@ var spectools =
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
                 spectools.emit( 'error',
-                    'Value min length' + val_len + ' mismatch for ' + top_type );
+                    `Value min length "${val_len}" mismatch for ${top_type}` );
 
                 return false;
             }
 
-            if ( ( 'maxlen' in tdef ) &&
-                        ( val_len > tdef.maxlen ) ) {
+            if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
                 spectools.emit( 'error',
-                    'Value max length' + val_len + ' mismatch for ' + top_type );
+                    `Value max length "${val_len}" mismatch for ${top_type}` );
 
                 return false;
             }
@@ -1051,7 +1043,7 @@ var spectools =
                     // Note, new type stack
                     if ( !this._checkType( info, elemtype, val[ i ], null ) ) {
                         spectools.emit( 'error',
-                            'Value ' + val[ i ] + ' mismatch for ' + top_type );
+                            `Value "${val[ i ]}" mismatch for ${top_type}` );
 
                         return false;
                     }
@@ -1106,7 +1098,7 @@ var spectools =
                             !this._checkType( info, 'integer', iv ) ) ||
                             !set_items.hasOwnProperty( iv ) ) {
                     spectools.emit( 'error',
-                        'No set item ' + iv + ' for ' + top_type );
+                        `No set item "${iv}" for ${top_type}` );
                     return false;
                 }
             }

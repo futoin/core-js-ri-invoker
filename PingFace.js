@@ -53,7 +53,7 @@ class PingFace extends NativeFace {
         ccm.register(
             as,
             name,
-            iface.iface + ':' + ifacever,
+            `${iface.iface}:${ifacever}`,
             endpoint,
             credentials,
             options
