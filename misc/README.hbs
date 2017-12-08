@@ -105,11 +105,13 @@ var AdvancedCCM = require('futoin-invoker/AdvancedCCM');
 # Browser installation
 
 Pre-built `dist/futoin-invoker.js` and `dist/futoin-invoker-lite.js` are available.
-The module can be used with `webpack` or any other CommonJS packer.
+
+The module can also be used with `webpack` or any other CommonJS packer, if ES6->ES5
+transpiler is used.
 
 *Warning: older browsers require WeakMap polyfill*
 
-*Note: there are the following globals available*:
+*The following globals are available*:
 
 * SimpleCCM - global reference to futoin-invoker.SimpleCCM class
 * AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
