@@ -1866,7 +1866,7 @@ fresh@0.5.2:
 
 fs-extra@^1.0.0:
   version "1.0.0"
-  resolved "http://registry.npmjs.org/fs-extra/-/fs-extra-1.0.0.tgz#cd3ce5f7e7cb6145883fcae3191e9877f8587950"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-1.0.0.tgz#cd3ce5f7e7cb6145883fcae3191e9877f8587950"
   dependencies:
     graceful-fs "^4.1.2"
     jsonfile "^2.1.0"
@@ -1908,9 +1908,9 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.10.2:
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.2.tgz#f333fd55eaac1503bbdd4386f42b5847c91feddc"
+futoin-asyncsteps@^1.10.3:
+  version "1.10.3"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.3.tgz#d43a5c7eb5bbb9592a5a969f3abd2db09f94acc7"
   dependencies:
     performance-now "^2.1.0"
 

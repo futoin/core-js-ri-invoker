@@ -3,7 +3,7 @@
   "version": "1.7.0",
   "description": "Transparently, efficiently and securely invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
-  "browser": "dist/futoin-invoker.js",
+  "browser": "lib/browser.js",
   "files": [
     "dist/",
     "examples/",
@@ -63,7 +63,7 @@
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
     "eslint": "^4.12.1",
-    "futoin-asyncsteps": "^1.10.2",
+    "futoin-asyncsteps": "^1.10.3",
     "grunt": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-eslint": "^20.1.0",
@@ -79,6 +79,6 @@
     "webpack": "^3.10.0"
   },
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.10.2"
+    "futoin-asyncsteps": "^1.10.3"
   }
 }

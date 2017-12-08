@@ -32,7 +32,7 @@ module.exports = {
                 },
             },
             {
-                test: /node_modules\/futoin-asyncsteps\/[A-Z].*\.js$/,
+                test: /node_modules\/futoin-.*\.js$/,
                 use: {
                     loader: 'babel-loader',
                     options: {

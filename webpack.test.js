@@ -23,6 +23,16 @@ module.exports = {
                     },
                 },
             },
+            {
+                test: /node_modules\/futoin-.*\.js$/,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: [ 'babel-preset-env' ],
+                        plugins: [ "transform-object-assign" ],
+                    },
+                },
+            },
         ],
     },
 };
