@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.7.2 (2017-12-10) ===
 CRITICAL FIX: upgraded to AsyncSteps with Throttle blocking fix
 
 === 1.7.1 (2017-12-08) ===
