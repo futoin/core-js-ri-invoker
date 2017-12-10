@@ -62,8 +62,8 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.2",
-    "eslint": "^4.12.1",
-    "futoin-asyncsteps": "^1.10.3",
+    "eslint": "^4.13.0",
+    "futoin-asyncsteps": "^1.10.4",
     "grunt": "^1.0.1",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-eslint": "^20.1.0",
@@ -79,6 +79,6 @@
     "webpack": "^3.10.0"
   },
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.10.3"
+    "futoin-asyncsteps": "^1.10.4"
   }
 }
