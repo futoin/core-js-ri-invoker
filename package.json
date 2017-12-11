@@ -1,6 +1,6 @@
 {
   "name": "futoin-invoker",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Transparently, efficiently and securely invoke remote or local service methods with strict API definition for Node and Browser",
   "main": "lib/invoker.js",
   "browser": "lib/browser.js",
