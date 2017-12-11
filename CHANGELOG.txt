@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: "unlimited" zone to use lightweight fake Limiter instead
+
 === 1.7.2 (2017-12-10) ===
 CRITICAL FIX: upgraded to AsyncSteps with Throttle blocking fix
 

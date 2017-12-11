@@ -60,17 +60,6 @@ class SimpleCCM {
                 burst: null,
             }
         );
-
-        this.limitZone(
-            "unlimited",
-            {
-                concurrent: 0xFFFFFFFF,
-                max_queue: null,
-                rate: 0xFFFFFFFF,
-                period_ms: 1e3,
-                burst: null,
-            }
-        );
     }
 
     /** @ignore */
@@ -487,7 +476,9 @@ class SimpleCCM {
      * @param {object} options - options to pass to Limiter c-tor
      */
     limitZone( name, options ) {
-        this._impl.limiters[name] = new Limiter( options );
+        if ( name !== 'unlimited' ) {
+            this._impl.limiters[name] = new Limiter( options );
+        }
     }
 }
 
