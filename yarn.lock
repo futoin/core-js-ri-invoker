@@ -1908,10 +1908,11 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncsteps@^1.10.4:
-  version "1.10.4"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.4.tgz#a1d4e540b60ec37401edf21f2119fa0f21c37e9b"
+futoin-asyncsteps@^1.10.7:
+  version "1.10.7"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.7.tgz#378fcfefc19e28e4c3928c0b009a9c566a9f9954"
   dependencies:
+    grunt-babel "^7.0.0"
     performance-now "^2.1.0"
 
 gauge@~2.7.3:
@@ -2024,6 +2025,10 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.1.9:
 growl@1.10.3:
   version "1.10.3"
   resolved "https://registry.yarnpkg.com/growl/-/growl-1.10.3.tgz#1926ba90cf3edfe2adb4927f5880bc22c66c790f"
+
+grunt-babel@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/grunt-babel/-/grunt-babel-7.0.0.tgz#13c90c01f154dec214e0eeb5d66ac7c70cedf2d3"
 
 grunt-cli@~1.2.0:
   version "1.2.0"

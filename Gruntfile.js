@@ -7,9 +7,15 @@ module.exports = function( grunt ) {
         pkg: grunt.file.readJSON( 'package.json' ),
 
         eslint: {
-            options: { fix: true,
-                ignore: false },
-            target: [ '*.js', 'lib/**/*.js', 'test/**/*.js' ],
+            options: {
+                fix: true,
+                ignore: false,
+            },
+            target: [
+                '*.js',
+                'lib/**/*.js',
+                'test/**/*.js',
+            ],
         },
         mocha_istanbul: {
             coverage: { src: [ 'test/spectooltest.js', 'test/unittest.js' ] },
@@ -21,6 +27,29 @@ module.exports = function( grunt ) {
         webpack: {
             dist: require( './webpack.dist' ),
             test: require( './webpack.test' ),
+        },
+        babel: {
+            options: {
+                sourceMap: true,
+                presets: [ 'env' ],
+                plugins: [ "transform-object-assign" ],
+            },
+            es5: {
+                expand: true,
+                src: [
+                    "lib/**/*.js",
+                    "test/*.js",
+                    "AdvancedCCM.js",
+                    "CacheFace.js",
+                    "InterfaceInfo.js",
+                    "LogFace.js",
+                    "NativeIface.js",
+                    "PingFace.js",
+                    "SimpleCCM.js",
+                    "SpecTools.js",
+                ],
+                dest: 'es5/',
+            },
         },
         connect: {
             server: {
@@ -66,6 +95,7 @@ module.exports = function( grunt ) {
     } );
 
     grunt.loadNpmTasks( 'grunt-eslint' );
+    grunt.loadNpmTasks( 'grunt-babel' );
     grunt.loadNpmTasks( 'grunt-webpack' );
     grunt.loadNpmTasks( 'grunt-contrib-connect' );
     grunt.loadNpmTasks( 'grunt-external-daemon' );
@@ -74,7 +104,7 @@ module.exports = function( grunt ) {
 
     grunt.registerTask( 'check', [ 'eslint' ] );
 
-    grunt.registerTask( 'build-browser', [ 'webpack:dist' ] );
+    grunt.registerTask( 'build-browser', [ 'babel', 'webpack:dist' ] );
     grunt.registerTask( 'test-browser', [
         'webpack:test',
         'connect',

@@ -8,20 +8,21 @@
   <body>
       <!-- Required for browser reporter -->
       <div id="mocha"></div>
-      <script src="../node_modules/mocha/mocha.js" type="text/javascript" charset="utf-8"></script>
-      <script src="../node_modules/chai/chai.js" type="text/javascript" charset="utf-8"></script>
-      <script type="text/javascript" charset="utf-8">
+      <script src="../node_modules/mocha/mocha.js"></script>
+      <script src="../node_modules/chai/chai.js"></script>
+      <script>
           mocha.ui('bdd');
           chai.should();
       </script>
       
-      <script src="../dist/futoin-invoker.js" type="text/javascript" charset="utf-8"></script>
-      <script src="../dist/unittest.js" type="text/javascript" charset="utf-8"></script>
-      <script src="../dist/spectooltest.js" type="text/javascript" charset="utf-8"></script>
+      <script src="../node_modules/futoin-asyncsteps/dist/futoin-asyncsteps.js"></script>
+      <script src="../dist/futoin-invoker.js"></script>
+      <script src="../dist/unittest.js"></script>
+      <script src="../dist/spectooltest.js"></script>
       
       <iframe id="server_frame" src="./iframe.html" ></iframe>
 
-      <script type="text/javascript" charset="utf-8">
+      <script>
         if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
         else { mocha.run(); }
       </script>

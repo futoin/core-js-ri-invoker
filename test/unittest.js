@@ -4,9 +4,7 @@ var _ = require( 'lodash' );
 var common = require( '../lib/common' );
 var isNode = common._isNode;
 var assert;
-var async_steps = require( 'futoin-asyncsteps' );
-var logface = require( '../LogFace' );
-var cacheface = require( '../CacheFace' );
+var async_steps;
 var invoker;
 var as;
 var ccm;
@@ -32,6 +30,7 @@ if ( !isNode ) {
     thisDir = '.';
 
     invoker = FutoInInvoker;
+    async_steps = $as;
 } else {
     // Node test
     var chai_module = module.require( 'chai' );
@@ -47,7 +46,12 @@ if ( !isNode ) {
     thisDir = __dirname;
 
     invoker = module.require( '../lib/invoker.js' );
+    async_steps = module.require( 'futoin-asyncsteps' );
 }
+
+var logface = invoker.LogFace;
+var cacheface = invoker.CacheFace;
+
 
 describe( 'Invoker Basic', function() {
     it( 'should create Simple CCM', function() {
@@ -1652,3 +1656,5 @@ if ( isNode ) {
         } );
     } );
 }
+
+var exports = {};

@@ -2,7 +2,10 @@
 === (next) ===
 FIXED: to parse JSON spec only on 200 request status in browser
 FIXED: completed ES6 conversion
+CHANGED: to build dist/ folder from es5/ folder
+CHANGED: not to include futoin-asyncsteps in dist/ build
 NEW: added "error" emit on SpecTools JSON parse error
+NEW: added ES5 transpiled modules under es5/ folder
 
 === 1.7.3 (2017-12-11) ===
 FIXED: "unlimited" zone to use lightweight fake Limiter instead

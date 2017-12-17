@@ -26,7 +26,7 @@ const _extend = require( 'lodash/extend' );
 const _defaults = require( 'lodash/defaults' );
 const SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
 const ee = require( 'event-emitter' );
-const Limiter = require( `futoin-asyncsteps/Limiter` );
+const Limiter = require( 'futoin-asyncsteps' ).Limiter;
 
 /**
  * SimpleCCM public properties

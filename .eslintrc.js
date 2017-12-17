@@ -69,6 +69,7 @@ module.exports = {
         {
             env: {
                 browser: true,
+                node: false,
             },
             files: [ "lib/browser*.js" ],
             rules: {
@@ -79,8 +80,8 @@ module.exports = {
         },
         {
             env: {
-                commonjs: true,
                 browser: true,
+                node: false,
             },
             files: [ "lib/browser/*.js" ],
             rules: {
@@ -129,6 +130,7 @@ module.exports = {
             },
             globals: {
                 "FutoInInvoker" : true,
+                "$as" : true,
                 "chai" : true,
             },
         },

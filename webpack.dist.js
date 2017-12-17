@@ -1,11 +1,12 @@
 'use strict';
 
 const UglifyJsPlugin = require( 'uglifyjs-webpack-plugin' );
+const package_json = require( './package' );
 
 module.exports = {
     entry: {
-        'futoin-invoker': './lib/browser.js',
-        'futoin-invoker-lite': './lib/browser_lite.js',
+        'futoin-invoker': `./${package_json.browser}`,
+        'futoin-invoker-lite': './es5/lib/browser_lite.js',
     },
     output: {
         library: {
@@ -17,32 +18,15 @@ module.exports = {
         filename: "[name].js",
         path: __dirname + '/dist',
     },
-    node : false,
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: [ 'babel-preset-env' ],
-                        plugins: [ "transform-object-assign" ],
-                    },
-                },
-            },
-            {
-                test: /node_modules\/futoin-.*\.js$/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: [ 'babel-preset-env' ],
-                        plugins: [ "transform-object-assign" ],
-                    },
-                },
-            },
-        ],
+    externals : {
+        'futoin-asyncsteps' : {
+            root: "$as",
+            amd: "futoin-asyncsteps",
+            commonjs: "futoin-asyncsteps",
+            commonjs2: "futoin-asyncsteps",
+        },
     },
+    node : false,
     plugins: [
         new UglifyJsPlugin( {
             sourceMap: true,
