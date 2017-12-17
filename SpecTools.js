@@ -128,7 +128,16 @@ const spectools =
                             read_as.success();
                             return;
                         } catch ( e ) {
-                            // ignore
+                            spectools.emit(
+                                'error',
+                                `Invalid JSON for '${uri}": ${e}`
+                            );
+
+                            try {
+                                as.break();
+                            } catch ( _ ) {
+                                // pass
+                            }
                         }
                     }
 
@@ -172,16 +181,25 @@ const spectools =
                         return;
                     }
 
-                    var response = this.responseText;
+                    const response = this.responseText;
 
-                    if ( response ) {
+                    if ( ( this.status === 200 ) && response ) {
                         try {
                             v = JSON.parse( response );
                             v._just_loaded = true;
                             as.success();
                             return;
                         } catch ( e ) {
-                            // ignore
+                            spectools.emit(
+                                'error',
+                                `Invalid JSON for '${uri}": ${e}`
+                            );
+
+                            try {
+                                as.break();
+                            } catch ( _ ) {
+                                // pass
+                            }
                         }
                     }
 

@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: to parse JSON spec only on 200 request status in browser
+NEW: added "error" emit on SpecTools JSON parse error
+
 === 1.7.3 (2017-12-11) ===
 FIXED: "unlimited" zone to use lightweight fake Limiter instead
 
