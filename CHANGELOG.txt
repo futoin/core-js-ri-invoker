@@ -1,6 +1,7 @@
 
 === (next) ===
 FIXED: to parse JSON spec only on 200 request status in browser
+FIXED: completed ES6 conversion
 NEW: added "error" emit on SpecTools JSON parse error
 
 === 1.7.3 (2017-12-11) ===

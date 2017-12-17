@@ -278,7 +278,7 @@ const spectools =
         // Process Constraints
         // ---
         if ( 'requires' in raw_spec ) {
-            var requires = raw_spec.requires;
+            const requires = raw_spec.requires;
 
             if ( !Array.isArray( requires ) ) {
                 as.error( FutoInError.InternalError, '"requires" is not array' );
@@ -298,14 +298,14 @@ const spectools =
         info.inherits = [];
 
         if ( 'inherit' in raw_spec ) {
-            var m = raw_spec.inherit.match( common._ifacever_pattern );
+            const m = raw_spec.inherit.match( common._ifacever_pattern );
 
             if ( m === null ) {
                 as.error( FutoInError.InvokerError,
                     "Invalid inherit ifacever: " + raw_spec.inherit );
             }
 
-            var sup_info = {};
+            const sup_info = {};
 
             sup_info.iface = m[ common._ifacever_pattern_name ];
             sup_info.version = m[ common._ifacever_pattern_ver ];
@@ -323,19 +323,19 @@ const spectools =
         // Process Imports / mixins
         // ---
         if ( 'imports' in raw_spec ) {
-            var iface_pattern = common._ifacever_pattern;
-            var imp_load_cache = load_cache || {}; // make sure we always use cache here
+            const iface_pattern = common._ifacever_pattern;
+            const imp_load_cache = load_cache || {}; // make sure we always use cache here
 
             info.imports = raw_spec.imports.slice();
 
             as.forEach( raw_spec.imports, ( as, _k, v ) => {
-                var m = v.match( iface_pattern );
+                const m = v.match( iface_pattern );
 
                 if ( m === null ) {
                     as.error( FutoInError.InvokerError, "Invalid import ifacever: " + v );
                 }
 
-                var imp_info = {};
+                const imp_info = {};
 
                 imp_info.iface = m[ common._ifacever_pattern_name ];
                 imp_info.version = m[ common._ifacever_pattern_ver ];
@@ -351,18 +351,18 @@ const spectools =
                 as.add( ( as ) => {
                     // 1. Use each imported interface only once
                     // 2. Merge compatible interface versions
-                    var import_candidates = {};
+                    const import_candidates = {};
 
-                    for ( var i = info.imports.length - 1; i >= 0; --i ) {
-                        var imp_ifacever = info.imports[i];
-                        var m = imp_ifacever.match( iface_pattern );
-                        var iface = m[ common._ifacever_pattern_name ];
-                        var ver = m[ common._ifacever_pattern_ver ];
-                        var curr_ver = import_candidates[iface];
+                    for ( let i = info.imports.length - 1; i >= 0; --i ) {
+                        const imp_ifacever = info.imports[i];
+                        const m = imp_ifacever.match( iface_pattern );
+                        const iface = m[ common._ifacever_pattern_name ];
+                        const ver = m[ common._ifacever_pattern_ver ];
+                        let curr_ver = import_candidates[iface];
 
                         if ( curr_ver ) {
                             curr_ver = curr_ver.split( '.' );
-                            var new_ver = ver.split( '.' );
+                            const new_ver = ver.split( '.' );
 
                             if ( curr_ver[0] !== new_ver[0] ) {
                                 as.error( FutoInError.InvokerError,
@@ -384,7 +384,7 @@ const spectools =
                     as.forEach( import_candidates, ( as, iface, ver ) => {
                         info.imports.push( iface + ':' + ver );
 
-                        var imp_info = {};
+                        const imp_info = {};
 
                         imp_info.iface = iface;
                         imp_info.version = ver;
@@ -409,21 +409,17 @@ const spectools =
      * @param {object} raw_spec - _
      */
     _checkFTN3Rev : function( as, info, raw_spec ) {
-        var ftn3rev = raw_spec.ftn3rev || '1.0';
-        var rv = ftn3rev.match( spectools._ver_pattern );
+        const ftn3rev = raw_spec.ftn3rev || '1.0';
+        const rv = ftn3rev.match( spectools._ver_pattern );
 
         if ( rv === null ) {
             as.error( FutoInError.InternalError, "Invalid ftn3rev field" );
         }
 
-        var mjr = parseInt( rv[ 1 ] );
-        var mnr = parseInt( rv[ 2 ] );
-        var funcs = info.funcs;
-        var f;
-        var tmp;
-        var t;
-        var tt;
-        var ts;
+        const mjr = parseInt( rv[ 1 ] );
+        const mnr = parseInt( rv[ 2 ] );
+        const funcs = info.funcs;
+        const types = info.types;
 
         // Check for version-specific features
         // ---
@@ -453,7 +449,7 @@ const spectools =
             }
 
             if ( mnr < 3 ) {
-                for ( f in funcs ) {
+                for ( let f in funcs ) {
                     if ( funcs[f].seclvl ) {
                         as.error( FutoInError.InternalError,
                             "Function seclvl is FTN3 v1.3 feature" );
@@ -462,23 +458,23 @@ const spectools =
             }
 
             if ( mnr < 4 ) {
-                for ( f in funcs ) {
-                    tmp = funcs[f].params;
+                for ( let f in funcs ) {
+                    const params = funcs[f].params;
 
-                    if ( tmp ) {
-                        for ( t in tmp ) {
-                            if ( typeof tmp[t] === 'string' ) {
+                    if ( params ) {
+                        for ( let t in params ) {
+                            if ( typeof params[t] === 'string' ) {
                                 as.error( FutoInError.InternalError,
                                     "Type shortcut is FTN3 v1.4 feature" );
                             }
                         }
                     }
 
-                    tmp = funcs[f].result;
+                    const result = funcs[f].result;
 
-                    if ( tmp && typeof tmp === 'object' ) {
-                        for ( t in tmp ) {
-                            t = tmp[t];
+                    if ( result && typeof result === 'object' ) {
+                        for ( let t in result ) {
+                            t = result[t];
 
                             if ( typeof t === 'string' ) {
                                 as.error( FutoInError.InternalError,
@@ -495,10 +491,8 @@ const spectools =
                     }
                 }
 
-                tmp = info.types;
-
-                for ( t in tmp ) {
-                    if ( typeof tmp[t] === 'string' ) {
+                for ( let t in types ) {
+                    if ( typeof types[t] === 'string' ) {
                         as.error( FutoInError.InternalError,
                             "Type shortcut is FTN3 v1.4 feature" );
                     }
@@ -506,13 +500,11 @@ const spectools =
             }
 
             if ( mnr < 5 ) {
-                tmp = info.types;
-
-                for ( t in tmp ) {
-                    tt = tmp[t];
+                for ( let t in types ) {
+                    const tt = types[t];
 
                     if ( tt.minlen !== undefined || tt.maxlen !== undefined ) {
-                        ts = {};
+                        const ts = {};
                         this._checkType( info, t, '', ts );
 
                         if ( ts['#last_base'] === 'string' ) {
@@ -524,23 +516,23 @@ const spectools =
             }
 
             if ( mnr < 6 ) {
-                for ( f in funcs ) {
-                    tmp = funcs[f].params;
+                for ( let f in funcs ) {
+                    const params = funcs[f].params;
 
-                    if ( tmp ) {
-                        for ( t in tmp ) {
-                            if ( tmp[t] instanceof Array ) {
+                    if ( params ) {
+                        for ( let t in params ) {
+                            if ( params[t] instanceof Array ) {
                                 as.error( FutoInError.InternalError,
                                     "Type variant is FTN3 v1.6 feature" );
                             }
                         }
                     }
 
-                    tmp = funcs[f].result;
+                    const result = funcs[f].result;
 
-                    if ( tmp && typeof tmp === 'object' ) {
-                        for ( t in tmp ) {
-                            if ( tmp[t] instanceof Array ) {
+                    if ( result && typeof result === 'object' ) {
+                        for ( let t in result ) {
+                            if ( result[t] instanceof Array ) {
                                 as.error( FutoInError.InternalError,
                                     "Type variant is FTN3 v1.6 feature" );
                             }
@@ -548,10 +540,8 @@ const spectools =
                     }
                 }
 
-                tmp = info.types;
-
-                for ( t in tmp ) {
-                    tt = tmp[t];
+                for ( let t in types ) {
+                    const tt = types[t];
 
                     if ( tt instanceof Array ) {
                         as.error( FutoInError.InternalError,
@@ -561,7 +551,7 @@ const spectools =
                         as.error( FutoInError.InternalError,
                             "Enum/Set is FTN3 v1.6 feature" );
                     } else if ( tt.elemtype !== undefined ) {
-                        ts = {};
+                        const ts = {};
                         this._checkType( info, t, '', ts );
 
                         if ( ts['#last_base'] === 'map' ) {
@@ -573,7 +563,7 @@ const spectools =
             }
 
             if ( mnr < 7 ) {
-                for ( f in funcs ) {
+                for ( let f in funcs ) {
                     f = funcs[f];
 
                     if ( f.result && typeof f.result === 'string' ) {
@@ -584,7 +574,7 @@ const spectools =
             }
 
             if ( mnr < 8 ) {
-                for ( f in funcs ) {
+                for ( let f in funcs ) {
                     if ( funcs[f].maxreqsize || funcs[f].maxrspsize ) {
                         as.error( FutoInError.InternalError,
                             "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
@@ -613,22 +603,19 @@ const spectools =
      * @param {object} info - _
      */
     _parseFuncs : function( as, info ) {
-        var finfo;
-        var pn;
-
-        for ( var f in info.funcs ) {
-            finfo = info.funcs[ f ];
+        for ( let f in info.funcs ) {
+            const finfo = info.funcs[ f ];
             finfo.min_args = 0;
 
             if ( 'params' in finfo ) {
-                var fparams = finfo.params;
+                const fparams = finfo.params;
 
                 if ( typeof fparams !== 'object' ) {
                     as.error( FutoInError.InternalError, "Invalid params object" );
                 }
 
-                for ( pn in fparams ) {
-                    var pinfo = fparams[ pn ];
+                for ( let pn in fparams ) {
+                    const pinfo = fparams[ pn ];
 
                     if ( typeof pinfo === 'string' ) {
                         finfo.min_args += 1;
@@ -653,13 +640,13 @@ const spectools =
             finfo.expect_result = false;
 
             if ( 'result' in finfo ) {
-                var fresult = finfo.result;
+                const fresult = finfo.result;
 
                 if ( typeof fresult === 'string' ) {
                     finfo.expect_result = true;
                 } else if ( typeof fresult == 'object' ) {
-                    for ( var rn in fresult ) {
-                        var rinfo = fresult[ rn ];
+                    for ( let rn in fresult ) {
+                        const rinfo = fresult[ rn ];
 
                         if ( typeof rinfo !== 'string' ) {
                             if ( typeof rinfo !== 'object' ) {
@@ -697,7 +684,7 @@ const spectools =
                     as.error( FutoInError.InternalError, '"throws" without result' );
                 }
 
-                var throws = finfo.throws;
+                const throws = finfo.throws;
 
                 if ( !Array.isArray( throws ) ) {
                     as.error( FutoInError.InternalError, '"throws" is not array' );
@@ -720,7 +707,7 @@ const spectools =
      */
     _maxSize : function( ms ) {
         if ( ms ) {
-            var res = parseInt( ms );
+            const res = parseInt( ms );
 
             switch( ms[ ms.length ? ms.length - 1 : 0 ] ) {
             case 'K': return res << 10;
@@ -738,10 +725,8 @@ const spectools =
      * @param {object} info - _
      */
     _parseTypes : function( as, info ) {
-        var tinfo;
-
-        for ( var t in info.types ) {
-            tinfo = info.types[ t ];
+        for ( let t in info.types ) {
+            const tinfo = info.types[ t ];
 
             if ( typeof tinfo === 'string' ) {
                 continue;
@@ -761,8 +746,8 @@ const spectools =
                     continue;
                 }
 
-                for ( var f in tinfo.fields ) {
-                    var fdef = tinfo.fields[ f ];
+                for ( let f in tinfo.fields ) {
+                    const fdef = tinfo.fields[ f ];
 
                     if ( ( typeof fdef !== 'string' ) &&
                          !( fdef instanceof Array ) &&
@@ -782,10 +767,7 @@ const spectools =
      * @param {object} sup_info - _
      */
     _parseImportInherit : function( as, info, raw_spec, sup_info ) {
-        var i;
-        var pn;
-
-        for ( var t in sup_info.types ) {
+        for ( let t in sup_info.types ) {
             if ( t in info.types ) {
                 as.error( FutoInError.InternalError, `Iface type redifintion: ${t}` );
                 continue;
@@ -794,27 +776,29 @@ const spectools =
             info.types[ t ] = sup_info.types[ t ];
         }
 
-        for ( var f in sup_info.funcs ) {
-            var fdef = sup_info.funcs[ f ];
+        for ( let f in sup_info.funcs ) {
+            const fdef = sup_info.funcs[ f ];
 
             if ( !( f in info.funcs ) ) {
                 info.funcs[ f ] = fdef;
                 continue;
             }
 
-            var sup_params = fdef.params;
-            var params = info.funcs[ f ].params;
+            const sup_params = fdef.params;
+            const params = info.funcs[ f ].params;
 
-            var sup_params_keys = Object.keys( sup_params );
-            var params_keys = Object.keys( params );
+            const sup_params_keys = Object.keys( sup_params );
+            const params_keys = Object.keys( params );
 
             if ( params_keys.length < sup_params_keys.length ) {
                 as.error( FutoInError.InternalError, `Invalid param count for "${f}"` );
             }
 
+            let i = 0;
+
             // Verify parameters are correctly duplicated
-            for ( i = 0; i < sup_params_keys.length; ++i ) {
-                pn = sup_params_keys[ i ];
+            for ( ; i < sup_params_keys.length; ++i ) {
+                const pn = sup_params_keys[ i ];
 
                 if ( pn !== params_keys[ i ] ) {
                     as.error( FutoInError.InternalError, `Invalid param order for "${f}/${pn}"` );
@@ -827,7 +811,7 @@ const spectools =
 
             // Verify that all added params have default value
             for ( ; i < params_keys.length; ++i ) {
-                pn = params_keys[ i ];
+                const pn = params_keys[ i ];
 
                 if ( !( pn in sup_params ) &&
                      !( 'default' in params[ pn ] ||
@@ -892,10 +876,8 @@ const spectools =
      */
     _checkType : function( info, type, val, _type_stack ) {
         _type_stack = _type_stack || {};
-        var tdef = _type_stack[ '#tdef' ] || {};
-        var top_type = _type_stack[ '#top' ] || type;
-        var elemtype;
-        var val_len;
+        const tdef = _type_stack[ '#tdef' ] || {};
+        const top_type = _type_stack[ '#top' ] || type;
 
         // Standard Types
         // ---
@@ -906,13 +888,13 @@ const spectools =
         case 'boolean':
             return ( typeof val === type );
 
-        case 'string':
+        case 'string': {
             if ( typeof val !== type ) {
                 return false;
             }
 
             if ( 'regex' in tdef ) {
-                var comp_regex;
+                let comp_regex;
 
                 if ( '_comp_regex' in info ) {
                     comp_regex = info._comp_regex;
@@ -933,7 +915,7 @@ const spectools =
                 }
             }
 
-            val_len = val.length;
+            const val_len = val.length;
 
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
@@ -952,8 +934,9 @@ const spectools =
             }
 
             return true;
+        }
 
-        case 'map':
+        case 'map': {
             if ( ( typeof val !== 'object' ) ||
                  ( val instanceof Array ) ||
                  ( val === null )
@@ -961,11 +944,11 @@ const spectools =
                 return false;
             }
 
-            var fields = tdef.fields;
+            const fields = tdef.fields;
 
             if ( typeof fields !== 'undefined' ) {
-                for ( var f in fields ) {
-                    var field_def = fields[ f ];
+                for ( let f in fields ) {
+                    let field_def = fields[ f ];
 
                     if ( typeof field_def === 'string' ) {
                         field_def = { type : field_def };
@@ -988,10 +971,10 @@ const spectools =
                 }
             }
 
-            elemtype = tdef.elemtype;
+            const elemtype = tdef.elemtype;
 
             if ( typeof elemtype !== 'undefined' ) {
-                for ( var ft in val ) {
+                for ( let ft in val ) {
                     if ( !this._checkType( info, elemtype, val[ ft ], null ) ) {
                         spectools.emit( 'error',
                             `Value "${val[ ft ]}" mismatch for ${top_type}` );
@@ -1002,9 +985,10 @@ const spectools =
             }
 
             return true;
+        }
 
         case 'integer':
-        case 'number':
+        case 'number': {
             if ( typeof val !== 'number' ) {
                 return false;
             }
@@ -1030,13 +1014,14 @@ const spectools =
             }
 
             return true;
+        }
 
-        case 'array':
+        case 'array': {
             if ( !( val instanceof Array ) ) {
                 return false;
             }
 
-            val_len = val.length;
+            const val_len = val.length;
 
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
@@ -1054,10 +1039,10 @@ const spectools =
             }
 
             //--
-            elemtype = tdef.elemtype;
+            const elemtype = tdef.elemtype;
 
             if ( typeof elemtype !== 'undefined' ) {
-                for ( var i = 0; i < val_len; ++i ) {
+                for ( let i = 0; i < val_len; ++i ) {
                     // Note, new type stack
                     if ( !this._checkType( info, elemtype, val[ i ], null ) ) {
                         spectools.emit( 'error',
@@ -1069,9 +1054,10 @@ const spectools =
             }
 
             return true;
+        }
 
         case 'enum':
-        case 'set':
+        case 'set': {
             if ( _type_stack ) {
                 if ( type === 'set' && !( val instanceof Array ) ) {
                     return false;
@@ -1081,8 +1067,8 @@ const spectools =
                 throw new Error( FutoInError.InternalError );
             }
 
-            var comp_set;
-            var set_items;
+            let comp_set;
+            let set_items;
 
             if ( '_comp_set' in info ) {
                 comp_set = info._comp_set;
@@ -1109,8 +1095,8 @@ const spectools =
                 val = [ val ];
             }
 
-            for ( var ii = val.length - 1; ii >= 0; --ii ) {
-                var iv = val[ii];
+            for ( let ii = val.length - 1; ii >= 0; --ii ) {
+                const iv = val[ii];
 
                 if ( ( !this._checkType( info, 'string', iv ) &&
                             !this._checkType( info, 'integer', iv ) ) ||
@@ -1122,12 +1108,13 @@ const spectools =
             }
 
             return true;
+        }
 
         default:
             // Custom Types
             // ---
             if ( type in info.types ) {
-                var tdef_part = info.types[ type ];
+                let tdef_part = info.types[ type ];
 
                 if ( ( typeof tdef_part === 'string' ) ||
                     ( tdef_part instanceof Array ) ) {
@@ -1146,12 +1133,12 @@ const spectools =
                 _type_stack[ type ] = true;
 
                 // ---
-                var base_type = tdef_part.type;
+                const base_type = tdef_part.type;
 
                 if ( base_type instanceof Array ) {
-                    for ( var vti = base_type.length - 1; vti >= 0; --vti ) {
-                        var vtype = base_type[vti];
-                        var new_type_stack = _extend( {}, _type_stack );
+                    for ( let vti = base_type.length - 1; vti >= 0; --vti ) {
+                        const vtype = base_type[vti];
+                        const new_type_stack = _extend( {}, _type_stack );
 
                         if ( this._checkType( info, vtype, val, new_type_stack ) ) {
                             return true;
@@ -1180,13 +1167,13 @@ const spectools =
      * @alias SpecTools.checkParameterType
      */
     checkParameterType : function( info, funcname, varname, value ) {
-        var vardef = info.funcs[ funcname ].params[ varname ];
+        const vardef = info.funcs[ funcname ].params[ varname ];
 
         if ( value === null && vardef.default === null ) {
             return true;
         }
 
-        var vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
+        const vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
 
         return spectools._checkType( info, vartype, value );
     },
@@ -1201,11 +1188,11 @@ const spectools =
      * @alias SpecTools.checkResultType
      */
     checkResultType : function( as, info, funcname, varname, value ) {
-        var vardef = info.funcs[ funcname ].result[ varname ];
-        var vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
+        const vardef = info.funcs[ funcname ].result[ varname ];
+        const vartype = ( typeof vardef === 'string' ) ? vardef : vardef.type;
 
         if ( !spectools._checkType( info, vartype, value ) ) {
-            var msg = "Type mismatch for result: " + varname;
+            const msg = `Type mismatch for result: ${varname}`;
 
             spectools.emit( 'error', msg );
             as.error( FutoInError.InvalidRequest, msg );
@@ -1223,7 +1210,7 @@ const spectools =
      */
     checkFutoInType : function( as, type, varname, value ) {
         if ( !spectools._checkType( {}, type, value ) ) {
-            var msg = "Type mismatch for parameter: " + varname;
+            const msg = `Type mismatch for parameter: ${varname}`;
 
             spectools.emit( 'error', msg );
             as.error( FutoInError.InvalidRequest, msg );
