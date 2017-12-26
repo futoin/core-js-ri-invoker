@@ -1914,15 +1914,14 @@ functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
 
-futoin-asyncevent@^0.9.0:
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/futoin-asyncevent/-/futoin-asyncevent-0.9.0.tgz#ab67167b1ba889fc77475e407aa6e5eb6962fb81"
+futoin-asyncevent@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/futoin-asyncevent/-/futoin-asyncevent-1.0.0.tgz#323bcfa07a0fb7344b62bb411dc0d57f3b6d9919"
 
-futoin-asyncsteps@^1.10.9:
-  version "1.10.9"
-  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.9.tgz#58fe020e55d14f84e1d908c5ae801024fa4fe2ad"
+futoin-asyncsteps@^1.10.11:
+  version "1.10.11"
+  resolved "https://registry.yarnpkg.com/futoin-asyncsteps/-/futoin-asyncsteps-1.10.11.tgz#ff353ead1ae641f9dfaa7bfda78a8947c5236671"
   dependencies:
-    grunt-babel "^7.0.0"
     performance-now "^2.1.0"
 
 gauge@~2.7.3:

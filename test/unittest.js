@@ -14,7 +14,6 @@ var closeTestHttpServer;
 var thisDir;
 
 if ( !isNode ) {
-    require( 'babel-polyfill/dist/polyfill.js' );
     // Browser test
     chai.should();
     assert = chai.assert;
