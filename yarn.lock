@@ -1638,7 +1638,7 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
 
-event-emitter@^0.3.5, event-emitter@~0.3.5:
+event-emitter@~0.3.5:
   version "0.3.5"
   resolved "https://registry.yarnpkg.com/event-emitter/-/event-emitter-0.3.5.tgz#df8c69eef1647923c7157b9ce83840610b02cc39"
   dependencies:
@@ -1913,6 +1913,10 @@ fstream@^1.0.0, fstream@^1.0.10, fstream@^1.0.2:
 functional-red-black-tree@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/functional-red-black-tree/-/functional-red-black-tree-1.0.1.tgz#1b0ab3bd553b2a0d6399d29c0e3ea0b252078327"
+
+futoin-asyncevent@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/futoin-asyncevent/-/futoin-asyncevent-0.9.0.tgz#ab67167b1ba889fc77475e407aa6e5eb6962fb81"
 
 futoin-asyncsteps@^1.10.9:
   version "1.10.9"

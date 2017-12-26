@@ -25,6 +25,12 @@ module.exports = {
             commonjs: "futoin-asyncsteps",
             commonjs2: "futoin-asyncsteps",
         },
+        'futoin-asyncevent' : {
+            root: "$asyncevent",
+            amd: "futoin-asyncevent",
+            commonjs: "futoin-asyncevent",
+            commonjs2: "futoin-asyncevent",
+        },
     },
     node : false,
     plugins: [

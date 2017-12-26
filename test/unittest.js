@@ -79,9 +79,10 @@ describe( 'SimpleCCM', function() {
                 .add(
                     function( as ) {
                         try {
-                            as.state.reg_fired = false;
+                            const state = as.state;
+                            state.reg_fired = false;
                             ccm.once( 'register', function() {
-                                as.state.reg_fired = true;
+                                state.reg_fired = true;
                             } );
                             ccm.register( as, 'myiface', 'iface.a:1.1', 'http://localhost:23456' );
                         } catch ( e ) {
@@ -110,9 +111,10 @@ describe( 'SimpleCCM', function() {
                     ccm.assertIface( 'myiface', 'iface.a:1.1' );
                     ccm.assertIface( 'otherface', 'iface.b:1.2' );
 
-                    as.state.reg_fired = false;
+                    const state = as.state;
+                    state.reg_fired = false;
                     ccm.once( 'unregister', function() {
-                        as.state.reg_fired = true;
+                        state.reg_fired = true;
                     } );
                     ccm.unRegister( 'myiface' );
                     ccm.assertIface( 'otherface', 'iface.b:1.2' );
@@ -839,15 +841,16 @@ call_remotes_model_as.add(
             }
         ).add(
             function( as ) {
-                as.state.close_called = false;
-                as.state.iface_close_called = false;
+                const state = as.state;
+                state.close_called = false;
+                state.iface_close_called = false;
 
                 ccm.once( 'close', function() {
-                    as.state.close_called = true;
+                    state.close_called = true;
                 } );
 
                 iface.once( 'close', function() {
-                    as.state.iface_close_called = true;
+                    state.iface_close_called = true;
                 } );
 
                 ccm.close();

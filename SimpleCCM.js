@@ -25,7 +25,7 @@ const NativeIface = require( './NativeIface' );
 const _extend = require( 'lodash/extend' );
 const _defaults = require( 'lodash/defaults' );
 const SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 const Limiter = require( 'futoin-asyncsteps' ).Limiter;
 
 /**
@@ -46,6 +46,12 @@ const SimpleCCMPublic = common.Options;
  */
 class SimpleCCM {
     constructor( options, impl=null ) {
+        $asyncevent( this, [
+            'register',
+            'unregister',
+            'close',
+        ] );
+
         this._iface_info = {};
         this._iface_impl = {};
         this._impl = impl || new SimpleCCMImpl( options );
@@ -484,7 +490,6 @@ class SimpleCCM {
 
 _extend( SimpleCCM.prototype, SimpleCCMPublic );
 _extend( SimpleCCM, SimpleCCMPublic );
-ee( SimpleCCM.prototype );
 
 module.exports = SimpleCCM;
 

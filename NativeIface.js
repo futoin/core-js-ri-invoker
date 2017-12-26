@@ -20,7 +20,7 @@
  */
 
 const _zipObject = require( 'lodash/zipObject' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 const $as = require( 'futoin-asyncsteps' );
 
 const common = require( './lib/common' );
@@ -38,6 +38,13 @@ const FUTOIN_CONTENT_TYPE = Options.FUTOIN_CONTENT_TYPE;
  */
 class NativeIface {
     constructor( ccmimpl, info ) {
+        $asyncevent( this, [
+            'connect',
+            'disconnect',
+            'close',
+            'commError',
+        ] );
+
         this._ccmimpl = ccmimpl;
         this._raw_info = info;
         this._iface_info = null;
@@ -285,8 +292,6 @@ class NativeIface {
     */
     _signMessageDummy() {}
 }
-
-ee( NativeIface.prototype );
 
 /**
 * Must be object with version => spec pairs in child class, if set.

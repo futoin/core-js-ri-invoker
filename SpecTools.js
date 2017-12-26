@@ -29,7 +29,7 @@ const _cloneDeep = require( 'lodash/cloneDeep' );
 const _zipObject = require( 'lodash/zipObject' );
 const _difference = require( 'lodash/difference' );
 const _extend = require( 'lodash/extend' );
-const ee = require( 'event-emitter' );
+const $asyncevent = require( 'futoin-asyncevent' );
 
 if ( isNode ) {
     fs = module.require( 'fs' );
@@ -1240,7 +1240,7 @@ if ( isNode ) {
     module.require( './lib/node/spectools_hmac' )( spectools );
 }
 
-ee( spectools );
+$asyncevent( spectools, [ 'error' ] );
 
 /**
  * On error message for details in debugging.
