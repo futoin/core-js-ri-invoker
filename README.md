@@ -329,8 +329,14 @@ interface, include separately</p>
 <dt><a href="#SimpleCCM">SimpleCCM</a></dt>
 <dd><p><strong>window.SimpleCCM</strong> - Browser-only reference to futoin-asyncsteps.SimpleCCM</p>
 </dd>
+<dt><a href="#SimpleCCM">SimpleCCM</a></dt>
+<dd><p><strong>futoin.SimpleCCM</strong> - Browser-only reference to futoin-asyncsteps.SimpleCCM</p>
+</dd>
 <dt><a href="#AdvancedCCM">AdvancedCCM</a></dt>
 <dd><p><strong>window.AdvancedCCM</strong> - Browser-only reference to futoin-asyncsteps.AdvancedCCM</p>
+</dd>
+<dt><a href="#AdvancedCCM">AdvancedCCM</a></dt>
+<dd><p><strong>futoin.AdvancedCCM</strong> - Browser-only reference to futoin-asyncsteps.AdvancedCCM</p>
 </dd>
 <dt><a href="#Invoker">Invoker</a></dt>
 <dd><p><strong>futoin.Invoker</strong> - Browser-only reference to futoin-invoker module</p>
@@ -1995,10 +2001,388 @@ Audit Logging v1.x
 cache v1.x iface name prefix
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM"></a>
+
+## SimpleCCM
+**futoin.SimpleCCM** - Browser-only reference to futoin-asyncsteps.SimpleCCM
+
+**Kind**: global variable  
+
+* [SimpleCCM](#SimpleCCM)
+    * [new SimpleCCM([options])](#new_SimpleCCM_new)
+    * _instance_
+        * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
+        * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
+        * [.unRegister(name)](#SimpleCCM+unRegister)
+        * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
+        * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
+        * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
+        * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
+        * [.alias(name, alias)](#SimpleCCM+alias)
+        * [.close()](#SimpleCCM+close)
+        * [.limitZone(name, options)](#SimpleCCM+limitZone)
+        * ["register"](#SimpleCCM+event_register)
+        * ["unregister"](#SimpleCCM+event_unregister)
+        * ["close"](#SimpleCCM+event_close)
+    * _static_
+        * [.SAFE_PAYLOAD_LIMIT](#SimpleCCM.SAFE_PAYLOAD_LIMIT)
+        * [.SVC_RESOLVER](#SimpleCCM.SVC_RESOLVER)
+        * [.SVC_AUTH](#SimpleCCM.SVC_AUTH)
+        * [.SVC_DEFENSE](#SimpleCCM.SVC_DEFENSE)
+        * [.SVC_ACL](#SimpleCCM.SVC_ACL)
+        * [.SVC_LOG](#SimpleCCM.SVC_LOG)
+        * [.SVC_CACHE_](#SimpleCCM.SVC_CACHE_)
+
+<a name="new_SimpleCCM_new"></a>
+
+### new SimpleCCM([options])
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [options] | <code>object</code> | map of options |
+
+<a name="SimpleCCM+register"></a>
+
+### simpleCCM.register(as, name, ifacever, endpoint, [credentials], [options])
+Register standard MasterService end-point (adds steps to *as*)
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Emits**: [<code>register</code>](#SimpleCCM+event_register)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps instance as registration may be waiting for external resources |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| ifacever | <code>string</code> | interface identifier and its version separated by colon |
+| endpoint | <code>string</code> | URI      OR any other resource identifier of function( ccmimpl, info )          returning iface implementing peer, accepted by CCM implementation      OR instance of Executor |
+| [credentials] | <code>string</code> | optional, authentication credentials: 'master' - enable MasterService authentication logic (Advanced CCM only) '{user}:{clear-text-password}' - send as is in the 'sec' section NOTE: some more reserved words and/or patterns can appear in the future |
+| [options] | <code>object</code> | fine tune global CCM options per endpoint |
+
+<a name="SimpleCCM+iface"></a>
+
+### simpleCCM.iface(name) ⇒ <code>NativeInterface</code>
+Get native interface wrapper for invocation of iface methods
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>NativeInterface</code> - - native interface  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | see register() |
+
+<a name="SimpleCCM+unRegister"></a>
+
+### simpleCCM.unRegister(name)
+Unregister previously registered interface (should not be used, unless really needed)
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Emits**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | see register() |
+
+<a name="SimpleCCM+defense"></a>
+
+### simpleCCM.defense() ⇒ <code>object</code>
+Shortcut to iface( "#defense" )
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - native defense interface  
+<a name="SimpleCCM+log"></a>
+
+### simpleCCM.log() ⇒ <code>object</code>
+Returns extended API interface as defined in FTN9 IF AuditLogService
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
+<a name="SimpleCCM+cache"></a>
+
+### simpleCCM.cache([bucket]) ⇒ <code>object</code>
+Returns extended API interface as defined in [FTN14 Cache][]
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
+<a name="SimpleCCM+assertIface"></a>
+
+### simpleCCM.assertIface(name, ifacever)
+Assert that interface registered by name matches major version and minor is not less than required.
+This function must generate fatal error and forbid any further execution
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| ifacever | <code>string</code> | interface identifier and its version separated by colon |
+
+<a name="SimpleCCM+alias"></a>
+
+### simpleCCM.alias(name, alias)
+Alias interface name with another name
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Emits**: [<code>register</code>](#SimpleCCM+event_register)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| alias | <code>string</code> | alternative name for registered interface |
+
+<a name="SimpleCCM+close"></a>
+
+### simpleCCM.close()
+Shutdown CCM (close all active comms)
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### simpleCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
+<a name="SimpleCCM+event_register"></a>
+
+### "register"
+CCM regiser event. Fired on new interface registration.
+( name, ifacever, info )
+
+**Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM+event_unregister"></a>
+
+### "unregister"
+CCM regiser event. Fired on interface unregistration.
+( name, info )
+
+**Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM+event_close"></a>
+
+### "close"
+CCM close event. Fired on CCM shutdown.
+
+**Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
+
+### SimpleCCM.SAFE_PAYLOAD_LIMIT
+Maximum FutoIn message payload size (not related to raw data)
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+**Default**: <code>65536</code>  
+<a name="SimpleCCM.SVC_RESOLVER"></a>
+
+### SimpleCCM.SVC_RESOLVER
+Runtime iface resolution v1.x
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SVC_AUTH"></a>
+
+### SimpleCCM.SVC_AUTH
+AuthService v1.x
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SVC_DEFENSE"></a>
+
+### SimpleCCM.SVC_DEFENSE
+Defense system v1.x
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SVC_ACL"></a>
+
+### SimpleCCM.SVC_ACL
+Access Control system v1.x
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SVC_LOG"></a>
+
+### SimpleCCM.SVC_LOG
+Audit Logging v1.x
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
+<a name="SimpleCCM.SVC_CACHE_"></a>
+
+### SimpleCCM.SVC_CACHE_
+cache v1.x iface name prefix
+
+**Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="AdvancedCCM"></a>
 
 ## AdvancedCCM
 **window.AdvancedCCM** - Browser-only reference to futoin-asyncsteps.AdvancedCCM
+
+**Kind**: global variable  
+
+* [AdvancedCCM](#AdvancedCCM)
+    * [new AdvancedCCM(options)](#new_AdvancedCCM_new)
+    * [.register(as, name, ifacever, endpoint, [credentials], [options])](#SimpleCCM+register)
+    * [.iface(name)](#SimpleCCM+iface) ⇒ <code>NativeInterface</code>
+    * [.unRegister(name)](#SimpleCCM+unRegister)
+    * [.defense()](#SimpleCCM+defense) ⇒ <code>object</code>
+    * [.log()](#SimpleCCM+log) ⇒ <code>object</code>
+    * [.cache([bucket])](#SimpleCCM+cache) ⇒ <code>object</code>
+    * [.assertIface(name, ifacever)](#SimpleCCM+assertIface)
+    * [.alias(name, alias)](#SimpleCCM+alias)
+    * [.close()](#SimpleCCM+close)
+    * [.limitZone(name, options)](#SimpleCCM+limitZone)
+    * ["register"](#SimpleCCM+event_register)
+    * ["unregister"](#SimpleCCM+event_unregister)
+    * ["close"](#SimpleCCM+event_close)
+
+<a name="new_AdvancedCCM_new"></a>
+
+### new AdvancedCCM(options)
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>object</code> | see AdvancedCCMOptions |
+
+<a name="SimpleCCM+register"></a>
+
+### advancedCCM.register(as, name, ifacever, endpoint, [credentials], [options])
+Register standard MasterService end-point (adds steps to *as*)
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Emits**: [<code>register</code>](#SimpleCCM+event_register)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps instance as registration may be waiting for external resources |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| ifacever | <code>string</code> | interface identifier and its version separated by colon |
+| endpoint | <code>string</code> | URI      OR any other resource identifier of function( ccmimpl, info )          returning iface implementing peer, accepted by CCM implementation      OR instance of Executor |
+| [credentials] | <code>string</code> | optional, authentication credentials: 'master' - enable MasterService authentication logic (Advanced CCM only) '{user}:{clear-text-password}' - send as is in the 'sec' section NOTE: some more reserved words and/or patterns can appear in the future |
+| [options] | <code>object</code> | fine tune global CCM options per endpoint |
+
+<a name="SimpleCCM+iface"></a>
+
+### advancedCCM.iface(name) ⇒ <code>NativeInterface</code>
+Get native interface wrapper for invocation of iface methods
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>NativeInterface</code> - - native interface  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | see register() |
+
+<a name="SimpleCCM+unRegister"></a>
+
+### advancedCCM.unRegister(name)
+Unregister previously registered interface (should not be used, unless really needed)
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Emits**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | see register() |
+
+<a name="SimpleCCM+defense"></a>
+
+### advancedCCM.defense() ⇒ <code>object</code>
+Shortcut to iface( "#defense" )
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - native defense interface  
+<a name="SimpleCCM+log"></a>
+
+### advancedCCM.log() ⇒ <code>object</code>
+Returns extended API interface as defined in FTN9 IF AuditLogService
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN9 native face  
+<a name="SimpleCCM+cache"></a>
+
+### advancedCCM.cache([bucket]) ⇒ <code>object</code>
+Returns extended API interface as defined in [FTN14 Cache][]
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Returns**: <code>object</code> - FTN14 native face  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+
+<a name="SimpleCCM+assertIface"></a>
+
+### advancedCCM.assertIface(name, ifacever)
+Assert that interface registered by name matches major version and minor is not less than required.
+This function must generate fatal error and forbid any further execution
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| ifacever | <code>string</code> | interface identifier and its version separated by colon |
+
+<a name="SimpleCCM+alias"></a>
+
+### advancedCCM.alias(name, alias)
+Alias interface name with another name
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Emits**: [<code>register</code>](#SimpleCCM+event_register)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | unique identifier in scope of CCM instance |
+| alias | <code>string</code> | alternative name for registered interface |
+
+<a name="SimpleCCM+close"></a>
+
+### advancedCCM.close()
+Shutdown CCM (close all active comms)
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Emits**: [<code>close</code>](#SimpleCCM+event_close)  
+<a name="SimpleCCM+limitZone"></a>
+
+### advancedCCM.limitZone(name, options)
+Configure named AsyncSteps Limiter instance
+
+**Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| name | <code>string</code> | zone name |
+| options | <code>object</code> | options to pass to Limiter c-tor |
+
+<a name="SimpleCCM+event_register"></a>
+
+### "register"
+CCM regiser event. Fired on new interface registration.
+( name, ifacever, info )
+
+**Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+<a name="SimpleCCM+event_unregister"></a>
+
+### "unregister"
+CCM regiser event. Fired on interface unregistration.
+( name, info )
+
+**Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+<a name="SimpleCCM+event_close"></a>
+
+### "close"
+CCM close event. Fired on CCM shutdown.
+
+**Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+<a name="AdvancedCCM"></a>
+
+## AdvancedCCM
+**futoin.AdvancedCCM** - Browser-only reference to futoin-asyncsteps.AdvancedCCM
 
 **Kind**: global variable  
 

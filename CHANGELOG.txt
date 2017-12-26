@@ -1,6 +1,7 @@
 
 === (next) ===
 FIXED: to use FTN15-compliant `futoin-asyncevent` instead of `event-emitter`
+FIXED: improved browser/browser-lite globals consistency
 
 === 1.7.5 (2017-12-26) ===
 NEW: fixed to assert AsyncSteps as first argument of NativeIface#call()/#.{member}()
