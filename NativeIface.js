@@ -19,10 +19,12 @@
  * limitations under the License.
  */
 
-const common = require( './lib/common' );
-const futoin_error = common.FutoInError;
 const _zipObject = require( 'lodash/zipObject' );
 const ee = require( 'event-emitter' );
+const $as = require( 'futoin-asyncsteps' );
+
+const common = require( './lib/common' );
+const futoin_error = common.FutoInError;
 const InterfaceInfo = require( './InterfaceInfo' );
 const Options = common.Options;
 const FUTOIN_CONTENT_TYPE = Options.FUTOIN_CONTENT_TYPE;
@@ -93,6 +95,8 @@ class NativeIface {
     * @alias NativeIface#call
     */
     call( as, name, params, upload_data, download_stream, timeout ) {
+        $as.assertAS( as );
+
         params = params || {};
         const raw_info = this._raw_info;
 
@@ -204,6 +208,8 @@ class NativeIface {
     * @param {array} args - _
     */
     _member_call_intercept( as, name, finfo, args ) {
+        $as.assertAS( as );
+
         const arginfo = finfo.params;
         let keys = Object.keys( arginfo );
 
