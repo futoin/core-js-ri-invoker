@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.7.7 (2018-01-12) ===
 FIXED: to compare legacy HMAC with protection from timining attacks
 CHANGED: moved futoin-asyncevent from peer to regular deps
 NEW: added SpecTools.secureEquals()
