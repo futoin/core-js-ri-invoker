@@ -1,3 +1,5 @@
+=== (next) ===
+NEW: more verbose spec constraints mismatch
 
 === 1.7.7 (2018-01-12) ===
 FIXED: to compare legacy HMAC with protection from timining attacks

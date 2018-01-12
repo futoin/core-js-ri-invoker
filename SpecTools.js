@@ -834,10 +834,12 @@ const spectools =
             }
         }
 
-        if ( _difference(
+        const constraint_diff = _difference(
             Object.keys( sup_info.constraints ),
-            raw_spec.requires ).length ) {
-            as.error( FutoInError.InternalError, "Missing constraints from inherited" );
+            raw_spec.requires );
+
+        if ( constraint_diff.length ) {
+            as.error( FutoInError.InternalError, `Missing constraints from inherited: ${constraint_diff}` );
         }
     },
 
