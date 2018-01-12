@@ -1234,6 +1234,23 @@ const spectools =
         as.error( FutoInError.InvalidRequest, "HMAC generation is supported only for server environment" );
         return {}; // suppress eslint
     },
+
+    /**
+     * Secure compare to cover time-based side-channels for attacks
+     * @note Pure JS is used in browser and crypto-based in Node.js
+     * @param {string} a - first string
+     * @param {string} b - second String
+     * @returns {boolean} true, if match
+     */
+    secureEquals( a, b ) {
+        let res = a.length - b.length;
+
+        for ( let i = Math.min( a.length, b.length ) - 1; i >= 0; --i ) {
+            res |= a.charCodeAt( i ) ^ b.charCodeAt( i );
+        }
+
+        return ( res === 0 );
+    },
 };
 
 if ( isNode ) {
@@ -1246,5 +1263,7 @@ $asyncevent( spectools, [ 'error' ] );
  * On error message for details in debugging.
  * @event SpecTools.error
  */
+
+Object.freeze( spectools );
 
 module.exports = spectools;

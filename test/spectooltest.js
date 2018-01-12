@@ -1,6 +1,7 @@
 'use strict';
 
 var assert;
+var expect;
 var async_steps = require( 'futoin-asyncsteps' );
 var _ = require( 'lodash' );
 var common = require( '../lib/common' );
@@ -14,6 +15,7 @@ if ( !isNode ) {
     // Browser test
     chai.should();
     assert = chai.assert;
+    expect = chai.expect;
 
     thisDir = '.';
 
@@ -24,6 +26,7 @@ if ( !isNode ) {
 
     chai_module.should();
     assert = chai_module.assert;
+    expect = chai_module.expect;
 
     thisDir = __dirname;
 
@@ -1629,7 +1632,16 @@ describe( 'SpecTools', function() {
         ).execute();
     } );
 
-    it( 'should allow enum in variant', function( done ) {
+    it( 'should correctly compare', function() {
+        expect( SpecTools.secureEquals( 'abc', 'abc' ) ).to.be.true;
+        expect( SpecTools.secureEquals( 'abc', 'abd' ) ).to.be.false;
+        expect( SpecTools.secureEquals( 'abc', 'abcd' ) ).to.be.false;
+        expect( SpecTools.secureEquals( 'ab', 'abc' ) ).to.be.false;
+        expect( SpecTools.secureEquals( '', '' ) ).to.be.true;
+        expect( SpecTools.secureEquals( '', 'a' ) ).to.be.false;
+    } );
+
+    it( 'securely compare', function( done ) {
         var iface = {
             iface: 'some.face',
             version: '1.0',

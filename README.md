@@ -1312,6 +1312,8 @@ cache v1.x iface name prefix
     * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>
     * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
+    * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
+    * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
     * ["error"](#SpecTools.event_error)
 
 <a name="new_SpecTools_new"></a>
@@ -1433,6 +1435,33 @@ NOTE: for simplicity, 'sec' field must not be present
 | as | <code>AsyncSteps</code> | step interface |
 | info | <code>object</code> | Interface raw info object |
 | ftnreq | <code>object</code> | Request Object |
+
+<a name="SpecTools.secureEquals"></a>
+
+### SpecTools.secureEquals(a, b) ⇒ <code>boolean</code>
+Secure compare to cover time-based side-channels for attacks
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>boolean</code> - true, if match  
+**Note**: Pure JS is used in browser and crypto-based in Node.js  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>string</code> | first string |
+| b | <code>string</code> | second String |
+
+<a name="SpecTools.secureEqualBuffer"></a>
+
+### SpecTools.secureEqualBuffer(a, b) ⇒ <code>boolean</code>
+Secure compare to cover time-based side-channels for attacks
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>boolean</code> - true, if match  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| a | <code>Buffer</code> | first buffer |
+| b | <code>Buffer</code> | second buffer |
 
 <a name="SpecTools.event_error"></a>
 

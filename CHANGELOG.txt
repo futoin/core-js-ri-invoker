@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: to compare legacy HMAC with protection from timining attacks
+NEW: added SpecTools.secureEquals()
+
 === 1.7.6 (2017-12-26) ===
 FIXED: to use FTN15-compliant `futoin-asyncevent` instead of `event-emitter`
 FIXED: improved browser/browser-lite globals consistency
