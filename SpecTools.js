@@ -63,7 +63,7 @@ const spectools =
     _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
     _ifacever_pattern : common._ifacever_pattern,
 
-    _max_supported_v1_minor : 8,
+    _max_supported_v1_minor : 9,
 
     /**
      * Load FutoIn iface definition.
@@ -583,7 +583,73 @@ const spectools =
             }
 
             if ( mnr < 9 ) {
-                // TODO
+                if ( 'BinaryFormat' in info.constraints ) {
+                    as.error( FutoInError.InternalError,
+                        "BinaryFormat is FTN3 v1.9 feature" );
+                }
+
+                // ---
+                let found_data = false;
+                const data_type = 'data';
+
+                for ( let f in funcs ) {
+                    const params = funcs[f].params;
+
+                    if ( params ) {
+                        for ( let t in params ) {
+                            const pt = params[t];
+
+                            if ( pt === data_type || pt.type === data_type ) {
+                                found_data = true;
+                            }
+                        }
+                    }
+
+                    const result = funcs[f].result;
+
+                    if ( result && typeof result === 'object' ) {
+                        for ( let t in result ) {
+                            const rt = result[t];
+
+                            if ( rt === data_type || rt.type === data_type ) {
+                                found_data = true;
+                            }
+                        }
+                    }
+                }
+
+                for ( let t in types ) {
+                    const tt = types[t];
+
+                    if ( ( tt === data_type ) ||
+                         ( tt.type === data_type ) ||
+                         ( tt.elemtype === data_type ) ||
+                         ( ( tt instanceof Array ) && ( tt.indexOf( data_type ) !== -1 ) )
+                    ) {
+                        found_data = true;
+                    }
+
+                    const fields = tt.fields;
+
+                    if ( fields ) {
+                        for ( let f in fields ) {
+                            const ft = fields[f];
+
+                            if ( ft === data_type ) {
+                                found_data = true;
+                            }
+                        }
+                    }
+                }
+
+                if ( found_data ) {
+                    as.error( FutoInError.InternalError,
+                        "'data' type is FTN3 v1.9 feature" );
+                }
+            }
+
+            if ( mnr < 10 ) {
+                // TODO: ...
             }
 
             // Executor is not allowed to support newer than implemented version (v1.1)
@@ -1107,6 +1173,30 @@ const spectools =
                         `No set item "${iv}" for ${top_type}` );
                     return false;
                 }
+            }
+
+            return true;
+        }
+
+        case 'data': {
+            if ( !( val instanceof Uint8Array ) ) {
+                return false;
+            }
+
+            const val_len = val.length;
+
+            if ( ( 'minlen' in tdef ) && ( val_len < tdef.minlen ) ) {
+                spectools.emit( 'error',
+                    `Value min length "${val_len}" mismatch for ${top_type}` );
+
+                return false;
+            }
+
+            if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
+                spectools.emit( 'error',
+                    `Value max length "${val_len}" mismatch for ${top_type}` );
+
+                return false;
             }
 
             return true;

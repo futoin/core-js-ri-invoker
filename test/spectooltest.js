@@ -495,6 +495,81 @@ describe( 'SpecTools', function() {
                     var iface = {
                         iface : info.iface,
                         version: info.version,
+                        ftn3rev: "1.8",
+                        requires: [ 'BinaryFormat' ],
+                    };
+
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err ) {
+                    try {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "BinaryFormat is FTN3 v1.9 feature" );
+                        as.success( 'OK' );
+                    } catch ( e ) {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok ) {
+                    ok.should.equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.8",
+                        types: {
+                            T1: 'data',
+                            T2: {
+                                type: 'data',
+                            },
+                            TV: [ 'string', 'data' ],
+                            TM: {
+                                type: 'map',
+                                fields: {
+                                    f: 'data',
+                                },
+                            },
+                            TA: {
+                                type: 'array',
+                                elemtype: 'data',
+                            },
+                        },
+                        funcs: {
+                            f: {
+                                params: {
+                                    a: 'data',
+                                    b: { type: 'data' },
+                                },
+                                result: 'data',
+                            },
+                            r: {
+                                result: {
+                                    a: 'data',
+                                    b: { type: 'data' },
+                                },
+                            },
+                        },
+                    };
+
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err ) {
+                    try {
+                        err.should.equal( 'InternalError' );
+                        as.state.error_info.should.equal( "'data' type is FTN3 v1.9 feature" );
+                        as.success( 'OK' );
+                    } catch ( e ) {
+                        done( e );
+                    }
+                }
+            ).add(
+                function( as, ok ) {
+                    ok.should.equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
                         ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
                     };
 
@@ -1240,6 +1315,10 @@ describe( 'SpecTools', function() {
                     ok : [ {} ],
                     fail : [ true, false, 'yes', 1, 1.1, [], null, undefined ],
                 },
+                data : {
+                    ok : [ new Uint8Array( 10 ) ],
+                    fail : [ true, false, 'yes', 1, 1.1, [], null, undefined, {}, new Int32Array( 10 ) ],
+                },
             };
 
             as.forEach( tests, function( as, type, v ) {
@@ -1275,7 +1354,7 @@ describe( 'SpecTools', function() {
             var iface = {
                 iface: 'some.face',
                 version: '1.0',
-                ftn3rev: '1.7',
+                ftn3rev: '1.9',
                 types: {
                     Int : {
                         type: 'integer',
@@ -1355,6 +1434,11 @@ describe( 'SpecTools', function() {
                         type: "array",
                         elemtype: "Int",
                         maxlen: 3,
+                    },
+                    Data : {
+                        type: "data",
+                        minlen: 3,
+                        maxlen: 5,
                     },
                 },
             };
@@ -1447,6 +1531,10 @@ describe( 'SpecTools', function() {
                 Array : {
                     ok: [ [], [ 1 ], [ 1, 2, 3 ] ],
                     fail: [ [ 1, 2, 3, 4 ], null, undefined, true ],
+                },
+                Data : {
+                    ok: [ new Uint8Array( 3 ), new Uint8Array( 4 ), new Uint8Array( 5 ) ],
+                    fail: [ new Uint8Array( 2 ), new Uint8Array( 6 ) ],
                 },
             };
 
@@ -1699,23 +1787,29 @@ describe( 'SpecTools', function() {
                         b : true,
                         a : 'beta',
                     },
+                    d : Buffer.alloc( 3, '1' ),
                 },
                 r : {
                     test : 'alpha',
                 },
             };
 
-            var hmacbase = 'f:some.iface:1.2;p:a:alpha;b:false;n:1.34;o:a:beta;b:true;;;r:test:alpha;;rid:C1234;';
+            var hmacbase = 'f:some.iface:1.2;p:a:alpha;b:false;d:111;n:1.34;o:a:beta;b:true;;;r:test:alpha;;rid:C1234;';
             var key = crypto.randomBytes( 200 ); // 1600-bit block size for SHA3
             var keyb64 = key.toString( 'base64' );
 
             var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
 
-            it ( 'should correclt create HMAC base', function() {
+            it ( 'should correctly create HMAC base', function() {
+                var all = [];
                 var b = [];
+                var fake_hmac = {
+                    update: ( v ) => all.push( Buffer.isBuffer( v ) ? v.toString() : v ),
+                };
 
-                SpecTools._hmacBase( b, req );
-                b.join( '' ).should.equal( hmacbase );
+                SpecTools._hmacBase( fake_hmac, b, req );
+                all.push( b.join( '' ) );
+                all.join( '' ).should.equal( hmacbase );
             } );
 
             for ( var i = 0, c = algos.length; i < c; ++i ) {
@@ -1731,21 +1825,18 @@ describe( 'SpecTools', function() {
 
                         var res1 = SpecTools.genHMAC( as, options, req );
                         var res2 = SpecTools.genHMAC( as, options, req );
-
-                        //SpecTools.hmacbase.should.equal( hmacbase );
-                        SpecTools.checkHMAC( res1, res2 ).should.be.true;
-
                         var testres = crypto
                             .createHmac( algo_lo, key )
                             .update( hmacbase )
                             .digest();
 
-                        SpecTools.checkHMAC( res1, testres ).should.be.true;
                         testres
                             .toString( 'hex' )
                             .should.equal(
                                 res1.toString( 'hex' )
                             );
+
+                        SpecTools.checkHMAC( res1, res2 ).should.be.true;
                     } );
                 } )( i );
             }

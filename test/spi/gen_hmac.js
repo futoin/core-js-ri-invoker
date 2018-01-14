@@ -22,6 +22,8 @@ var req = {
             boolOther : true,
             alphaOther : 'beta',
         },
+        dataParam: Buffer.alloc( 100, 0x0F ),
+        longDataParam: Buffer.alloc( 8192, 0x0F ),
     },
     r : {
         test : 'alpha',
@@ -47,7 +49,6 @@ for ( let i = 0; i < count; ++i ) {
 
 diff = performance_now() - start;
 console.log( 'Join method: ' + diff + ' @' + ( count/diff*1e3 ) + '/sec' );
-
 
 // ---
 [ 'md5', 'sha224', 'sha256', 'sha384', 'sha512' ].forEach( function( algo ) {
