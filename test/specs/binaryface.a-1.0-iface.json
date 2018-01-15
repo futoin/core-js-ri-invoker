@@ -1,0 +1,20 @@
+{
+    "iface" : "binaryface.a",
+    "version" : "1.0",
+    "ftn3rev" : "1.9",
+    "funcs" : {
+        "getCoder" : {
+            "result" : {
+                "name" : {
+                    "type" : "string"
+                }
+            }
+        }
+    },
+    "requires" : [
+        "AllowAnonymous",
+        "MyRequire",
+        "SecureChannel",
+        "BinaryData"
+    ]
+}

@@ -583,9 +583,9 @@ const spectools =
             }
 
             if ( mnr < 9 ) {
-                if ( 'BinaryFormat' in info.constraints ) {
+                if ( 'BinaryData' in info.constraints ) {
                     as.error( FutoInError.InternalError,
-                        "BinaryFormat is FTN3 v1.9 feature" );
+                        "BinaryData is FTN3 v1.9 feature" );
                 }
 
                 // ---

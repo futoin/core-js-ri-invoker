@@ -101,6 +101,13 @@
                     "type" : "integer"
                 }
             }
+        },
+        "getCoder" : {
+            "result" : {
+                "name" : {
+                    "type" : "string"
+                }
+            }
         }
     },
     "requires" : [

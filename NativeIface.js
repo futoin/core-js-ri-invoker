@@ -27,7 +27,6 @@ const common = require( './lib/common' );
 const futoin_error = common.FutoInError;
 const InterfaceInfo = require( './InterfaceInfo' );
 const Options = common.Options;
-const FUTOIN_CONTENT_TYPE = Options.FUTOIN_CONTENT_TYPE;
 
 /**
  * Native Interface for FutoIn ifaces
@@ -117,6 +116,7 @@ class NativeIface {
             native_iface : this,
             options : raw_info.options,
             endpoint : raw_info.endpoint,
+            msg_coder : raw_info.coder,
             expect_response : true,
             signMessage : this._signMessageDummy,
             max_rsp_size: Options.SAFE_PAYLOAD_LIMIT,
@@ -184,16 +184,17 @@ class NativeIface {
                 }
 
                 if ( ctx.expect_response ) {
-                    as.add( ( as, rsp, content_type ) => {
+                    as.add( ( as, rsp, is_futoin_message ) => {
                         if ( ctx.download_stream ) {
                             as.success( true );
-                        } else if ( ( content_type === FUTOIN_CONTENT_TYPE ) ||
-                                    ( content_type === true ) ) {
-                            if ( typeof rsp === 'string' ) {
+                        } else if ( is_futoin_message ) {
+                            if ( ( rsp instanceof Uint8Array ) ||
+                                 ( typeof rsp === 'string' )
+                            ) {
                                 try {
-                                    rsp = JSON.parse( rsp );
+                                    rsp = ctx.msg_coder.decode( rsp );
                                 } catch ( e ) {
-                                    as.error( futoin_error.CommError, "JSON:" + e.message );
+                                    as.error( futoin_error.CommError, "Decode: " + e.message );
                                 }
                             }
 

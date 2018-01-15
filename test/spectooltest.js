@@ -496,7 +496,7 @@ describe( 'SpecTools', function() {
                         iface : info.iface,
                         version: info.version,
                         ftn3rev: "1.8",
-                        requires: [ 'BinaryFormat' ],
+                        requires: [ 'BinaryData' ],
                     };
 
                     SpecTools.loadIface( as, info, [ iface ] );
@@ -504,7 +504,7 @@ describe( 'SpecTools', function() {
                 function( as, err ) {
                     try {
                         err.should.equal( 'InternalError' );
-                        as.state.error_info.should.equal( "BinaryFormat is FTN3 v1.9 feature" );
+                        as.state.error_info.should.equal( "BinaryData is FTN3 v1.9 feature" );
                         as.success( 'OK' );
                     } catch ( e ) {
                         done( e );

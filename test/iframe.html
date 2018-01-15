@@ -12,7 +12,7 @@ chai.should();
 window.addEventListener( 'message', function( event ){
     try{
         var freq = event.data;
-        var frsp = processServerRequest( freq, '' );
+        var frsp = processServerRequest( freq, '', { name: function(){ return 'JSON'; } } );
         
         if ( typeof frsp === 'boolean' || !( 'e' in frsp ) )
         {

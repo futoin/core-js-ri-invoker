@@ -42,6 +42,7 @@ module.exports = function( grunt ) {
                     "AdvancedCCM.js",
                     "CacheFace.js",
                     "InterfaceInfo.js",
+                    "MessageCoder.js",
                     "LogFace.js",
                     "NativeIface.js",
                     "PingFace.js",

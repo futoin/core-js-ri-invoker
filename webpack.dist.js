@@ -31,6 +31,24 @@ module.exports = {
             commonjs: "futoin-asyncevent",
             commonjs2: "futoin-asyncevent",
         },
+        cbor : {
+            root: "cbor",
+            amd: "cbor",
+            commonjs: "cbor",
+            commonjs2: "cbor",
+        },
+        borc : {
+            root: "cbor",
+            amd: "borc",
+            commonjs: "borc",
+            commonjs2: "borc",
+        },
+        'msgpack-lite' : {
+            root: "msgpack",
+            amd: "msgpack-lite",
+            commonjs: "msgpack-lite",
+            commonjs2: "msgpack-lite",
+        },
     },
     node : false,
     plugins: [

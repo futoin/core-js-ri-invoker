@@ -8,10 +8,16 @@ var enableDestroy = require( 'server-destroy' );
 var httpsrv = null;
 var wssrv = null;
 
+const MessageCoder = require( '../MessageCoder' );
+require( '../lib/JSONCoder' ).register();
+require( '../lib/CBORCoder' ).register();
+require( '../lib/MsgPackCoder' ).register();
+
 require( 'chai' ).should();
 
 function processTestServerRequest( request, data ) {
-    var freq;
+    let freq;
+    let coder = MessageCoder.detect( data );
 
     if ( request && request.url !== '/ftn' ) {
         var parsed_url = url.parse( request.url, true );
@@ -27,13 +33,18 @@ function processTestServerRequest( request, data ) {
         }
     } else {
         try {
-            freq = JSON.parse( data );
+            freq = coder.decode( data );
         } catch ( e ) {
+            console.log( e );
             return { e : 'InvalidReuquest' };
         }
     }
 
-    return processServerRequest( freq, data );
+    return {
+        frsp : processServerRequest( freq, data, coder ),
+        freq,
+        coder,
+    };
 }
 
 function createTestHttpServer( cb ) {
@@ -51,20 +62,15 @@ function createTestHttpServer( cb ) {
             freq.push( chunk );
         } );
         request.on( "end", function() {
-            if ( freq.length ) {
-                if ( freq.length > 1 ) {
-                    freq = Buffer.concat( freq ).toString( 'utf8' );
-                } else {
-                    freq = freq[0].toString( 'utf8' );
-                }
-            } else {
-                freq = '';
-            }
+            freq = Buffer.concat( freq );
 
-            var frsp;
+            let frsp;
+            let coder;
 
             if ( request.method !== 'OPTIONS' ) {
-                frsp = processTestServerRequest( request, freq );
+                let res = processTestServerRequest( request, freq );
+                frsp = res.frsp;
+                coder = res.coder;
 
                 if ( frsp === null ) {
                     request.socket.destroy();
@@ -72,6 +78,7 @@ function createTestHttpServer( cb ) {
                 }
             } else {
                 frsp = '';
+                coder = MessageCoder.get( 'JSON' );
             }
 
             var content_type;
@@ -86,8 +93,8 @@ function createTestHttpServer( cb ) {
                     frsp = { r : frsp };
                 }
 
-                frsp = JSON.stringify( frsp );
-                content_type = 'application/futoin+json';
+                frsp = coder.encode( frsp );
+                content_type = coder.contentType();
             } else {
                 content_type = 'application/octet-stream';
             }
@@ -132,7 +139,8 @@ function createTestHttpServer( cb ) {
 
         ws.on( 'message', function( event ) {
             var msg = event.data;
-            var frsp = processTestServerRequest( null, msg );
+
+            let { frsp, coder, freq } = processTestServerRequest( null, msg );
 
             if ( frsp === null ) {
                 sock.destroy();
@@ -148,10 +156,9 @@ function createTestHttpServer( cb ) {
                 frsp = { r : frsp };
             }
 
-            msg = JSON.parse( msg );
-            frsp.rid = msg.rid;
+            frsp.rid = freq.rid;
 
-            frsp = JSON.stringify( frsp );
+            frsp = coder.encode( frsp );
             ws.send( frsp );
         } );
     } );

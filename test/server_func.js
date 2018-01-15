@@ -13,7 +13,7 @@ var fail_next = false;
 var log_count = 0;
 var cached_value;
 
-function processServerRequest( freq, data ) {
+function processServerRequest( freq, data, coder ) {
     var func = freq.f.split( ':' );
 
     if ( func.length !== 3 ) {
@@ -27,7 +27,7 @@ function processServerRequest( freq, data ) {
         } else if ( freq.p.txt.toLowerCase() !== freq.p.lvl + 'msg' ) {
             return null;
         } else if ( func[2] === 'hexdump' &&
-                freq.p.data !== new Buffer( 'HEXDATA' ).toString( 'base64' ) ) {
+                freq.p.data.toString() !== new Buffer( 'HEXDATA' ).toString( 'base64' ) ) {
             return null;
         }
 
@@ -101,13 +101,13 @@ function processServerRequest( freq, data ) {
 
     case "rawUploadFunc" :
         expect( freq.p ).to.be.empty;
-        data.should.equal( "MY_UPLOAD" );
+        data.toString().should.equal( "MY_UPLOAD" );
         return { ok : "OK" };
 
     case "rawUploadFuncParams" :
         freq.p.a.should.equal( '123' );
         JSON.parse( freq.p.o ).b.should.equal( false );
-        data.should.equal( "MY_UPLOAD" );
+        data.toString().should.equal( "MY_UPLOAD" );
         return { ok : "OK" };
 
     case "rawDownload" :
@@ -138,6 +138,8 @@ function processServerRequest( freq, data ) {
 
     case "getLogCount":
         return { count: log_count };
+    case "getCoder":
+        return { name: coder.name() };
     }
 
     return { e : 'InvalidFunction' };
