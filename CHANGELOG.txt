@@ -1,4 +1,8 @@
 
+=== (next) ===
+BREAKING CHANGE: bi-channel callbacks require futoin-executor v1.8.0+
+FIXED: to correctly handle mix of message codecs in WebSockets
+
 === 1.8.0 (2018-01-15) ===
 BREAKING CHANGE: raw download is Buffer instead of string now
 NEW: more verbose spec constraints mismatch
