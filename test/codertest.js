@@ -8,6 +8,8 @@ require( '../lib/JSONCoder' ).register();
 require( '../lib/CBORCoder' ).register();
 require( '../lib/MsgPackCoder' ).register();
 
+const BENCH_COUNT = 10e3; // 100e3 has issues with CBOR
+
 const msg = {
     f: 'some.iface:1.0:some_func',
     p: {
@@ -47,7 +49,7 @@ for ( let coder_name of [ 'JSON', 'CBOR', 'MPCK' ] ) {
 
         it ( 'encode benchmark', function() {
             this.timeout( 30e3 );
-            const count = 100e3;
+            const count = BENCH_COUNT;
             const start = performance_now();
 
             for ( let i = 0; i < count; ++i ) {
@@ -60,7 +62,7 @@ for ( let coder_name of [ 'JSON', 'CBOR', 'MPCK' ] ) {
 
         it ( 'decode benchmark', function() {
             this.timeout( 30e3 );
-            const count = 100e3;
+            const count = BENCH_COUNT;
 
             const m = coder.encode( msg );
 
