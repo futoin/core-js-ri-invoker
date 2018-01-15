@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.8.0 (2018-01-15) ===
 BREAKING CHANGE: raw download is Buffer instead of string now
 NEW: more verbose spec constraints mismatch
 NEW: 'data' type from FTN3 v1.9
