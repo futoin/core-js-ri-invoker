@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.8.1 (2018-01-15) ===
 BREAKING CHANGE: bi-channel callbacks require futoin-executor v1.8.0+
 FIXED: to correctly handle mix of message codecs in WebSockets
 
