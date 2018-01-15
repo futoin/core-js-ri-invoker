@@ -3,6 +3,14 @@
     "version" : "1.0",
     "ftn3rev" : "1.9",
     "funcs" : {
+        "binaryPingPong" : {
+            "params" : {
+                "ping" : "data"
+            },
+            "result" : {
+                "pong" : "data"
+            }
+        },
         "getCoder" : {
             "result" : {
                 "name" : {

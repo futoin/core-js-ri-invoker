@@ -1336,6 +1336,46 @@ describe( 'NativeIface', function() {
                 as.state.coder = 'JSON';
                 as.execute();
             } );
+        } else {
+            it( 'should call binary', function( done ) {
+                as.add(
+                    function( as ) {
+                        ccm.register(
+                            as, 'myiface', 'binaryface.a:1.0',
+                            'secure+http://localhost:23456/ftn' );
+                        ccm.register(
+                            as, 'myiface2', 'binaryface.a:1.0',
+                            'secure+ws://localhost:23456/ftn' );
+
+                        const buf = Buffer.alloc( 16, 0x12 );
+
+                        as.add( function( as ) {
+                            as.setTimeout( 100 );
+                            createTestHttpServer( function() {
+                                as.success();
+                            } );
+                        } );
+                        as.add( ( as ) => {
+                            ccm.iface( 'myiface' ).binaryPingPong( as, buf );
+                        } );
+                        as.add( ( as, res ) => {
+                            buf.equals( res.pong ).should.be.true;
+                        } );
+                        as.add( ( as ) => {
+                            ccm.iface( 'myiface2' ).binaryPingPong( as, buf );
+                        } );
+                        as.add( ( as, res ) => {
+                            buf.equals( res.pong ).should.be.true;
+                        } );
+                        as.add( ( as ) => done() );
+                    },
+                    function( as, err ) {
+                        console.log( err + ": " + as.state.error_info );
+                        done( as.state.last_exception || 'Fail' );
+                    }
+                );
+                as.execute();
+            } );
         }
 
         it( 'should call WS remotes through interceptors', function( done ) {

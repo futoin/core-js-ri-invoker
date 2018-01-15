@@ -18,7 +18,7 @@ module.exports = function( grunt ) {
             ],
         },
         mocha_istanbul: {
-            coverage: { src: [ 'test/spectooltest.js', 'test/unittest.js' ] },
+            coverage: { src: [ 'test/*test.js' ] },
             options: {
                 mochaOptions: [ '--exit' ],
             },

@@ -67,6 +67,8 @@ function processServerRequest( freq, data, coder ) {
         default:
             return { e : 'UnknownInterface' };
         }
+    } else if ( func[0] === 'binaryface.a' && func[1] === '1.0' ) {
+        // pass
     } else if ( func[0] !== 'fileface.a' ) {
         return { e : 'UnknownInterface' };
     } else if ( func[1] !== '1.1' ) {
@@ -133,6 +135,7 @@ function processServerRequest( freq, data, coder ) {
     case "unknownFunc":
         return { e : 'MY_ERROR' };
 
+    case "binaryPingPong":
     case "pingPong":
         return { pong : freq.p.ping };
 
