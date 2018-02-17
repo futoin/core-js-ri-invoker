@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 var assert;
 var expect;
 var async_steps = require( 'futoin-asyncsteps' );

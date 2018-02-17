@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 var _ = require( 'lodash' );
 var common = require( '../lib/common' );
 var isNode = common._isNode;

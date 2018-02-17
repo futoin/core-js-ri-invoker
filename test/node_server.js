@@ -1,5 +1,7 @@
 'use strict';
 
+require( './prepare' );
+
 var http = require( 'http' );
 var url = require( 'url' );
 var WebSocket = require( 'faye-websocket' );

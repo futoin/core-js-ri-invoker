@@ -5,7 +5,7 @@ var expect;
 if ( typeof chai !== 'undefined' ) {
     expect = chai.expect;
 } else {
-    expect = require( 'chai' ).expect;
+    expect = module.require( 'chai' ).expect;
 }
 
 
