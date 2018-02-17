@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.8.2 (2018-02-17) ===
 FIXED: CVE-2018-3721 mitigation with Object.freeze()
 
 === 1.8.1 (2018-01-15) ===
