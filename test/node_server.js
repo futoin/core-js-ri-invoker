@@ -13,8 +13,6 @@ require( '../lib/JSONCoder' ).register();
 require( '../lib/CBORCoder' ).register();
 require( '../lib/MsgPackCoder' ).register();
 
-require( 'chai' ).should();
-
 function processTestServerRequest( request, data ) {
     let freq;
     let coder = MessageCoder.detect( data );
@@ -192,7 +190,4 @@ if ( require.main === module ) {
     createTestHttpServer( function() {
         console.log( 'LISTENING' );
     } );
-    var hidereq = require;
-
-    hidereq( 'chai' ).should();
 }

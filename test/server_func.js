@@ -61,7 +61,7 @@ function processServerRequest( freq, data, coder ) {
             func[1] === '1.0' ) {
         switch ( func[2] ) {
         case "ping":
-            freq.p.echo.should.equal( 123 );
+            expect( freq.p.echo ).equal( 123 );
             return { echo : freq.p.echo };
 
         default:
@@ -84,32 +84,32 @@ function processServerRequest( freq, data, coder ) {
         }
 
     case 'testFunc' :
-        freq.p.a.should.equal( '1' );
-        freq.p.n.should.equal( 2.8 );
-        freq.p.i.should.equal( 4 );
-        freq.p.o.m.should.equal( 3 );
+        expect( freq.p.a ).equal( '1' );
+        expect( freq.p.n ).equal( 2.8 );
+        expect( freq.p.i ).equal( 4 );
+        expect( freq.p.o.m ).equal( 3 );
         return { res : 'MY_RESULT' };
 
     case 'noResult' :
-        freq.p.a.should.equal( '123' );
+        expect( freq.p.a ).equal( '123' );
         return {};
 
     case 'customResult':
         return true;
 
     case "call" :
-        freq.p.should.be.empty;
+        expect( freq.p ).be.empty;
         return {};
 
     case "rawUploadFunc" :
         expect( freq.p ).to.be.empty;
-        data.toString().should.equal( "MY_UPLOAD" );
+        expect( data.toString() ).equal( "MY_UPLOAD" );
         return { ok : "OK" };
 
     case "rawUploadFuncParams" :
-        freq.p.a.should.equal( '123' );
-        JSON.parse( freq.p.o ).b.should.equal( false );
-        data.toString().should.equal( "MY_UPLOAD" );
+        expect( freq.p.a ).equal( '123' );
+        expect( JSON.parse( freq.p.o ).b ).equal( false );
+        expect( data.toString() ).equal( "MY_UPLOAD" );
         return { ok : "OK" };
 
     case "rawDownload" :

@@ -1358,4 +1358,7 @@ $asyncevent( spectools, [ 'error' ] );
 
 Object.freeze( spectools );
 
+// CVE-2018-3721
+Object.freeze( Object.prototype );
+
 module.exports = spectools;

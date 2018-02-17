@@ -8,43 +8,6 @@
 
 **[Stability: 3 - Stable](http://nodejs.org/api/documentation.html)**
 
-# FutoIn reference implementation
-
-Reference implementation of:
- 
-    FTN7: FutoIn Invoker Concept
-    Version: 1.7
-    
-    FTN3: FutoIn Interface Definition
-    Version: 1.9
-
-    FTN3.1: FutoIn Interface - Common Types
-    Version: 1.0
-
-    FTN5: FutoIn HTTP integration
-    Version: 1.3
-
-    FTN9: FutoIn Interface - AuditLog
-    Version: 1.0 (client)
-
-    FTN14: FutoIn Cache
-    Version: 1.0 (client)
-    
-    FTN4: FutoIn Interface - Ping-Pong
-    Version: 1.0 (client)
-
-* Spec: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
-* Spec: [FTN3: FutoIn Interface Definition v1.x](http://specs.futoin.org/final/preview/ftn3_iface_definition.html)
-* Spec: [FTN3.1: FutoIn Interface - Common Types v1.x](http://specs.futoin.org/final/preview/ftn3.1_if_common_types.html)
-* Spec: [FTN5: FutoIn HTTP integration v1.x](http://specs.futoin.org/final/preview/ftn5_iface_http_integration.html)
-* Spec: [FTN9: FutoIn Interface - AuditLog v1.x](http://specs.futoin.org/final/preview/ftn9_if_auditlog.html)
-* Spec: [FTN14: FutoIn Cache v1.x](http://specs.futoin.org/final/preview/ftn14_cache.html)
-* Spec: [FTN4: FutoIn Interface - Ping-Pong v1.x](http://specs.futoin.org/final/preview/ftn4_if_ping.html)
-
-Author: [Andrey Galkin](mailto:andrey@futoin.org)
-
-[Web Site](http://futoin.org/)
-
 # About
 
 FutoIn Invoker is a peer which initiates a request - invokes a FutoIn interface method
@@ -95,6 +58,42 @@ Message coding formats:
 is already available in JS and PHP.*
 
 
+Reference implementation of:
+ 
+    FTN7: FutoIn Invoker Concept
+    Version: 1.7
+    
+    FTN3: FutoIn Interface Definition
+    Version: 1.9
+
+    FTN3.1: FutoIn Interface - Common Types
+    Version: 1.0
+
+    FTN5: FutoIn HTTP integration
+    Version: 1.3
+
+    FTN9: FutoIn Interface - AuditLog
+    Version: 1.0 (client)
+
+    FTN14: FutoIn Cache
+    Version: 1.0 (client)
+    
+    FTN4: FutoIn Interface - Ping-Pong
+    Version: 1.0 (client)
+
+* Spec: [FTN7: Interface Invoker Concept v1.x](http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html)
+* Spec: [FTN3: FutoIn Interface Definition v1.x](http://specs.futoin.org/final/preview/ftn3_iface_definition.html)
+* Spec: [FTN3.1: FutoIn Interface - Common Types v1.x](http://specs.futoin.org/final/preview/ftn3.1_if_common_types.html)
+* Spec: [FTN5: FutoIn HTTP integration v1.x](http://specs.futoin.org/final/preview/ftn5_iface_http_integration.html)
+* Spec: [FTN9: FutoIn Interface - AuditLog v1.x](http://specs.futoin.org/final/preview/ftn9_if_auditlog.html)
+* Spec: [FTN14: FutoIn Cache v1.x](http://specs.futoin.org/final/preview/ftn14_cache.html)
+* Spec: [FTN4: FutoIn Interface - Ping-Pong v1.x](http://specs.futoin.org/final/preview/ftn4_if_ping.html)
+
+Author: [Andrey Galkin](mailto:andrey@futoin.org)
+
+**Documentation** --> [FutoIn Guide](https://futoin.org/docs/asyncsteps/)
+
+
 # Installation for Node.js
 
 Command line:
@@ -135,6 +134,12 @@ to sites without build process.
 * AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
 * futoin.Invoker - global reference to futoin-invoker module
 
+# CVE-2018-3721 mitigation
+
+To prevent attacks similar to CVE-2018-3721, SpecTools freeze Object.prototype.
+More info:  https://hackerone.com/reports/310443
+
+Please make global prototype modifications before loading FutoIn deps, if that's really needed.
 
 # Examples
 

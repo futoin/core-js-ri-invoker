@@ -4,6 +4,7 @@ var _ = require( 'lodash' );
 var common = require( '../lib/common' );
 var isNode = common._isNode;
 var assert;
+var expect;
 var async_steps;
 var invoker;
 var as;
@@ -17,8 +18,8 @@ var coders;
 
 if ( !isNode ) {
     // Browser test
-    chai.should();
     assert = chai.assert;
+    expect = chai.expect;
 
     createTestHttpServer = function( cb ) {
         cb();
@@ -38,8 +39,8 @@ if ( !isNode ) {
     // Node test
     var chai_module = module.require( 'chai' );
 
-    chai_module.should();
     assert = chai_module.assert;
+    expect = chai_module.expect;
 
     var node_server = module.require( './node_server.js' );
 
@@ -103,7 +104,7 @@ describe( 'SimpleCCM', function() {
                     }
                 )
                 .add( function( as ) {
-                    as.state.reg_fired.should.be.true;
+                    expect( as.state.reg_fired ).be.true;
                     done();
                 } )
                 .execute();
@@ -142,7 +143,7 @@ describe( 'SimpleCCM', function() {
             }
         )
             .add( function( as ) {
-                as.state.reg_fired.should.be.true;
+                expect( as.state.reg_fired ).be.true;
                 done();
             } )
             .execute();
@@ -198,9 +199,9 @@ describe( 'SimpleCCM', function() {
             },
             function( as, err ) {
                 try {
-                    as.state.fire_reg.should.be.true;
-                    err.should.equal( 'InvokerError' );
-                    as.state.error_info.should.equal( 'Already registered' );
+                    expect( as.state.fire_reg ).be.true;
+                    expect( err ).equal( 'InvokerError' );
+                    expect( as.state.error_info ).equal( 'Already registered' );
                     done();
                 } catch( e ) {
                     console.log( e.message );
@@ -260,28 +261,28 @@ describe( 'SimpleCCM', function() {
             return cl3f;
         } );
 
-        ccm.defense().should.equal( deff );
-        ccm.log().should.equal( logf );
-        ccm.cache().should.equal( cl1f );
-        ccm.cache( "L2" ).should.equal( cl2f );
-        ccm.cache( "L3" ).should.equal( cl3f );
+        expect( ccm.defense() ).equal( deff );
+        expect( ccm.log() ).equal( logf );
+        expect( ccm.cache() ).equal( cl1f );
+        expect( ccm.cache( "L2" ) ).equal( cl2f );
+        expect( ccm.cache( "L3" ) ).equal( cl3f );
     } );
 
     it( 'should marked endpoints as secure', function() {
         ccm.register( as, 'myhttp', 'a:1.0', 'http://localhost:23456' );
-        ccm._iface_info.myhttp.secure_channel.should.be.false;
+        expect( ccm._iface_info.myhttp.secure_channel ).be.false;
         ccm.register( as, 'myhttps', 'a:1.0', 'https://localhost:23456' );
-        ccm._iface_info.myhttps.secure_channel.should.be.true;
+        expect( ccm._iface_info.myhttps.secure_channel ).be.true;
         ccm.register( as, 'myws', 'a:1.0', 'ws://localhost:23456' );
-        ccm._iface_info.myws.secure_channel.should.be.false;
+        expect( ccm._iface_info.myws.secure_channel ).be.false;
         ccm.register( as, 'mywss', 'a:1.0', 'wss://localhost:23456' );
-        ccm._iface_info.mywss.secure_channel.should.be.true;
+        expect( ccm._iface_info.mywss.secure_channel ).be.true;
         ccm.register( as, 'mysechttp', 'a:1.0', 'secure+http://localhost:23456' );
-        ccm._iface_info.mysechttp.secure_channel.should.be.true;
+        expect( ccm._iface_info.mysechttp.secure_channel ).be.true;
         ccm.register( as, 'mysecws', 'a:1.0', 'secure+ws://localhost:23456' );
-        ccm._iface_info.mysecws.secure_channel.should.be.true;
+        expect( ccm._iface_info.mysecws.secure_channel ).be.true;
         ccm.register( as, 'myunix', 'a:1.0', 'unix://localhost:23456' );
-        ccm._iface_info.myunix.secure_channel.should.be.true;
+        expect( ccm._iface_info.myunix.secure_channel ).be.true;
     } );
 
     it( 'should fail on missing iface registration', function() {
@@ -312,9 +313,9 @@ describe( 'SimpleCCM', function() {
             ccm.alias( 'myifacec', 'aiface4' );
         }, 'InvokerError' );
 
-        ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface1' ) );
-        ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface2' ) );
-        ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface3' ) );
+        expect( ccm.iface( 'myifacea' ) ).equal( ccm.iface( 'aiface1' ) );
+        expect( ccm.iface( 'myifacea' ) ).equal( ccm.iface( 'aiface2' ) );
+        expect( ccm.iface( 'myifacea' ) ).equal( ccm.iface( 'aiface3' ) );
 
         ccm.unRegister( 'aiface3' );
 
@@ -322,7 +323,7 @@ describe( 'SimpleCCM', function() {
             ccm.iface( 'aiface3' );
         }, 'InvokerError' );
 
-        ccm.iface( 'myifacea' ).should.equal( ccm.iface( 'aiface2' ) );
+        expect( ccm.iface( 'myifacea' ) ).equal( ccm.iface( 'aiface2' ) );
 
         ccm.unRegister( 'myifacea' );
 
@@ -471,8 +472,8 @@ describe( 'AdvancedCCM', function() {
                     ccm.register( as, 'mpackface', 'binaryface.a:1.0', 'secure+http://localhost:23456' );
 
                     as.add( ( as ) => {
-                        ccm._iface_info[ 'myiface' ].coder.name().should.equal( 'JSON' );
-                        ccm._iface_info[ 'mpackface' ].coder.name().should.equal( 'MPCK' );
+                        expect( ccm._iface_info[ 'myiface' ].coder.name() ).equal( 'JSON' );
+                        expect( ccm._iface_info[ 'mpackface' ].coder.name() ).equal( 'MPCK' );
                     } );
                 },
                 function( as, err ) {
@@ -509,7 +510,7 @@ call_remotes_model_as.add(
                 }
             );
             as.add( function( as, res ) {
-                res.res.should.equal( 'MY_RESULT' );
+                expect( res.res ).equal( 'MY_RESULT' );
             } );
         } ).add( function( as, res ) {
             if ( is_browser ) {
@@ -529,7 +530,7 @@ call_remotes_model_as.add(
                 }
             );
             as.add( function( as, res ) {
-                res.res.should.equal( 'MY_RESULT' );
+                expect( res.res ).equal( 'MY_RESULT' );
             } );
         } ).add( function( as ) {
             as.state.step = "noResult";
@@ -545,7 +546,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.noResult ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.should.be.empty;
+                    expect( res ).be.empty;
                 }
             } );
         } ).add( function( as ) {
@@ -570,7 +571,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.call ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.should.be.empty;
+                    expect( res ).be.empty;
                 }
             } );
         } ).add( function( as ) {
@@ -589,7 +590,7 @@ call_remotes_model_as.add(
             );
 
             as.add( function( as, res ) {
-                res.ok.should.equal( "OK" );
+                expect( res.ok ).equal( "OK" );
             } );
         } ).add( function( as ) {
             as.state.step = "rawUploadFuncParams";
@@ -613,7 +614,7 @@ call_remotes_model_as.add(
             );
 
             as.add( function( as, res ) {
-                res.ok.should.equal( "OK" );
+                expect( res.ok ).equal( "OK" );
             } );
         } ).add( function( as ) {
             if ( is_ws || is_browser ) {
@@ -629,7 +630,7 @@ call_remotes_model_as.add(
 
 
             as.add( function( as, res ) {
-                res.toString().should.equal( "MY_DOWNLOAD" );
+                expect( res.toString() ).equal( "MY_DOWNLOAD" );
             } );
         } ).add(
             function( as ) {
@@ -641,12 +642,12 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "MY_ERROR" );
+                expect( err ).equal( "MY_ERROR" );
                 as.success( "YES" );
             }
         ).add(
             function( as, res ) {
-                res.should.equal( "YES" );
+                expect( res ).equal( "YES" );
 
                 as.state.step = "wrongDataResult";
 
@@ -660,8 +661,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InternalError" );
-                as.state.error_info.should.equal( "Raw result is not expected" );
+                expect( err ).equal( "InternalError" );
+                expect( as.state.error_info ).equal( "Raw result is not expected" );
 
                 as.success();
             }
@@ -670,7 +671,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.wrongDataResult ) {
                     assert.strictEqual( undefined, res );
                 } else if ( !is_ws && !is_browser ) {
-                    res.toString().should.equal( "MY_DOWNLOAD" );
+                    expect( res.toString() ).equal( "MY_DOWNLOAD" );
                 }
 
                 as.state.step = "missingResultVar";
@@ -681,8 +682,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InternalError" );
-                as.state.error_info.should.equal( "Missing result variables" );
+                expect( err ).equal( "InternalError" );
+                expect( as.state.error_info ).equal( "Missing result variables" );
 
                 as.success();
             }
@@ -691,7 +692,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.wrongDataResult ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "rawResultExpected";
@@ -706,8 +707,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InternalError" );
-                as.state.error_info.should.equal( "Raw result is expected" );
+                expect( err ).equal( "InternalError" );
+                expect( as.state.error_info ).equal( "Raw result is expected" );
 
                 as.success();
             }
@@ -716,7 +717,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.rawResultExpected ) {
                     assert.strictEqual( undefined, res );
                 } else if ( !is_ws && !is_browser ) {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "wrongException";
@@ -728,10 +729,10 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 if ( iface._raw_info.funcs.wrongException ) {
-                    err.should.equal( "InternalError" );
-                    as.state.error_info.should.equal( "Not expected exception from Executor" );
+                    expect( err ).equal( "InternalError" );
+                    expect( as.state.error_info ).equal( "Not expected exception from Executor" );
                 } else {
-                    err.should.equal( "MY_ERROR" );
+                    expect( err ).equal( "MY_ERROR" );
                 }
 
                 as.success();
@@ -749,10 +750,10 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 if ( iface._raw_info.funcs.wrongException ) {
-                    err.should.equal( "InvokerError" );
-                    as.state.error_info.should.equal( "Unknown interface function: unknownFunc" );
+                    expect( err ).equal( "InvokerError" );
+                    expect( as.state.error_info ).equal( "Unknown interface function: unknownFunc" );
                 } else {
-                    err.should.equal( "MY_ERROR" );
+                    expect( err ).equal( "MY_ERROR" );
                 }
 
                 as.success();
@@ -771,12 +772,12 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InvokerError" );
+                expect( err ).equal( "InvokerError" );
 
                 if ( is_browser && !iface._raw_info.funcs.unexpectedUpload ) {
-                    as.state.error_info.should.equal( "Upload data is allowed only for HTTP/WS endpoints" );
+                    expect( as.state.error_info ).equal( "Upload data is allowed only for HTTP/WS endpoints" );
                 } else {
-                    as.state.error_info.should.equal( "Raw upload is not allowed" );
+                    expect( as.state.error_info ).equal( "Raw upload is not allowed" );
                 }
 
 
@@ -787,7 +788,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.unexpectedUpload || is_browser ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "noParams";
@@ -799,8 +800,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InvokerError" );
-                as.state.error_info.should.equal( "No params are defined" );
+                expect( err ).equal( "InvokerError" );
+                expect( as.state.error_info ).equal( "No params are defined" );
 
                 as.success();
             }
@@ -809,7 +810,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.noParams ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "unknownParam";
@@ -822,8 +823,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InvokerError" );
-                as.state.error_info.should.equal( "Unknown parameter: b" );
+                expect( err ).equal( "InvokerError" );
+                expect( as.state.error_info ).equal( "Unknown parameter: b" );
 
                 as.success();
             }
@@ -832,7 +833,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.noParams ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "missingParam";
@@ -844,8 +845,8 @@ call_remotes_model_as.add(
                 );
             },
             function( as, err ) {
-                err.should.equal( "InvokerError" );
-                as.state.error_info.should.equal( "Missing parameter a" );
+                expect( err ).equal( "InvokerError" );
+                expect( as.state.error_info ).equal( "Missing parameter a" );
 
                 as.success();
             }
@@ -854,7 +855,7 @@ call_remotes_model_as.add(
                 if ( iface._raw_info.funcs.noParams ) {
                     assert.strictEqual( undefined, res );
                 } else {
-                    res.ok.should.equal( "OK" );
+                    expect( res.ok ).equal( "OK" );
                 }
 
                 as.state.step = "testUnicode";
@@ -867,7 +868,7 @@ call_remotes_model_as.add(
             }
         ).add(
             function( as, res ) {
-                res.pong.should.equal( "Мои данные на русском un latviešu valodā" );
+                expect( res.pong ).equal( "Мои данные на русском un latviešu valodā" );
 
                 as.state.step = "getCoder";
 
@@ -878,7 +879,7 @@ call_remotes_model_as.add(
             }
         ).add(
             function( as, res ) {
-                res.name.should.equal( as.state.coder );
+                expect( res.name ).equal( as.state.coder );
             }
         ).add(
             function( as ) {
@@ -898,8 +899,8 @@ call_remotes_model_as.add(
             }
         ).add(
             function( as ) {
-                as.state.close_called.should.be.true;
-                as.state.iface_close_called.should.be.true;
+                expect( as.state.close_called ).be.true;
+                expect( as.state.iface_close_called ).be.true;
             }
         );
     },
@@ -935,7 +936,7 @@ call_interceptors_model_as.add(
                 throw e;
             }
         } ).add( function( as, res ) {
-            res.res.should.equal( 'MY_RESULT' );
+            expect( res.res ).equal( 'MY_RESULT' );
 
             as.state.step = "noResult";
 
@@ -947,7 +948,7 @@ call_interceptors_model_as.add(
             if ( iface._raw_info.funcs.noResult ) {
                 assert.strictEqual( undefined, res );
             } else {
-                res.should.be.empty;
+                expect( res ).be.empty;
             }
 
             as.state.step = "rawDownload";
@@ -955,20 +956,20 @@ call_interceptors_model_as.add(
             iface.rawDownload( as );
         } ).add(
             function( as, res ) {
-                res.toString().should.equal( "MY_DOWNLOAD" );
+                expect( res.toString() ).equal( "MY_DOWNLOAD" );
 
                 as.state.step = "triggerError";
 
                 iface.triggerError( as );
             },
             function( as, err ) {
-                err.should.equal( "MY_ERROR" );
+                expect( err ).equal( "MY_ERROR" );
                 as.success( "YES" );
             }
         ).add( function( as, res ) {
-            res.should.equal( "YES" );
-            as.state.incomming_msg.length.should.equal( 4 );
-            as.state.outgoing_msg.length.should.equal( 4 );
+            expect( res ).equal( "YES" );
+            expect( as.state.incomming_msg.length ).equal( 4 );
+            expect( as.state.outgoing_msg.length ).equal( 4 );
             as.success();
         } );
     },
@@ -1021,18 +1022,18 @@ describe( 'NativeIface', function() {
             as.add( function( as ) {
                 var info = ccm.iface( 'myiface' ).ifaceInfo();
 
-                ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+                expect( ccm.iface( 'myiface' ).ifaceInfo() ).equal( info );
 
-                info.name().should.equal( 'fileface.a' );
-                info.version().should.equal( '1.1' );
-                info.inherits().length.should.equal( 0 );
-                _.isEmpty( info.funcs() ).should.be.true;
-                _.isEmpty( info.constraints() ).should.be.true;
+                expect( info.name() ).equal( 'fileface.a' );
+                expect( info.version() ).equal( '1.1' );
+                expect( info.inherits().length ).equal( 0 );
+                expect( _.isEmpty( info.funcs() ) ).be.true;
+                expect( _.isEmpty( info.constraints() ) ).be.true;
 
                 var iface = ccm.iface( 'myiface' );
 
-                iface.should.not.have.property( 'testFunc' );
-                iface.should.not.have.property( 'rawUploadFunc' );
+                expect( iface ).not.have.property( 'testFunc' );
+                expect( iface ).not.have.property( 'rawUploadFunc' );
                 done();
             } );
             as.execute();
@@ -1138,8 +1139,8 @@ describe( 'NativeIface', function() {
                 },
                 function( as, err ) {
                     try {
-                        err.should.equal( 'InvokerError' );
-                        as.state.error_info.should.match( /^Unknown endpoint schema/ );
+                        expect( err ).equal( 'InvokerError' );
+                        expect( as.state.error_info ).match( /^Unknown endpoint schema/ );
                         done();
                     } catch ( ex ) {
                         done( ex );
@@ -1211,20 +1212,20 @@ describe( 'NativeIface', function() {
                     try {
                         var info = ccm.iface( 'myiface' ).ifaceInfo();
 
-                        ccm.iface( 'myiface' ).ifaceInfo().should.equal( info );
+                        expect( ccm.iface( 'myiface' ).ifaceInfo() ).equal( info );
                         ccm.assertIface( 'myiface', 'fileface.b:3.1' );
                         ccm.assertIface( 'myiface', 'fileface.b:3.0' );
 
-                        info.name().should.equal( 'fileface.a' );
-                        info.version().should.equal( '1.1' );
-                        info.inherits().length.should.equal( 1 );
-                        _.isEmpty( info.funcs() ).should.be.false;
-                        _.isEmpty( info.constraints() ).should.be.false;
+                        expect( info.name() ).equal( 'fileface.a' );
+                        expect( info.version() ).equal( '1.1' );
+                        expect( info.inherits().length ).equal( 1 );
+                        expect( _.isEmpty( info.funcs() ) ).be.false;
+                        expect( _.isEmpty( info.constraints() ) ).be.false;
 
                         var iface = ccm.iface( 'myiface' );
 
-                        iface.should.have.property( 'testFunc' );
-                        iface.should.not.have.property( 'rawUploadFunc' );
+                        expect( iface ).have.property( 'testFunc' );
+                        expect( iface ).not.have.property( 'rawUploadFunc' );
 
                         assert.throws( function() {
                             iface.bindDerivedKey();
@@ -1359,13 +1360,13 @@ describe( 'NativeIface', function() {
                             ccm.iface( 'myiface' ).binaryPingPong( as, buf );
                         } );
                         as.add( ( as, res ) => {
-                            buf.equals( res.pong ).should.be.true;
+                            expect( buf.equals( res.pong ) ).be.true;
                         } );
                         as.add( ( as ) => {
                             ccm.iface( 'myiface2' ).binaryPingPong( as, buf );
                         } );
                         as.add( ( as, res ) => {
-                            buf.equals( res.pong ).should.be.true;
+                            expect( buf.equals( res.pong ) ).be.true;
                         } );
                         as.add( ( as ) => done() );
                     },
@@ -1423,8 +1424,8 @@ describe( 'NativeIface', function() {
                 },
                 function( as, err ) {
                     try {
-                        err.should.equal( 'SecurityError' );
-                        as.state.error_info.should.equal( "SecureChannel is required" );
+                        expect( err ).equal( 'SecurityError' );
+                        expect( as.state.error_info ).equal( "SecureChannel is required" );
                         done();
                     } catch ( ex ) {
                         done( ex );
@@ -1457,7 +1458,7 @@ describe( 'NativeIface', function() {
                     );
                 },
                 function( as, err ) {
-                    err.should.equal( "InvokerError" );
+                    expect( err ).equal( "InvokerError" );
                     done();
                 }
             );
@@ -1471,7 +1472,7 @@ describe( 'NativeIface', function() {
                     as.successStep();
                 },
                 function( as, err ) {
-                    err.should.equal( "InternalError" );
+                    expect( err ).equal( "InternalError" );
                     done();
                 }
             );
@@ -1508,7 +1509,7 @@ describe( 'NativeIface', function() {
                         i : 4,
                         o : { m : 3 } } );
                     as.add( function( as, res ) {
-                        res.res.should.equal( 'MY_RESULT' );
+                        expect( res.res ).equal( 'MY_RESULT' );
                         done();
                     } );
                 },
@@ -1597,7 +1598,7 @@ describe( 'LogFace', function() {
                                 as.state.waits += 1;
 
                                 if ( as.state.waits > 20 ) {
-                                    res.count.should.equal( 7 );
+                                    expect( res.count ).equal( 7 );
                                 }
                             } );
                     } );
@@ -1668,20 +1669,20 @@ describe( 'CacheFace', function() {
                     cface.getOrSet( as, 'mykey', cb, [ 1, 2 ], 10 );
 
                     as.add( function( as, value ) {
-                        value.should.equal( 3 );
+                        expect( value ).equal( 3 );
                         cface.getOrSet( as, 'mykey', cb, [ 1, 2 ], 10 );
                     } );
 
                     as.add( function( as, value ) {
-                        value.should.equal( 3 );
-                        call_count.should.equal( 1 );
+                        expect( value ).equal( 3 );
+                        expect( call_count ).equal( 1 );
                     } );
 
                     cface.getOrSet( as, 'mykey', cb );
 
                     as.add( function( as, value ) {
-                        value.should.equal( 100 );
-                        call_count.should.equal( 2 );
+                        expect( value ).equal( 100 );
+                        expect( call_count ).equal( 2 );
                     } );
                 },
                 function( as, err ) {
@@ -1747,7 +1748,7 @@ if ( isNode ) {
                         pface.ping( as, 123 );
 
                         as.add( function( as, echo ) {
-                            echo.should.equal( 123 );
+                            expect( echo ).equal( 123 );
                         } );
                     },
                     function( as, err ) {
