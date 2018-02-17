@@ -136,10 +136,13 @@ to sites without build process.
 
 # CVE-2018-3721 mitigation
 
-To prevent attacks similar to CVE-2018-3721, SpecTools freeze Object.prototype.
+To prevent attacks similar to CVE-2018-3721, Object.prototype can be frozen via `SpecTools.secureObjectPrototype()`.
 More info:  https://hackerone.com/reports/310443
 
-Please make global prototype modifications before loading FutoIn deps, if that's really needed.
+Some libraries which override `toString` and `valueOf` in own prototypes require minor
+modifications to define a property on derived prototype.
+
+It's possible to load all deps and then call `SpecTools.secureObjectPrototype()`.
 
 # Examples
 
