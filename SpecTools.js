@@ -3,8 +3,8 @@
 /**
  * @file
  *
- * Copyright 2014-2017 FutoIn Project (https://futoin.org)
- * Copyright 2014-2017 Andrey Galkin <andrey@futoin.org>
+ * Copyright 2014-2018 FutoIn Project (https://futoin.org)
+ * Copyright 2014-2018 Andrey Galkin <andrey@futoin.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1343,6 +1343,16 @@ const spectools =
 
         return ( res === 0 );
     },
+
+    /**
+     * Call after loading all depedency modules.
+     *
+     * Mitigates CVE-2018-3721 and similar.
+     */
+    secureObjectPrototype() {
+        // CVE-2018-3721
+        Object.freeze( Object.prototype );
+    },
 };
 
 if ( isNode ) {
@@ -1357,8 +1367,5 @@ $asyncevent( spectools, [ 'error' ] );
  */
 
 Object.freeze( spectools );
-
-// CVE-2018-3721
-Object.freeze( Object.prototype );
 
 module.exports = spectools;

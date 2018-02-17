@@ -1328,6 +1328,7 @@ cache v1.x iface name prefix
     * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
     * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
+    * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
     * ["error"](#SpecTools.event_error)
 
@@ -1465,6 +1466,14 @@ Secure compare to cover time-based side-channels for attacks
 | a | <code>string</code> | first string |
 | b | <code>string</code> | second String |
 
+<a name="SpecTools.secureObjectPrototype"></a>
+
+### SpecTools.secureObjectPrototype()
+Call after loading all depedency modules.
+
+Mitigates CVE-2018-3721 and similar.
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
 <a name="SpecTools.secureEqualBuffer"></a>
 
 ### SpecTools.secureEqualBuffer(a, b) ⇒ <code>boolean</code>

@@ -1,4 +1,7 @@
 
+=== (next) ===
+CHANGED: Object.prototype is freezed only by SpecTools.secureObjectPrototype()
+
 === 1.8.2 (2018-02-17) ===
 FIXED: CVE-2018-3721 mitigation with Object.freeze()
 

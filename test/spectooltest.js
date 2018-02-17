@@ -45,6 +45,10 @@ describe( 'SpecTools', function() {
         as = null;
     } );
 
+    describe( '#secureObjectPrototype', function() {
+        SpecTools.secureObjectPrototype();
+    } );
+
     describe( '#loadIface', function() {
         var testspec = {
             iface : 'test.spec',
