@@ -1,4 +1,7 @@
 
+=== (next) ===
+CHANGED: upgraded webpack to v4
+
 === 1.8.3 (2018-02-17) ===
 CHANGED: Object.prototype is freezed only by SpecTools.secureObjectPrototype()
 
