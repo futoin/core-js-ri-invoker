@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to properly includes specs/ in package
+
 === 1.8.4 (2018-05-10) ===
 CHANGED: upgraded webpack to v4
 FIXED: Browser env WebSockets comm failure without event-emitter

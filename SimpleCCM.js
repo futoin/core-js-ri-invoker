@@ -130,6 +130,7 @@ class SimpleCCM {
         let impl = null;
         let endpoint_scheme;
         let is_bidirect = false;
+        let is_internal = false;
         let limitZone = 'default';
 
         // ---
@@ -176,6 +177,7 @@ class SimpleCCM {
             impl = this._native_iface_builder;
             endpoint_scheme = '#internal#';
             is_bidirect = true;
+            is_internal = true;
             credentials = credentials || '-internal';
             limitZone = 'unlimited';
         } else {
@@ -184,6 +186,7 @@ class SimpleCCM {
             endpoint = null;
             endpoint_scheme = null;
             is_bidirect = true;
+            is_internal = true;
         }
 
         // ---
@@ -242,23 +245,28 @@ class SimpleCCM {
                     // ---
                     if ( !info.simple_req ) {
                         if ( !( 'AllowAnonymous' in info.constraints ) &&
-                            !info.creds ) {
+                            !info.creds
+                        ) {
                             as.error( futoin_error.SecurityError, "Requires authenticated user" );
                         }
 
                         if ( ( 'SecureChannel' in info.constraints ) &&
-                            !secure_channel ) {
+                            !secure_channel
+                        ) {
                             as.error( futoin_error.SecurityError, "SecureChannel is required" );
                         }
 
                         if ( ( 'MessageSignature' in info.constraints ) &&
                             !info.creds_master &&
-                            !info.creds_hmac ) {
-                            as.error( futoin_error.SecurityError, "SecureChannel is required" );
+                            !info.creds_hmac &&
+                            !is_internal
+                        ) {
+                            as.error( futoin_error.SecurityError, "MessageSignature is required" );
                         }
 
                         if ( ( 'BiDirectChannel' in info.constraints ) &&
-                            !is_bidirect ) {
+                            !is_bidirect
+                        ) {
                             as.error( futoin_error.InvokerError, "BiDirectChannel is required" );
                         }
                     }

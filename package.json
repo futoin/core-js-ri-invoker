@@ -9,6 +9,7 @@
     "es5/",
     "examples/",
     "lib/",
+    "specs/",
     "AdvancedCCM.js",
     "CacheFace.js",
     "InterfaceInfo.js",
@@ -17,7 +18,8 @@
     "NativeIface.js",
     "PingFace.js",
     "SimpleCCM.js",
-    "SpecTools.js"
+    "SpecTools.js",
+    "futoin.json"
   ],
   "engines": {
     "node": ">=6"
