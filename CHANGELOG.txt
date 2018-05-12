@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.8.5 (2018-05-12) ===
 FIXED: to properly includes specs/ in package
 
 === 1.8.4 (2018-05-10) ===
