@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.8.6 (2018-05-15) ===
 FIXED: "items" and "regex" cache issue in diamond inheritance
 NEW: more detailed SpecTools errors with type validation path
 
