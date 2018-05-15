@@ -11,6 +11,8 @@ var isNode = common._isNode;
 var invoker;
 var as;
 
+const $as_test = require( 'futoin-asyncsteps/testcase' );
+
 var thisDir;
 
 if ( !isNode ) {
@@ -1570,6 +1572,48 @@ describe( 'SpecTools', function() {
             } ).execute();
         } );
     } );
+
+    it ( 'should handle diamond inherited "regex" and "items" correctly', $as_test( ( as ) => {
+        this.timeout( 5e3 );
+        const iface = {
+            iface: 'some.face',
+            version: '1.0',
+            ftn3rev: '1.9',
+            types: {
+                Regex1 : {
+                    type : 'string',
+                    regex : '^a$',
+                },
+                Regex2 : {
+                    type : 'string',
+                    regex : '^b$',
+                },
+                Set1 : {
+                    type : 'set',
+                    items: [ 1, 2 ],
+                },
+                Set2 : {
+                    type : 'set',
+                    items : [ 3, 4 ],
+                },
+                DiamonRegex: [ 'Regex1', 'Regex2' ],
+                DiamonSet: [ 'Set1', 'Set2' ],
+            },
+        };
+
+        const info = {
+            iface: iface.iface,
+            version: iface.version,
+        };
+
+        SpecTools.loadIface( as, info, [ iface ] );
+        as.add( ( as ) => {
+            expect( SpecTools.checkType( info, 'DiamonRegex', 'a' ) ).to.be.true;
+            expect( SpecTools.checkType( info, 'DiamonRegex', 'b' ) ).to.be.true;
+            expect( SpecTools.checkType( info, 'DiamonSet', [ 1 ] ) ).to.be.true;
+            expect( SpecTools.checkType( info, 'DiamonSet', [ 3 ] ) ).to.be.true;
+        } );
+    } ) );
 
 
     it ( 'should allow null for default null parameter', function( done ) {

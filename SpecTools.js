@@ -945,7 +945,7 @@ const spectools =
     _checkType : function( info, type, val, _type_stack ) {
         _type_stack = _type_stack || {};
         const tdef = _type_stack[ '#tdef' ] || {};
-        const top_type = _type_stack[ '#top' ] || type;
+        const type_path = _type_stack[ '#tp' ] || type;
 
         // Standard Types
         // ---
@@ -962,22 +962,23 @@ const spectools =
             }
 
             if ( 'regex' in tdef ) {
-                let comp_regex;
+                let comp_regex = info._comp_regex;
 
-                if ( '_comp_regex' in info ) {
-                    comp_regex = info._comp_regex;
-                } else {
+                if ( !comp_regex ) {
                     comp_regex = {};
                     info._comp_regex = comp_regex;
                 }
 
-                if ( !( top_type in comp_regex ) ) {
-                    comp_regex[ top_type ] = new RegExp( tdef.regex );
+                let regex_obj = comp_regex[ type_path ];
+
+                if ( !regex_obj ) {
+                    regex_obj = new RegExp( tdef.regex );
+                    comp_regex[ type_path ] = regex_obj;
                 }
 
-                if ( val.match( comp_regex[ top_type ] ) === null ) {
+                if ( val.match( regex_obj ) === null ) {
                     spectools.emit( 'error',
-                        `Regex mismatch mismatch for ${top_type}` );
+                        `Regex mismatch for ${type_path}` );
 
                     return false;
                 }
@@ -988,7 +989,7 @@ const spectools =
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
                 spectools.emit( 'error',
-                    `Value min length "${val_len}" mismatch for ${top_type}` );
+                    `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
@@ -996,7 +997,7 @@ const spectools =
             if ( ( 'maxlen' in tdef ) &&
                         ( val_len > tdef.maxlen ) ) {
                 spectools.emit( 'error',
-                    `Value max length "${val_len}" mismatch for ${top_type}` );
+                    `Value max length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
@@ -1032,7 +1033,7 @@ const spectools =
 
                     if ( !this._checkType( info, field_def.type, val[ f ], null ) ) {
                         spectools.emit( 'error',
-                            `Field "${f}" value "${val[ f ]}" mismatch for ${top_type}` );
+                            `Field "${f}" value "${val[ f ]}" mismatch for ${type_path}` );
 
                         return false;
                     }
@@ -1045,7 +1046,7 @@ const spectools =
                 for ( let ft in val ) {
                     if ( !this._checkType( info, elemtype, val[ ft ], null ) ) {
                         spectools.emit( 'error',
-                            `Value "${val[ ft ]}" mismatch for ${top_type}` );
+                            `Value "${val[ ft ]}" mismatch for ${type_path}` );
 
                         return false;
                     }
@@ -1068,7 +1069,7 @@ const spectools =
             if ( ( 'min' in tdef ) &&
                         ( val < tdef.min ) ) {
                 spectools.emit( 'error',
-                    `Value min range mismatch for ${top_type}` );
+                    `Value min range mismatch for ${type_path}` );
 
                 return false;
             }
@@ -1076,7 +1077,7 @@ const spectools =
             if ( ( 'max' in tdef ) &&
                         ( val > tdef.max ) ) {
                 spectools.emit( 'error',
-                    `Value max range mismatch for ${top_type}` );
+                    `Value max range mismatch for ${type_path}` );
 
                 return false;
             }
@@ -1094,14 +1095,14 @@ const spectools =
             if ( ( 'minlen' in tdef ) &&
                         ( val_len < tdef.minlen ) ) {
                 spectools.emit( 'error',
-                    `Value min length "${val_len}" mismatch for ${top_type}` );
+                    `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
 
             if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
                 spectools.emit( 'error',
-                    `Value max length "${val_len}" mismatch for ${top_type}` );
+                    `Value max length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
@@ -1114,7 +1115,7 @@ const spectools =
                     // Note, new type stack
                     if ( !this._checkType( info, elemtype, val[ i ], null ) ) {
                         spectools.emit( 'error',
-                            `Value "${val[ i ]}" mismatch for ${top_type}` );
+                            `Value "${val[ i ]}" mismatch for ${type_path}` );
 
                         return false;
                     }
@@ -1131,32 +1132,29 @@ const spectools =
                     return false;
                 }
             } else {
-                console.log( "[ERROR] enum and set are allowed only in custom types: " + top_type );
+                console.log( "[ERROR] enum and set are allowed only in custom types: " + type_path );
                 throw new Error( FutoInError.InternalError );
             }
 
-            let comp_set;
-            let set_items;
+            let comp_set = info._comp_set;
 
-            if ( '_comp_set' in info ) {
-                comp_set = info._comp_set;
-            } else {
+            if ( !comp_set ) {
                 comp_set = {};
                 info._comp_set = comp_set;
             }
 
-            if ( !( top_type in comp_set ) ) {
+            let set_items = comp_set[ type_path ];
+
+            if ( !set_items ) {
                 set_items = tdef.items;
 
                 if ( typeof set_items === 'undefined' ) {
-                    console.log( "[ERROR] enum and set require items: " + top_type );
+                    console.log( "[ERROR] enum and set require items: " + type_path );
                     throw new Error( FutoInError.InternalError );
                 }
 
                 set_items = _zipObject( set_items, set_items );
-                comp_set[ top_type ] = set_items;
-            } else {
-                set_items = comp_set[ top_type ];
+                comp_set[ type_path ] = set_items;
             }
 
             if ( type === 'enum' ) {
@@ -1170,7 +1168,7 @@ const spectools =
                             !this._checkType( info, 'integer', iv ) ) ||
                             !set_items.hasOwnProperty( iv ) ) {
                     spectools.emit( 'error',
-                        `No set item "${iv}" for ${top_type}` );
+                        `No set item "${iv}" for ${type_path}` );
                     return false;
                 }
             }
@@ -1187,14 +1185,14 @@ const spectools =
 
             if ( ( 'minlen' in tdef ) && ( val_len < tdef.minlen ) ) {
                 spectools.emit( 'error',
-                    `Value min length "${val_len}" mismatch for ${top_type}` );
+                    `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
 
             if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
                 spectools.emit( 'error',
-                    `Value max length "${val_len}" mismatch for ${top_type}` );
+                    `Value max length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
@@ -1214,11 +1212,10 @@ const spectools =
                 }
 
                 _type_stack[ '#tdef' ] = _extend( {}, tdef_part, tdef );
-                _type_stack[ '#top' ] = top_type;
 
                 // ---
                 if ( type in _type_stack ) {
-                    console.log( "[ERROR] Custom type recursion: " + top_type );
+                    console.log( "[ERROR] Custom type recursion: " + type_path );
                     throw new Error( FutoInError.InternalError );
                 }
 
@@ -1231,6 +1228,7 @@ const spectools =
                     for ( let vti = base_type.length - 1; vti >= 0; --vti ) {
                         const vtype = base_type[vti];
                         const new_type_stack = _extend( {}, _type_stack );
+                        new_type_stack[ '#tp' ] = `${type_path}:${vtype}`;
 
                         if ( this._checkType( info, vtype, val, new_type_stack ) ) {
                             return true;
@@ -1240,6 +1238,7 @@ const spectools =
                     return false;
                 } else {
                     _type_stack['#last_base'] = base_type; // see FTN3 rev check
+                    _type_stack['#tp'] = `${type_path}:${base_type}`;
                     return this._checkType( info, base_type, val, _type_stack );
                 }
             } else {
