@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: missing padding for Base64 in futoin.types spec
+
 === 1.8.6 (2018-05-15) ===
 FIXED: "items" and "regex" cache issue in diamond inheritance
 NEW: more detailed SpecTools errors with type validation path
