@@ -664,7 +664,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InternalError" );
-                expect( as.state.error_info ).equal( "Raw result is not expected" );
+                expect( as.state.error_info )
+                    .equal( "Raw result is not expected: wrongDataResult()" );
 
                 as.success();
             }
@@ -685,7 +686,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InternalError" );
-                expect( as.state.error_info ).equal( "Missing result variables" );
+                expect( as.state.error_info )
+                    .equal( "Missing result variables: missingResultVar()" );
 
                 as.success();
             }
@@ -710,7 +712,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InternalError" );
-                expect( as.state.error_info ).equal( "Raw result is expected" );
+                expect( as.state.error_info )
+                    .equal( "Raw result is expected: rawResultExpected()" );
 
                 as.success();
             }
@@ -732,7 +735,8 @@ call_remotes_model_as.add(
             function( as, err ) {
                 if ( iface._raw_info.funcs.wrongException ) {
                     expect( err ).equal( "InternalError" );
-                    expect( as.state.error_info ).equal( "Not expected exception from Executor" );
+                    expect( as.state.error_info )
+                        .equal( "Not expected exception from Executor: wrongException()" );
                 } else {
                     expect( err ).equal( "MY_ERROR" );
                 }
@@ -753,7 +757,8 @@ call_remotes_model_as.add(
             function( as, err ) {
                 if ( iface._raw_info.funcs.wrongException ) {
                     expect( err ).equal( "InvokerError" );
-                    expect( as.state.error_info ).equal( "Unknown interface function: unknownFunc" );
+                    expect( as.state.error_info )
+                        .equal( "Unknown interface function: unknownFunc()" );
                 } else {
                     expect( err ).equal( "MY_ERROR" );
                 }
@@ -777,9 +782,11 @@ call_remotes_model_as.add(
                 expect( err ).equal( "InvokerError" );
 
                 if ( is_browser && !iface._raw_info.funcs.unexpectedUpload ) {
-                    expect( as.state.error_info ).equal( "Upload data is allowed only for HTTP/WS endpoints" );
+                    expect( as.state.error_info )
+                        .equal( "Upload data is allowed only for HTTP/WS endpoints" );
                 } else {
-                    expect( as.state.error_info ).equal( "Raw upload is not allowed" );
+                    expect( as.state.error_info )
+                        .equal( "Raw upload is not allowed: unexpectedUpload()" );
                 }
 
 
@@ -803,7 +810,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InvokerError" );
-                expect( as.state.error_info ).equal( "No params are defined" );
+                expect( as.state.error_info )
+                    .equal( "No params are defined: noParams()" );
 
                 as.success();
             }
@@ -826,7 +834,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InvokerError" );
-                expect( as.state.error_info ).equal( "Unknown parameter: b" );
+                expect( as.state.error_info )
+                    .equal( "Unknown parameter: unknownParam(b)" );
 
                 as.success();
             }
@@ -848,7 +857,8 @@ call_remotes_model_as.add(
             },
             function( as, err ) {
                 expect( err ).equal( "InvokerError" );
-                expect( as.state.error_info ).equal( "Missing parameter a" );
+                expect( as.state.error_info )
+                    .equal( "Missing parameter: unknownParam(a)" );
 
                 as.success();
             }
