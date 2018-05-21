@@ -1867,8 +1867,8 @@ describe( 'SpecTools', function() {
 
                     it ( 'should gen correct ' + algo + ' HMAC', function() {
                         var options = {
-                            hmacKey : keyb64,
-                            hmacAlgo : algo,
+                            macKey : keyb64,
+                            macAlgo : algo,
                         };
 
                         var res1 = SpecTools.genHMAC( as, options, req );

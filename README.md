@@ -1505,9 +1505,12 @@ On error message for details in debugging.
 * [AdvancedCCMOptions](#AdvancedCCMOptions) ⇐ [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)
     * [new AdvancedCCMOptions()](#new_AdvancedCCMOptions_new)
     * [.specDirs](#AdvancedCCMOptions.specDirs)
-    * [.hmacKey](#AdvancedCCMOptions.hmacKey)
-    * [.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)
+    * [.macKey](#AdvancedCCMOptions.macKey)
+    * [.macAlgo](#AdvancedCCMOptions.macAlgo)
+    * ~~[.hmacKey](#AdvancedCCMOptions.hmacKey)~~
+    * ~~[.hmacAlgo](#AdvancedCCMOptions.hmacAlgo)~~
     * [.sendOnBehalfOf](#AdvancedCCMOptions.sendOnBehalfOf)
+    * [.masterAuth](#AdvancedCCMOptions.masterAuth)
 
 <a name="new_AdvancedCCMOptions_new"></a>
 
@@ -1525,20 +1528,36 @@ iface spec instance (object).
 
 **Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
 **Default**: <code>[]</code>  
+<a name="AdvancedCCMOptions.macKey"></a>
+
+### AdvancedCCMOptions.macKey
+Base64 encoded key for MAC generation. See FTN8
+
+**Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
+<a name="AdvancedCCMOptions.macAlgo"></a>
+
+### AdvancedCCMOptions.macAlgo
+Hash algorithm for HMAC generation:
+HMD5, HS256 (default), HS384, HS512
+
+**Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
 <a name="AdvancedCCMOptions.hmacKey"></a>
 
-### AdvancedCCMOptions.hmacKey
-Base64 encoded key for HMAC generation. See FTN6/FTN7
+### ~~AdvancedCCMOptions.hmacKey~~
+***Deprecated***
+
+Base64 encoded key for **legacy** HMAC generation. See FTN6/FTN7
 
 **Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
 <a name="AdvancedCCMOptions.hmacAlgo"></a>
 
-### AdvancedCCMOptions.hmacAlgo
-Hash algorithm for HMAC generation:
-MD5(default), SHA224, SHA256, SHA384, SHA256
+### ~~AdvancedCCMOptions.hmacAlgo~~
+***Deprecated***
+
+Hash algorithm for **legacy** HMAC generation:
+MD5(default), SHA224, SHA256, SHA384, SHA512
 
 **Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
-**Default**: <code>MD5</code>  
 <a name="AdvancedCCMOptions.sendOnBehalfOf"></a>
 
 ### AdvancedCCMOptions.sendOnBehalfOf
@@ -1547,6 +1566,12 @@ when invoked from Executor's request processing task
 
 **Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
 **Default**: <code>true</code>  
+<a name="AdvancedCCMOptions.masterAuth"></a>
+
+### AdvancedCCMOptions.masterAuth
+Instance implementing MasterAuth interface
+
+**Kind**: static property of [<code>AdvancedCCMOptions</code>](#AdvancedCCMOptions)  
 <a name="SimpleCCMOptions"></a>
 
 ## SimpleCCMOptions

@@ -11,6 +11,7 @@ var httpsrv = null;
 var wssrv = null;
 
 const MessageCoder = require( '../MessageCoder' );
+const SpecTools = require( '../SpecTools' );
 require( '../lib/JSONCoder' ).register();
 require( '../lib/CBORCoder' ).register();
 require( '../lib/MsgPackCoder' ).register();
@@ -29,7 +30,7 @@ function processTestServerRequest( request, data ) {
         };
 
         if ( path[5] ) {
-            freq.sec = path[5];
+            freq.sec = decodeURIComponent( path[5] );
         }
     } else {
         try {
@@ -40,10 +41,44 @@ function processTestServerRequest( request, data ) {
         }
     }
 
+    let macopt;
+
+    if ( freq.sec && freq.sec.match( /^-[hs]mac:/ ) ) {
+        const sec = freq.sec.split( ':' );
+        macopt = {
+            macKey: '111222333444555666777888999',
+            macAlgo : sec[2],
+        };
+        const tmp = Object.assign( {}, freq );
+        delete tmp.sec;
+
+        if ( tmp.f === 'fileface.a:1.1:rawUploadFuncParams' ) {
+            tmp.p = Object.assign( {}, tmp.p );
+            tmp.p.o = JSON.parse( tmp.p.o );
+        }
+
+        const reqmac = SpecTools.genHMAC( {}, macopt, tmp ).toString( 'base64' );
+
+        if ( reqmac !== sec[3] ) {
+            console.log( `MAC mismatch: ${reqmac} != ${sec[3]}` );
+            console.log( freq, macopt );
+            return {
+                frsp : {
+                    e: 'SecurityError',
+                    edesc: 'MAC mismatch',
+                },
+                freq,
+                coder,
+            };
+        }
+    }
+
+    const frsp = processServerRequest( freq, data, coder );
     return {
-        frsp : processServerRequest( freq, data, coder ),
+        frsp,
         freq,
         coder,
+        macopt,
     };
 }
 
@@ -66,11 +101,13 @@ function createTestHttpServer( cb ) {
 
             let frsp;
             let coder;
+            let macopt;
 
             if ( request.method !== 'OPTIONS' ) {
                 let res = processTestServerRequest( request, freq );
                 frsp = res.frsp;
                 coder = res.coder;
+                macopt = res.macopt;
 
                 if ( frsp === null ) {
                     request.socket.destroy();
@@ -91,6 +128,10 @@ function createTestHttpServer( cb ) {
                     return;
                 } else if ( !( 'e' in frsp ) ) {
                     frsp = { r : frsp };
+                }
+
+                if ( macopt ) {
+                    frsp.sec = SpecTools.genHMAC( {}, macopt, frsp ).toString( 'base64' );
                 }
 
                 frsp = coder.encode( frsp );
@@ -140,7 +181,7 @@ function createTestHttpServer( cb ) {
         ws.on( 'message', function( event ) {
             var msg = event.data;
 
-            let { frsp, coder, freq } = processTestServerRequest( null, msg );
+            let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg );
 
             if ( frsp === null ) {
                 sock.destroy();
@@ -157,6 +198,10 @@ function createTestHttpServer( cb ) {
             }
 
             frsp.rid = freq.rid;
+
+            if ( macopt ) {
+                frsp.sec = SpecTools.genHMAC( {}, macopt, frsp ).toString( 'base64' );
+            }
 
             frsp = coder.encode( frsp );
             ws.send( frsp );

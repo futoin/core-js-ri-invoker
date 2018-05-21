@@ -1322,6 +1322,76 @@ describe( 'NativeIface', function() {
                     as.execute();
                 } );
             } )( coder );
+
+            if ( typeof window === 'undefined' ) {
+                it( 'should call HTTP remotes with Stateless MAC ' + coder, function( done ) {
+                    this.timeout( 5000 );
+                    as.add(
+                        function( as ) {
+                            try {
+                                ccm.register( as, 'myiface', 'fileface.a:1.1',
+                                    'secure+ws://localhost:23456/ftn',
+                                    '-smac:usr', {
+                                        macKey: '111222333444555666777888999',
+                                        coder,
+                                    } );
+
+                                as.add( function( as ) {
+                                    as.setTimeout( 100 );
+                                    createTestHttpServer( function() {
+                                        as.success();
+                                    } );
+                                } );
+                            } catch ( e ) {
+                                console.dir( e.stack );
+                                console.log( as.state.error_info );
+                                throw e;
+                            }
+                        },
+                        function( as, err ) {
+                            as.state.done( new Error( err + ": " + as.state.error_info ) );
+                        }
+                    );
+                    as.copyFrom( call_remotes_model_as );
+                    as.state.done = done;
+                    as.state.coder = coder;
+                    as.execute();
+                } );
+
+                it( 'should call WS remotes with Stateless MAC ' + coder, function( done ) {
+                    this.timeout( 5000 );
+                    as.add(
+                        function( as ) {
+                            try {
+                                ccm.register( as, 'myiface', 'fileface.a:1.1',
+                                    'secure+http://localhost:23456/ftn',
+                                    '-smac:usr', {
+                                        macKey: '111222333444555666777888999',
+                                        coder,
+                                    } );
+
+                                as.add( function( as ) {
+                                    as.setTimeout( 100 );
+                                    createTestHttpServer( function() {
+                                        as.success();
+                                    } );
+                                } );
+                            } catch ( e ) {
+                                console.dir( e.stack );
+                                console.log( as.state.error_info );
+                                throw e;
+                            }
+                        },
+                        function( as, err ) {
+                            as.state.done( new Error( err + ": " + as.state.error_info ) );
+                        }
+                    );
+                    as.copyFrom( call_remotes_model_as );
+                    as.state.done = done;
+                    as.state.coder = coder;
+                    as.execute();
+                } );
+            }
         }
 
         if ( typeof window !== 'undefined' ) {

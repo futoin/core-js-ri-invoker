@@ -204,7 +204,6 @@ class SimpleCCM {
         }
 
         // ---
-
         const info = {
             iface,
             version : mjrmnr,
@@ -214,7 +213,7 @@ class SimpleCCM {
             endpoint_scheme,
             creds : credentials || null,
             creds_master : credentials === 'master',
-            creds_hmac : credentials && ( credentials.substr( 0, 6 ) === '-hmac:' ),
+            creds_mac : credentials && ( credentials.match( /^-[hs]mac:/ ) !== null ),
             secure_channel,
             impl : impl,
             regname : name,
@@ -227,9 +226,21 @@ class SimpleCCM {
             limitZone,
         };
 
-        if ( info.creds_hmac &&
-            ( !options.hmacKey || !options.hmacAlgo ) ) {
-            as.error( futoin_error.InvokerError, "Missing options.hmacKey or options.hmacAlgo" );
+        if ( info.creds_mac ) {
+            if ( credentials.match( /^-hmac:/ ) ) {
+                if ( !options.hmacKey ) {
+                    as.error( futoin_error.InvokerError, "Missing options.hmacKey" );
+                }
+
+                options.macKey = options.hmacKey;
+                options.macAlgo = options.hmacAlgo;
+            } else if ( !options.macKey ) {
+                as.error( futoin_error.InvokerError, "Missing options.macKey" );
+            }
+        }
+
+        if ( info.creds_master && !options.masterAuth ) {
+            as.error( futoin_error.InvokerError, "Missing options.masterAuth" );
         }
 
         if ( name ) {
@@ -258,7 +269,7 @@ class SimpleCCM {
 
                         if ( ( 'MessageSignature' in info.constraints ) &&
                             !info.creds_master &&
-                            !info.creds_hmac &&
+                            !info.creds_mac &&
                             !is_internal
                         ) {
                             as.error( futoin_error.SecurityError, "MessageSignature is required" );

@@ -14,6 +14,7 @@
     "CacheFace.js",
     "InterfaceInfo.js",
     "LogFace.js",
+    "MasterAuth.js",
     "MessageCoder.js",
     "NativeIface.js",
     "PingFace.js",
