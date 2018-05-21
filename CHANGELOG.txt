@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.9.0 (2018-05-21) ===
 NEW: experimental FTN8 Security Concept support
 
 === 1.8.9 (2018-05-21) ===
