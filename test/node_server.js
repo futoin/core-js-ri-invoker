@@ -43,11 +43,22 @@ function processTestServerRequest( request, data ) {
 
     let macopt;
 
-    if ( freq.sec && freq.sec.match( /^-[hs]mac:/ ) ) {
+    if ( freq.sec && freq.sec.match( /^-[mhs]mac:/ ) ) {
         const sec = freq.sec.split( ':' );
+        let algo;
+        let sig;
+
+        if ( sec[0] == '-mmac' ) {
+            algo = sec[2];
+            sig = sec[5];
+        } else {
+            algo = sec[2];
+            sig = sec[3];
+        }
+
         macopt = {
             macKey: '111222333444555666777888999',
-            macAlgo : sec[2],
+            macAlgo : algo,
         };
         const tmp = Object.assign( {}, freq );
         delete tmp.sec;
@@ -59,8 +70,8 @@ function processTestServerRequest( request, data ) {
 
         const reqmac = SpecTools.genHMAC( {}, macopt, tmp ).toString( 'base64' );
 
-        if ( reqmac !== sec[3] ) {
-            console.log( `MAC mismatch: ${reqmac} != ${sec[3]}` );
+        if ( reqmac !== sig ) {
+            console.log( `MAC mismatch: ${reqmac} != ${sig}` );
             console.log( freq, macopt );
             return {
                 frsp : {
