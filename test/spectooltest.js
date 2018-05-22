@@ -1848,16 +1848,8 @@ describe( 'SpecTools', function() {
 
             var algos = [ 'MD5', 'SHA224', 'SHA256', 'SHA384', 'SHA512' ];
 
-            it ( 'should correctly create HMAC base', function() {
-                var all = [];
-                var b = [];
-                var fake_hmac = {
-                    update: ( v ) => all.push( Buffer.isBuffer( v ) ? v.toString() : v ),
-                };
-
-                SpecTools._hmacBase( fake_hmac, b, req );
-                all.push( b.join( '' ) );
-                expect( all.join( '' ) ).equal( hmacbase );
+            it ( 'should correctly create MAC base', function() {
+                expect( SpecTools.macBase( req ).toString( 'utf8' ) ).equal( hmacbase );
             } );
 
             for ( var i = 0, c = algos.length; i < c; ++i ) {

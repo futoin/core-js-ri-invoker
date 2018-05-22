@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: MAC base calculation
+
 === 1.9.0 (2018-05-21) ===
 NEW: experimental FTN8 Security Concept support
 
