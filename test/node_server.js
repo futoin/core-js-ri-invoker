@@ -61,7 +61,6 @@ function processTestServerRequest( request, data ) {
             macAlgo : algo,
         };
         const tmp = Object.assign( {}, freq );
-        delete tmp.sec;
 
         if ( tmp.f === 'fileface.a:1.1:rawUploadFuncParams' ) {
             tmp.p = Object.assign( {}, tmp.p );

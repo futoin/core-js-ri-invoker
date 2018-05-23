@@ -75,10 +75,6 @@ class TestMasterAuth extends invoker.MasterAuth {
     }
 
     signMessage( ctx, req ) {
-        if ( 'sec' in req ) {
-            delete req.sec;
-        }
-
         const { macAlgo } = ctx.options;
         this._macopt.macAlgo = macAlgo;
         const sig = this.genMAC( ctx, req ).toString( 'base64' );
