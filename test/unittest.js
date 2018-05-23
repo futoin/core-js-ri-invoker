@@ -2,15 +2,26 @@
 
 require( './prepare' );
 
-var _ = require( 'lodash' );
-var common = require( '../lib/common' );
-var isNode = common._isNode;
-var assert;
-var expect;
-var async_steps;
-var invoker;
-var as;
-var ccm;
+const _isEmpty = require( 'lodash/isEmpty' );
+
+const is_browser = ( typeof window !== 'undefined' );
+const invoker = is_browser
+    ? require( 'futoin-invoker' )
+    : module.require( '../lib/invoker' );
+
+const isNode = !is_browser;
+const chai = require( 'chai' );
+const { assert, expect } = chai;
+const async_steps = require( 'futoin-asyncsteps' );
+
+let as;
+let ccm;
+
+const {
+    MessageCoder,
+    LogFace,
+    CacheFace,
+} = invoker;
 
 var createTestHttpServer;
 var closeTestHttpServer;
@@ -18,11 +29,7 @@ var thisDir;
 var coder;
 var coders;
 
-if ( !isNode ) {
-    // Browser test
-    assert = chai.assert;
-    expect = chai.expect;
-
+if ( is_browser ) {
     createTestHttpServer = function( cb ) {
         cb();
     };
@@ -33,17 +40,14 @@ if ( !isNode ) {
 
     thisDir = '.';
 
-    invoker = FutoInInvoker;
-    async_steps = $as;
+    expect( window.FutoInInvoker ).to.equal( invoker );
 
-    coders = { JSON: true };
+    coders = {
+        JSON: true,
+        // CBOR: true,
+        // MPCK: true,
+    };
 } else {
-    // Node test
-    var chai_module = module.require( 'chai' );
-
-    assert = chai_module.assert;
-    expect = chai_module.expect;
-
     var node_server = module.require( './node_server.js' );
 
     createTestHttpServer = node_server.createTestHttpServer;
@@ -51,18 +55,12 @@ if ( !isNode ) {
 
     thisDir = __dirname;
 
-    invoker = module.require( '../lib/invoker.js' );
-    async_steps = module.require( 'futoin-asyncsteps' );
-
     coders = {
         JSON: true,
-        //CBOR: true,
+        CBOR: true,
         MPCK: true,
     };
 }
-
-var logface = invoker.LogFace;
-var cacheface = invoker.CacheFace;
 
 class TestMasterAuth extends invoker.MasterAuth {
     constructor() {
@@ -1061,8 +1059,8 @@ describe( 'NativeIface', function() {
                 expect( info.name() ).equal( 'fileface.a' );
                 expect( info.version() ).equal( '1.1' );
                 expect( info.inherits().length ).equal( 0 );
-                expect( _.isEmpty( info.funcs() ) ).be.true;
-                expect( _.isEmpty( info.constraints() ) ).be.true;
+                expect( _isEmpty( info.funcs() ) ).be.true;
+                expect( _isEmpty( info.constraints() ) ).be.true;
 
                 var iface = ccm.iface( 'myiface' );
 
@@ -1253,8 +1251,8 @@ describe( 'NativeIface', function() {
                         expect( info.name() ).equal( 'fileface.a' );
                         expect( info.version() ).equal( '1.1' );
                         expect( info.inherits().length ).equal( 1 );
-                        expect( _.isEmpty( info.funcs() ) ).be.false;
-                        expect( _.isEmpty( info.constraints() ) ).be.false;
+                        expect( _isEmpty( info.funcs() ) ).be.false;
+                        expect( _isEmpty( info.constraints() ) ).be.false;
 
                         var iface = ccm.iface( 'myiface' );
 
@@ -1711,7 +1709,7 @@ describe( 'LogFace', function() {
         as
             .add(
                 function( as ) {
-                    logface.register( as, ccm, 'secure+ws://localhost:23456/ftn' );
+                    LogFace.register( as, ccm, 'secure+ws://localhost:23456/ftn' );
                     ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
 
                     as.add( function( as ) {
@@ -1804,7 +1802,7 @@ describe( 'CacheFace', function() {
         as
             .add(
                 function( as ) {
-                    cacheface.register( as, ccm, 'my', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+                    CacheFace.register( as, ccm, 'my', 'secure+ws://localhost:23456/ftn', 'login:pass' );
                     ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+ws://localhost:23456/ftn' );
 
                     as.add( function( as ) {
@@ -1936,4 +1934,3 @@ if ( isNode ) {
     } );
 }
 
-var exports = {};

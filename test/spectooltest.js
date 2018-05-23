@@ -2,45 +2,38 @@
 
 require( './prepare' );
 
-var assert;
-var expect;
-var async_steps = require( 'futoin-asyncsteps' );
-var _ = require( 'lodash' );
-var common = require( '../lib/common' );
-var isNode = common._isNode;
-var invoker;
-var as;
+const chai = require( 'chai' );
+const { assert, expect } = chai;
+const _cloneDeep = require( 'lodash/cloneDeep' );
+
+const is_browser = ( typeof window !== 'undefined' );
+const isNode = !is_browser;
+
+const async_steps = require( 'futoin-asyncsteps' );
+const invoker = is_browser
+    ? require( 'futoin-invoker' )
+    : module.require( '../lib/invoker' );
 
 const $as_test = require( 'futoin-asyncsteps/testcase' );
 
 var thisDir;
 
 if ( !isNode ) {
-    // Browser test
-    assert = chai.assert;
-    expect = chai.expect;
-
     thisDir = '.';
-
-    invoker = FutoInInvoker;
 } else {
-    // Node test
-    var chai_module = module.require( 'chai' );
-
-    assert = chai_module.assert;
-    expect = chai_module.expect;
-
     thisDir = __dirname;
-
-    invoker = module.require( '../lib/invoker.js' );
     var crypto = module.require( 'crypto' );
 }
 
-var SpecTools = invoker.SpecTools;
+const {
+    SpecTools,
+} = invoker;
 
 // SpecTools.on('error', function() { console.log( arguments ) } );
 
 describe( 'SpecTools', function() {
+    let as;
+
     beforeEach( function() {
         as = async_steps();
     } );
@@ -734,7 +727,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on params without type', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingParam = {
                         params : {
@@ -774,7 +767,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on result without type', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : {
@@ -812,7 +805,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on params not object', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         params : true,
@@ -845,7 +838,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on param not object', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         params : {
@@ -880,7 +873,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on result not object', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : true,
@@ -913,7 +906,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on resultvar not object', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : {
@@ -948,7 +941,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on throws not array', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : {
@@ -986,7 +979,7 @@ describe( 'SpecTools', function() {
         it ( 'should fail on requires not array', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : {
@@ -1025,7 +1018,7 @@ describe( 'SpecTools', function() {
         it ( 'should load with no requires', function( done ) {
             as.add(
                 function( as ) {
-                    var spec = _.cloneDeep( testspec );
+                    var spec = _cloneDeep( testspec );
 
                     spec.funcs.missingResult = {
                         result : {

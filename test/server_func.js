@@ -1,17 +1,11 @@
 'use strict';
 
-var expect;
-
-if ( typeof chai !== 'undefined' ) {
-    expect = chai.expect;
-} else {
-    expect = module.require( 'chai' ).expect;
-}
-
+const expect = require( 'chai' ).expect;
 
 var fail_next = false;
 var log_count = 0;
 var cached_value;
+
 
 function processServerRequest( freq, data, coder ) {
     var func = freq.f.split( ':' );
@@ -27,7 +21,7 @@ function processServerRequest( freq, data, coder ) {
         } else if ( freq.p.txt.toLowerCase() !== freq.p.lvl + 'msg' ) {
             return null;
         } else if ( func[2] === 'hexdump' &&
-                freq.p.data.toString() !== new Buffer( 'HEXDATA' ).toString( 'base64' ) ) {
+                freq.p.data.toString() !== Buffer.from( 'HEXDATA' ).toString( 'base64' ) ) {
             return null;
         }
 
@@ -150,4 +144,8 @@ function processServerRequest( freq, data, coder ) {
 
 if ( typeof module !== 'undefined' ) {
     module.exports = processServerRequest;
+}
+
+if ( typeof window !== 'undefined' ) {
+    window.processServerRequest = processServerRequest;
 }

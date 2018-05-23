@@ -5,10 +5,10 @@ require( './prepare' );
 const expect = require( 'chai' ).expect;
 const performance_now = require( "performance-now" );
 
-const MessageCoder = require( '../MessageCoder' );
-require( '../lib/JSONCoder' ).register();
-require( '../lib/CBORCoder' ).register();
-require( '../lib/MsgPackCoder' ).register();
+const is_browser = ( typeof window !== 'undefined' );
+const { MessageCoder } = is_browser
+    ? require( 'futoin-invoker' )
+    : module.require( '../lib/invoker' );
 
 const BENCH_COUNT = 10e3; // 100e3 has issues with CBOR
 

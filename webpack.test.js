@@ -3,8 +3,9 @@
 module.exports = {
     mode: 'development',
     entry: {
-        unittest : './test/unittest.js',
-        spectooltest : './test/spectooltest.js',
+        unittest : './es5/test/unittest.js',
+        spectooltest : './es5/test/spectooltest.js',
+        server_func : './es5/test/server_func.js',
     },
     output: {
         filename: "[name].js",
@@ -62,19 +63,4 @@ module.exports = {
         },
     },
     node : false,
-    module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: [ 'babel-preset-env' ],
-                        plugins: [ "transform-object-assign" ],
-                    },
-                },
-            },
-        ],
-    },
 };
