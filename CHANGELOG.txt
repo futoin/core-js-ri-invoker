@@ -1,4 +1,8 @@
 
+=== (next) ===
+FIXED: improved browser tests to use dist module
+NEW: module exports Errors as alias of legacy FutoInError
+
 === 1.9.1 (2018-05-23) ===
 FIXED: improved CBOR encoding performance by using "cbor" over "borc"
 NEW: MAC base calculation
