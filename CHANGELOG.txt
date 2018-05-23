@@ -1,5 +1,6 @@
 
 === (next) ===
+FIXED: improved CBOR encoding performance by using "cbor" over "borc"
 NEW: MAC base calculation
 
 === 1.9.0 (2018-05-21) ===
