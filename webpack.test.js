@@ -37,7 +37,7 @@ module.exports = {
             commonjs2: "cbor",
         },
         borc : {
-            root: "cbor",
+            root: "borc",
             amd: "borc",
             commonjs: "borc",
             commonjs2: "borc",
