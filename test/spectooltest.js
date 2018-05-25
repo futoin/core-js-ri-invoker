@@ -1829,6 +1829,7 @@ describe( 'SpecTools', function() {
                         a : 'beta',
                     },
                     d : Buffer.alloc( 3, '1' ),
+                    def: null, // must be ignored - never gets transfered
                 },
                 r : {
                     test : 'alpha',

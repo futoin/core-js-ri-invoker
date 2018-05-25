@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: MAC generation to work with null default parameters
+
 === 1.9.2 (2018-05-23) ===
 FIXED: improved browser tests to use dist module
 NEW: module exports Errors as alias of legacy FutoInError
