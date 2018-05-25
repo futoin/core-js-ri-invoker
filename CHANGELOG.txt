@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 1.9.3 (2018-05-25) ===
 FIXED: MAC generation to work with null default parameters
 
 === 1.9.2 (2018-05-23) ===
