@@ -85,7 +85,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "server-destroy": "^1.0.1",
-    "webpack": "^4.8.3"
+    "webpack": "^4.10.2"
   },
   "peerDependencies": {
     "futoin-asyncsteps": "^1.11.5"

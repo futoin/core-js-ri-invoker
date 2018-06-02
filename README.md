@@ -52,10 +52,13 @@ Message coding formats:
 
 * JSON - default and mandatory
 * MessagePack (MPCK) - default for interfaces with `BinaryData` constraint
-* CBOR - also available, but shows 10-100x worse performance compared to MessagePack even with `borc` fork
+* CBOR - also available, but shows 10x worse performance compared to MessagePack
 
 *Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
 is already available in JS and PHP.*
+
+
+**Documentation** --> [FutoIn Guide](https://futoin.org/docs/microservices/)
 
 
 Reference implementation of:
