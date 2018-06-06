@@ -1,6 +1,5 @@
 'use strict';
 
-const UglifyJsPlugin = require( 'uglifyjs-webpack-plugin' );
 const package_json = require( './package' );
 
 module.exports = {
@@ -52,9 +51,4 @@ module.exports = {
         },
     },
     node : false,
-    plugins: [
-        new UglifyJsPlugin( {
-            sourceMap: true,
-        } ),
-    ],
 };
