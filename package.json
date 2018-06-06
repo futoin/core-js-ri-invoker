@@ -55,7 +55,7 @@
     "agentkeepalive": "^3.4.1",
     "detect-node": "^2.0.3",
     "faye-websocket": "^0.11.1",
-    "futoin-asyncevent": "^1.0.2",
+    "futoin-asyncevent": "^2.0.0",
     "lodash": "^4.17.10",
     "msgpack-lite": "^0.1.26",
     "performance-now": "^2.1.0",
@@ -68,11 +68,11 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "benchmark": "^2.1.4",
-    "cbor": "^4.0.0",
+    "cbor": "^4.1.0",
     "chai": "^4.1.2",
     "eslint": "^4.19.1",
-    "futoin-asyncsteps": "^1.11.5",
-    "grunt": "^1.0.2",
+    "futoin-asyncsteps": "^2.0.0",
+    "grunt": "^1.0.3",
     "grunt-babel": "^7.0.0",
     "grunt-contrib-connect": "^1.0.2",
     "grunt-eslint": "^20.1.0",
@@ -85,10 +85,10 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "server-destroy": "^1.0.1",
-    "webpack": "^4.10.2"
+    "webpack": "^4.11.0"
   },
   "peerDependencies": {
-    "futoin-asyncsteps": "^1.11.5"
+    "futoin-asyncsteps": "^2.0.0"
   },
   "optionalDependencies": {
     "borc": "^2.0.3"
