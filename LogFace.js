@@ -238,16 +238,14 @@ class LogFace extends NativeIface {
                         as.break();
                     }
 
-                    as.state.log_item = log_queue.shift();
+                    const log_item = log_queue.shift();
 
                     as.add(
                         ( as ) => {
-                            var item = as.state.log_item;
-
-                            this.call( as, item[0], item[1] );
+                            this.call( as, log_item[0], log_item[1] );
                         },
                         ( as, err ) => {
-                            console.log( 'LOGFAIL:' + as.state.log_item );
+                            console.log( 'LOGFAIL:' + log_item );
                             console.log( 'ERROR:' + err + ':' + as.state.error_info );
                             console.log( as.state.last_exception.stack );
                             as.success();
@@ -256,6 +254,8 @@ class LogFace extends NativeIface {
                 } ),
                 ( as, err ) => {
                     this._active_runner = false;
+                    console.log( 'ERROR:' + err + ':' + as.state.error_info );
+                    console.log( as.state.last_exception.stack );
                 }
             )
             .execute();

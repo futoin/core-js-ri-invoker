@@ -62,6 +62,11 @@ if ( is_browser ) {
     };
 }
 
+const break_burst = ( as ) => {
+    as.waitExternal();
+    async_steps.ActiveAsyncTool.callImmediate( () => as.state && as.success(), 0 );
+};
+
 class TestMasterAuth extends invoker.MasterAuth {
     constructor() {
         super();
@@ -125,6 +130,7 @@ describe( 'SimpleCCM', function() {
                         done( new Error( err + ": " + as.state.error_info ) );
                     }
                 )
+                .add( break_burst )
                 .add( function( as ) {
                     expect( as.state.reg_fired ).be.true;
                     done();
@@ -164,6 +170,7 @@ describe( 'SimpleCCM', function() {
                 console.log( err + ": " + as.state.error_info );
             }
         )
+            .add( break_burst )
             .add( function( as ) {
                 expect( as.state.reg_fired ).be.true;
                 done();
@@ -540,7 +547,6 @@ call_remotes_model_as.add(
             }
 
             as.state.step = "testFuncRetry";
-
             iface.call(
                 as,
                 'testFuncRetry',
@@ -929,7 +935,7 @@ call_remotes_model_as.add(
 
                 ccm.close();
             }
-        ).add(
+        ).add( break_burst ).add(
             function( as ) {
                 expect( as.state.close_called ).be.true;
                 expect( as.state.iface_close_called ).be.true;
@@ -1751,12 +1757,9 @@ describe( 'LogFace', function() {
                     as.loop( function( as ) {
                         as.add( function( as ) {
                             as.setTimeout( 1e3 );
-                            setTimeout( function() {
-                                setTimeout( function() {
-                                    as.success();
-                                }, 300 );
-                            }, 1 );
+                            async_steps.ActiveAsyncTool.callImmediate( () => as.success(), 300 );
                         } )
+                            .add( break_burst )
                             .add( function( as ) {
                                 ccm.iface( 'myiface' ).getLogCount( as );
                             } )
@@ -1778,6 +1781,7 @@ describe( 'LogFace', function() {
                     done( as.state.last_exception );
                 }
             )
+            .add( break_burst )
             .add( function( as, res ) {
                 done();
             } )
