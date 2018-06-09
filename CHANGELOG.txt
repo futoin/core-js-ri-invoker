@@ -1,4 +1,8 @@
 
+=== (next) ===
+CHANGED: upgrade futoin-asyncsteps & futoin-asyncevent
+FIXED: exception on rare case of WebSockets connection close in Node.js
+
 === 1.10.1 (2018-06-09) ===
 CHANGED: upgraded to futoin-asyncsteps v2.1 with burst execution feature
 
