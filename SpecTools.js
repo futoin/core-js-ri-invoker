@@ -124,7 +124,6 @@ const spectools =
                     if ( !err ) {
                         try {
                             v = JSON.parse( data );
-                            v._just_loaded = true;
                             read_as.success();
                             return;
                         } catch ( e ) {
@@ -186,7 +185,6 @@ const spectools =
                     if ( ( this.status === 200 ) && response ) {
                         try {
                             v = JSON.parse( response );
-                            v._just_loaded = true;
                             as.success();
                             return;
                         } catch ( e ) {
@@ -223,7 +221,7 @@ const spectools =
                     ( v.iface === info.iface ) &&
                     ( v.version === info.version )
                 ) {
-                    raw_spec = v;
+                    raw_spec = _cloneDeep( v );
                     as.break();
                 }
             } );
@@ -259,13 +257,8 @@ const spectools =
     parseIface : function( as, info, specdirs, raw_spec, load_cache ) {
         // Do not damage FutoIn specs passed by value
         // ---
-        if ( raw_spec._just_loaded ) {
-            info.funcs = raw_spec.funcs || {};
-            info.types = raw_spec.types || {};
-        } else {
-            info.funcs = _cloneDeep( raw_spec.funcs || {} );
-            info.types = _cloneDeep( raw_spec.types || {} );
-        }
+        info.funcs = raw_spec.funcs || {};
+        info.types = raw_spec.types || {};
 
         // Process function definitions
         // ---
