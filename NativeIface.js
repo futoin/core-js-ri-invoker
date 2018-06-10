@@ -112,6 +112,7 @@ class NativeIface {
             info : raw_info,
             upload_data : upload_data,
             download_stream : download_stream,
+            rawresult : false,
             rsp_content_type : null,
             native_iface : this,
             options : raw_info.options,
@@ -122,6 +123,7 @@ class NativeIface {
             max_rsp_size: Options.SAFE_PAYLOAD_LIMIT,
             max_req_size: Options.SAFE_PAYLOAD_LIMIT,
         };
+        Object.seal( ctx );
 
         const ccmimpl = this._ccmimpl;
 

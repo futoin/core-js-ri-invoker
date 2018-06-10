@@ -282,6 +282,8 @@ const spectools =
             info.constraints = {};
         }
 
+        Object.freeze( info.constraints );
+
         // Check "ftn3rev" field
         // ---
         spectools._checkFTN3Rev( as, info, raw_spec );
@@ -393,6 +395,14 @@ const spectools =
         } else {
             info.imports = [];
         }
+
+        as.add( ( as ) => {
+            info._comp_regex = {};
+            info._comp_set = {};
+            Object.freeze( info.funcs );
+            Object.freeze( info.types );
+            Object.freeze( info );
+        } );
     },
 
     /**
@@ -756,6 +766,7 @@ const spectools =
 
             finfo._max_req_size = this._maxSize( finfo.maxreqsize );
             finfo._max_rsp_size = this._maxSize( finfo.maxrspsize );
+            Object.freeze( finfo );
         }
     },
 
@@ -792,6 +803,7 @@ const spectools =
             }
 
             if ( tinfo instanceof Array ) {
+                Object.freeze( tinfo );
                 continue;
             }
 
@@ -802,6 +814,7 @@ const spectools =
             if ( tinfo.type === 'map' ) {
                 if ( !( 'fields' in tinfo ) ) {
                     tinfo.fields = {};
+                    Object.freeze( tinfo );
                     continue;
                 }
 
@@ -814,6 +827,9 @@ const spectools =
                         as.error( FutoInError.InternalError, 'Missing "type" for custom type field' );
                     }
                 }
+
+                Object.freeze( tinfo );
+                continue;
             }
         }
     },
@@ -955,13 +971,7 @@ const spectools =
             }
 
             if ( 'regex' in tdef ) {
-                let comp_regex = info._comp_regex;
-
-                if ( !comp_regex ) {
-                    comp_regex = {};
-                    info._comp_regex = comp_regex;
-                }
-
+                const comp_regex = info._comp_regex;
                 let regex_obj = comp_regex[ type_path ];
 
                 if ( !regex_obj ) {
@@ -1129,13 +1139,7 @@ const spectools =
                 throw new Error( FutoInError.InternalError );
             }
 
-            let comp_set = info._comp_set;
-
-            if ( !comp_set ) {
-                comp_set = {};
-                info._comp_set = comp_set;
-            }
-
+            const comp_set = info._comp_set;
             let set_items = comp_set[ type_path ];
 
             if ( !set_items ) {
@@ -1148,6 +1152,7 @@ const spectools =
 
                 set_items = _zipObject( set_items, set_items );
                 comp_set[ type_path ] = set_items;
+                Object.freeze( set_items );
             }
 
             if ( type === 'enum' ) {

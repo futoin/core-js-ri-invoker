@@ -324,6 +324,8 @@ class SimpleCCM {
                 impl = info.impl( this._impl, info );
             }
 
+            Object.seal( impl ); // make sure it's optimized
+
             this._iface_impl[ regname ] = impl;
         }
 

@@ -1,4 +1,8 @@
 
+=== (next) ===
+CHANED: minor performance and security improvements to use sealed and frozed objects.
+FIXED: not to pollute raw specs objects provided in specDirs
+
 === 1.10.2 (2018-06-09) ===
 CHANGED: upgrade futoin-asyncsteps & futoin-asyncevent
 FIXED: exception on rare case of WebSockets connection close in Node.js

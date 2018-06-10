@@ -143,7 +143,11 @@ describe( 'SpecTools', function() {
             )
                 .add(
                     function( as ) {
-                        load_cache[ 'fileface.a:1.1:e' ].comes_from_cache = true;
+                        load_cache[ 'fileface.a:1.1:e' ] = Object.assign(
+                            { comes_from_cache : true },
+                            load_cache[ 'fileface.a:1.1:e' ]
+                        );
+                        Object.freeze( load_cache[ 'fileface.a:1.1:e' ] );
                         SpecTools.loadIface(
                             as,
                             info,
@@ -611,22 +615,6 @@ describe( 'SpecTools', function() {
                     var iface = {
                         iface : info.iface,
                         version: info.version,
-                        ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
-                    };
-
-                    info._invoker_use = true;
-                    SpecTools.loadIface( as, info, [ iface ] );
-                },
-                function( as, err ) {
-                    done( as.state.last_exception );
-                }
-            ).add(
-                function( as, ok ) {
-                    assert.isUndefined( ok );
-
-                    var iface = {
-                        iface : info.iface,
-                        version: info.version,
                         ftn3rev: '2.0',
                     };
 
@@ -645,6 +633,22 @@ describe( 'SpecTools', function() {
             ).add(
                 function( as, ok ) {
                     expect( ok ).equal( 'OK' );
+
+                    var iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: '1.' + ( 1 + SpecTools._max_supported_v1_minor ),
+                    };
+
+                    info._invoker_use = true;
+                    SpecTools.loadIface( as, info, [ iface ] );
+                },
+                function( as, err ) {
+                    done( as.state.last_exception );
+                }
+            ).add(
+                function( as, ok ) {
+                    assert.isUndefined( ok );
                     done();
                 }
             ).execute();
