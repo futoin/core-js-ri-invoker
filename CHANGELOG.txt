@@ -3,6 +3,7 @@
 CHANGED: minor performance and security improvements to use sealed and frozed objects.
 FIXED: not to pollute raw specs objects provided in specDirs.
 NEW: more strict and verbose integrity checks during spec loading.
+NEW: NativeIface interceptors optimized with eval (~9% boost)
 
 === 1.10.2 (2018-06-09) ===
 CHANGED: upgrade futoin-asyncsteps & futoin-asyncevent

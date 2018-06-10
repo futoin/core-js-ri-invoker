@@ -62,7 +62,7 @@ class NativeIface {
             }
 
             Object.defineProperty( this, fn, {
-                value: this._member_call_generate( fn, finfo ),
+                value: this._member_call_generate_eval( fn, finfo ),
                 configurable: false,
                 enumerable: false,
                 writeable: false,
@@ -264,11 +264,36 @@ class NativeIface {
     * @param {InterfaceInfo} finfo - interface info
     * @returns {function} call generator with bound parameters
     */
-    /*_member_call_generate_eval( name, finfo ) {
+    _member_call_generate_eval( name, finfo ) {
         const src = [];
-        src.push( 'function (as)' );
+        const { params } = finfo;
+
+        const plist = Object.keys( params );
+        const pmap = [];
+
+        for ( let p of plist ) {
+            if ( params[p].default === undefined ) {
+                pmap.push( `${p}:${p}` );
+            }
+        }
+
+        const args = [ 'as' ].concat( plist );
+
+        src.push( `(function (${args.join( ',' )}) {` );
+        src.push( `'use strict';` );
+        src.push( `var params = {${pmap.join( ',' )}};` );
+
+        for ( let p of plist ) {
+            if ( params[p].default !== undefined ) {
+                src.push( `if (${p} !== undefined) params.${p} = ${p};` );
+            }
+        }
+
+        src.push( `return this.call(as, "${name}", params);` );
+        src.push( '})' );
+
         return eval( src.join( '' ) );
-    }*/
+    }
 
     /**
     * Get interface info
