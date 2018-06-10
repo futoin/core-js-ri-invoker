@@ -427,7 +427,7 @@ describe( 'AdvancedCCM', function() {
                     ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
                 },
                 function( as, err ) {
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             ).add( function( as ) {
                 done();
@@ -485,7 +485,7 @@ describe( 'AdvancedCCM', function() {
                     );
                 },
                 function( as, err ) {
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             ).add( function( as ) {
                 done();
@@ -506,7 +506,7 @@ describe( 'AdvancedCCM', function() {
                     } );
                 },
                 function( as, err ) {
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             ).add( function( as ) {
                 done();
@@ -1013,7 +1013,7 @@ call_interceptors_model_as.add(
     },
     function( as, err ) {
         console.log( err + ": " + as.state.error_info + "("+as.state.step+")" );
-        as.state.done( as.state.last_exception );
+        as.state.done( as.state.last_exception || 'Fail' );
     }
 ).add( function( as ) {
     as.state.done();
@@ -1229,7 +1229,7 @@ describe( 'NativeIface', function() {
                         return;
                     }
 
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             ).add(
                 function( as ) {
@@ -1674,7 +1674,7 @@ describe( 'NativeIface', function() {
                     } );
                 },
                 function( as, err ) {
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             ).add(
                 function( as ) {
@@ -1690,7 +1690,7 @@ describe( 'NativeIface', function() {
                     } );
                 },
                 function( as, err ) {
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             );
             as.execute();
@@ -1726,7 +1726,7 @@ describe( 'LogFace', function() {
                 },
                 function( as, err ) {
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             )
             .execute();
@@ -1734,6 +1734,16 @@ describe( 'LogFace', function() {
 
     after( function( done ) {
         closeTestHttpServer( done );
+    } );
+
+    it ( 'should have levels', () => {
+        const log = ccm.log();
+
+        expect( log.LVL_DEBUG ).equal( 'debug' );
+        expect( log.LVL_INFO ).equal( 'info' );
+        expect( log.LVL_WARN ).equal( 'warn' );
+        expect( log.LVL_ERROR ).equal( 'error' );
+        expect( log.LVL_SECURITY ).equal( 'security' );
     } );
 
     it( 'should call futoin.log through native interface', function( done ) {
@@ -1778,7 +1788,7 @@ describe( 'LogFace', function() {
                 },
                 function( as, err ) {
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             )
             .add( break_burst )
@@ -1817,7 +1827,7 @@ describe( 'CacheFace', function() {
                 },
                 function( as, err ) {
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             )
             .execute();
@@ -1861,7 +1871,7 @@ describe( 'CacheFace', function() {
                 },
                 function( as, err ) {
                     console.log( as.state.error_info );
-                    done( as.state.last_exception );
+                    done( as.state.last_exception || 'Fail' );
                 }
             )
             .add( function( as, res ) {
@@ -1903,7 +1913,7 @@ if ( isNode ) {
                     },
                     function( as, err ) {
                         console.log( as.state.error_info );
-                        done( as.state.last_exception );
+                        done( as.state.last_exception || 'Fail' );
                     }
                 )
                 .execute();
@@ -1927,13 +1937,23 @@ if ( isNode ) {
                     },
                     function( as, err ) {
                         console.log( as.state.error_info );
-                        done( as.state.last_exception );
+                        done( as.state.last_exception || 'Fail' );
                     }
                 )
                 .add( function( as, res ) {
                     done();
                 } )
                 .execute();
+        } );
+    } );
+
+    describe( 'MasterAuth', function() {
+        it( 'should raise default errors', function() {
+            const ma = new invoker.MasterAuth;
+            expect( () => ma.signMessage() ).throw(
+                'Missing signMessage() implementation' );
+            expect( () => ma.genMAC() ).throw(
+                'Missing genMAC() implementation' );
         } );
     } );
 }

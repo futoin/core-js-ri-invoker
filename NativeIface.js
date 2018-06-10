@@ -61,7 +61,12 @@ class NativeIface {
                 continue;
             }
 
-            this[ fn ] = this._member_call_generate( fn, finfo );
+            Object.defineProperty( this, fn, {
+                value: this._member_call_generate( fn, finfo ),
+                configurable: false,
+                enumerable: false,
+                writeable: false,
+            } );
         }
     }
 
@@ -252,6 +257,18 @@ class NativeIface {
             );
         };
     }
+
+    /**
+    * @ignore
+    * @param {string} name - member name
+    * @param {InterfaceInfo} finfo - interface info
+    * @returns {function} call generator with bound parameters
+    */
+    /*_member_call_generate_eval( name, finfo ) {
+        const src = [];
+        src.push( 'function (as)' );
+        return eval( src.join( '' ) );
+    }*/
 
     /**
     * Get interface info

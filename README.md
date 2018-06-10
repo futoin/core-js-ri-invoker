@@ -1328,7 +1328,6 @@ cache v1.x iface name prefix
     * [.standard_errors](#SpecTools.standard_errors)
     * [.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
     * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
-    * [.checkConsistency(as, info)](#SpecTools.checkConsistency)
     * [.checkType(info, type, val)](#SpecTools.checkType) ⇒ <code>Boolean</code>
     * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>
     * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
@@ -1379,20 +1378,6 @@ Parse raw futoin spec (preloaded)
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
 | raw_spec | <code>Object</code> | iface definition object |
 | [load_cache] | <code>Object</code> | cache of already loaded interfaces |
-
-<a name="SpecTools.checkConsistency"></a>
-
-### SpecTools.checkConsistency(as, info)
-Deeply check consistency of loaded interface.
-
-NOTE: not yet implemented
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | previously loaded iface |
 
 <a name="SpecTools.checkType"></a>
 

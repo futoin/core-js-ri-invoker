@@ -36,6 +36,13 @@ if ( isNode ) {
     request = module.require( 'request' );
 }
 
+const VERSION_RE = /^([0-9]+)\.([0-9]+)$/;
+const IFACE_RE = common._ifacever_pattern;
+const FUNC_RE = /^[a-z][a-zA-Z0-9]*$/;
+const PARAM_RE = /^[a-z][a-z0-9_]*$/;
+const TYPE_RE = /^[A-Z][a-zA-Z0-9]*$/;
+const THROWS_RE = /^([A-Z][a-zA-Z0-9]*|[A-Z][A-Z0-9_]*)$/;
+
 /**
  * SpecTools
  * @class
@@ -60,8 +67,11 @@ const spectools =
         SecurityError : true,
     },
 
-    _ver_pattern : /^([0-9]+)\.([0-9]+)$/,
-    _ifacever_pattern : common._ifacever_pattern,
+    _ver_pattern : VERSION_RE,
+    _ifacever_pattern : IFACE_RE,
+    _type_pattern : TYPE_RE,
+    _func_pattern : FUNC_RE,
+    _param_pattern : PARAM_RE,
 
     _max_supported_v1_minor : 9,
 
@@ -108,113 +118,114 @@ const spectools =
         }
 
         as.forEach( specdirs, ( as, _k, v ) => {
-            // Check Node.js fs
-            as.add( ( read_as ) => {
-                if ( ( typeof v !== 'string' ) || !isNode ) {
-                    return;
-                }
+            if ( typeof v === 'string' ) {
+                if ( isNode ) {
+                    as.add( ( read_as ) => {
+                        const uri = `${v}/${fn}`;
 
-                const uri = `${v}/${fn}`;
+                        const on_read = ( data, err ) => {
+                            if ( !read_as ) {
+                                return;
+                            }
 
-                const on_read = ( data, err ) => {
-                    if ( !read_as ) {
-                        return;
-                    }
+                            if ( !err ) {
+                                try {
+                                    v = JSON.parse( data );
+                                    read_as.success();
+                                    return;
+                                } catch ( e ) {
+                                    spectools.emit(
+                                        'error',
+                                        `Invalid JSON for '${uri}": ${e}`
+                                    );
 
-                    if ( !err ) {
-                        try {
-                            v = JSON.parse( data );
-                            read_as.success();
-                            return;
-                        } catch ( e ) {
-                            spectools.emit(
-                                'error',
-                                `Invalid JSON for '${uri}": ${e}`
-                            );
+                                    try {
+                                        as.break();
+                                    } catch ( _ ) {
+                                        // pass
+                                    }
+                                }
+                            }
 
                             try {
-                                as.break();
-                            } catch ( _ ) {
-                                // pass
+                                read_as.continue();
+                            } catch ( e ) {
+                                // ignore
                             }
+                        };
+
+                        if ( uri.substr( 0, 4 ) === 'http' ) {
+                            request( uri, ( error, _response, body ) => {
+                                on_read( body, error );
+                            } );
+                        } else {
+                            fs.readFile(
+                                uri,
+                                { encoding : 'utf8' },
+                                ( err, data ) => {
+                                    on_read( data, err );
+                                }
+                            );
                         }
-                    }
 
-                    try {
-                        read_as.continue();
-                    } catch ( e ) {
-                        // ignore
-                    }
-                };
-
-                if ( uri.substr( 0, 4 ) === 'http' ) {
-                    request( uri, ( error, _response, body ) => {
-                        on_read( body, error );
+                        read_as.setCancel( ( as ) => {
+                            read_as = null; // see readFile above
+                        } );
                     } );
                 } else {
-                    fs.readFile(
-                        uri,
-                        { encoding : 'utf8' },
-                        ( err, data ) => {
-                            on_read( data, err );
-                        }
-                    );
-                }
-
-                read_as.setCancel( ( as ) => {
-                    read_as = null; // see readFile above
-                } );
-            } );
-            // Check remote URL in browser
-            as.add( ( as ) => {
-                if ( ( typeof v !== 'string' ) || isNode ) {
-                    return;
-                }
-
-                const uri = `${v}/${fn}`;
-
-                const httpreq = new XMLHttpRequest(); // jshint ignore:line
-
-                httpreq.onreadystatechange = function() {
-                    if ( this.readyState !== this.DONE ) {
-                        return;
-                    }
-
-                    const response = this.responseText;
-
-                    if ( ( this.status === 200 ) && response ) {
-                        try {
-                            v = JSON.parse( response );
-                            as.success();
+                    // Check remote URL in browser
+                    as.add( ( as ) => {
+                        if ( ( typeof v !== 'string' ) || isNode ) {
                             return;
-                        } catch ( e ) {
-                            spectools.emit(
-                                'error',
-                                `Invalid JSON for '${uri}": ${e}`
-                            );
+                        }
+
+                        const uri = `${v}/${fn}`;
+
+                        const httpreq = new XMLHttpRequest(); // jshint ignore:line
+
+                        httpreq.onreadystatechange = function() {
+                            if ( this.readyState !== this.DONE ) {
+                                return;
+                            }
+
+                            const response = this.responseText;
+
+                            if ( ( this.status === 200 ) && response ) {
+                                try {
+                                    v = JSON.parse( response );
+                                    as.success();
+                                    return;
+                                } catch ( e ) {
+                                    spectools.emit(
+                                        'error',
+                                        `Invalid JSON for '${uri}": ${e}`
+                                    );
+
+                                    try {
+                                        as.break();
+                                    } catch ( _ ) {
+                                        // pass
+                                    }
+                                }
+                            }
 
                             try {
-                                as.break();
-                            } catch ( _ ) {
-                                // pass
+                                as.continue();
+                            } catch ( ex ) {
+                                // ignore
                             }
-                        }
-                    }
+                        };
 
-                    try {
-                        as.continue();
-                    } catch ( ex ) {
-                        // ignore
-                    }
-                };
+                        httpreq.open( "GET", uri, true );
+                        httpreq.send();
 
-                httpreq.open( "GET", uri, true );
-                httpreq.send();
+                        as.setCancel( ( as ) => {
+                            httpreq.abort();
+                        } );
+                    } );
+                }
+            }
 
-                as.setCancel( ( as ) => {
-                    httpreq.abort();
-                } );
-            } );
             // Check object spec
             as.add( ( as ) => {
                 if ( ( typeof v === 'object' ) &&
@@ -260,14 +271,6 @@ const spectools =
         info.funcs = raw_spec.funcs || {};
         info.types = raw_spec.types || {};
 
-        // Process function definitions
-        // ---
-        spectools._parseFuncs( as, info );
-
-        // Process type definitions
-        // ---
-        spectools._parseTypes( as, info );
-
         // Process Constraints
         // ---
         if ( 'requires' in raw_spec ) {
@@ -293,7 +296,7 @@ const spectools =
         info.inherits = [];
 
         if ( 'inherit' in raw_spec ) {
-            const m = raw_spec.inherit.match( common._ifacever_pattern );
+            const m = raw_spec.inherit.match( IFACE_RE );
 
             if ( m === null ) {
                 as.error( FutoInError.InvokerError,
@@ -318,10 +321,10 @@ const spectools =
         // Process Imports / mixins
         // ---
         if ( 'imports' in raw_spec ) {
-            const iface_pattern = common._ifacever_pattern;
+            const iface_pattern = IFACE_RE;
             const imp_load_cache = load_cache || {}; // make sure we always use cache here
 
-            info.imports = raw_spec.imports.slice();
+            let all_imports = raw_spec.imports;
 
             as.forEach( raw_spec.imports, ( as, _k, v ) => {
                 const m = v.match( iface_pattern );
@@ -338,7 +341,7 @@ const spectools =
                 spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
                 as.add( ( as ) => {
-                    info.imports = info.imports.concat( imp_info.imports );
+                    all_imports = all_imports.concat( imp_info.imports );
                 } );
             } );
 
@@ -348,8 +351,8 @@ const spectools =
                     // 2. Merge compatible interface versions
                     const import_candidates = {};
 
-                    for ( let i = info.imports.length - 1; i >= 0; --i ) {
-                        const imp_ifacever = info.imports[i];
+                    for ( let i = all_imports.length - 1; i >= 0; --i ) {
+                        const imp_ifacever = all_imports[i];
                         const m = imp_ifacever.match( iface_pattern );
                         const iface = m[ common._ifacever_pattern_name ];
                         const ver = m[ common._ifacever_pattern_ver ];
@@ -374,10 +377,10 @@ const spectools =
                         }
                     }
 
-                    info.imports = [];
+                    const imports = info.imports = [];
 
                     as.forEach( import_candidates, ( as, iface, ver ) => {
-                        info.imports.push( iface + ':' + ver );
+                        imports.push( iface + ':' + ver );
 
                         const imp_info = {};
 
@@ -391,16 +394,29 @@ const spectools =
                         } );
                     } );
                 } );
+            } else {
+                info.imports = all_imports;
             }
         } else {
             info.imports = [];
         }
 
         as.add( ( as ) => {
+            // Process type definitions
+            // ---
+            spectools._parseTypes( as, info );
+
+            // Process function definitions
+            // ---
+            spectools._parseFuncs( as, info );
+
             info._comp_regex = {};
             info._comp_set = {};
+
             Object.freeze( info.funcs );
             Object.freeze( info.types );
+            Object.freeze( info.inherits );
+            Object.freeze( info.imports );
             Object.freeze( info );
         } );
     },
@@ -413,7 +429,7 @@ const spectools =
      */
     _checkFTN3Rev : function( as, info, raw_spec ) {
         const ftn3rev = raw_spec.ftn3rev || '1.0';
-        const rv = ftn3rev.match( spectools._ver_pattern );
+        const rv = ftn3rev.match( VERSION_RE );
 
         if ( rv === null ) {
             as.error( FutoInError.InternalError, "Invalid ftn3rev field" );
@@ -673,69 +689,113 @@ const spectools =
      */
     _parseFuncs : function( as, info ) {
         for ( let f in info.funcs ) {
+            if ( !f.match( FUNC_RE ) ) {
+                as.error( FutoInError.InternalError,
+                    `Invalid function name: ${f}` );
+            }
+
             const finfo = info.funcs[ f ];
             finfo.min_args = 0;
 
-            if ( 'params' in finfo ) {
-                const fparams = finfo.params;
+            const fparams = finfo.params;
 
+            if ( fparams ) {
                 if ( typeof fparams !== 'object' ) {
-                    as.error( FutoInError.InternalError, "Invalid params object" );
+                    as.error( FutoInError.InternalError,
+                        `Invalid params object: ${f}` );
                 }
 
                 for ( let pn in fparams ) {
+                    if ( pn.match( PARAM_RE ) === null ) {
+                        as.error( FutoInError.InternalError,
+                            `Invalid parameter name: ${f}(${pn})` );
+                    }
+
                     const pinfo = fparams[ pn ];
 
                     if ( typeof pinfo === 'string' ) {
                         finfo.min_args += 1;
+                        this._checkKnownType( as, info, pinfo );
                     } else {
                         if ( typeof pinfo !== 'object' ) {
-                            as.error( FutoInError.InternalError, "Invalid param object" );
+                            as.error( FutoInError.InternalError,
+                                `Invalid parameter definition: ${f}(${pn})` );
                         }
 
-                        if ( !( 'type' in pinfo ) ) {
+                        const pt = pinfo.type;
+
+                        if ( pt ) {
+                            this._checkKnownType( as, info, pt );
+                        } else {
                             as.error( FutoInError.InternalError, "Missing type for params" );
                         }
 
-                        if ( !( 'default' in pinfo ) ) {
+                        if ( pinfo.default === undefined ) {
+                            // Set even if it was not set!
+                            pinfo.default = undefined;
+                        } else {
                             finfo.min_args += 1;
                         }
+
+                        Object.freeze( pinfo );
                     }
                 }
             } else {
                 finfo.params = {};
             }
 
+            Object.freeze( finfo.params );
+
+            //---
             finfo.expect_result = false;
 
-            if ( 'result' in finfo ) {
-                const fresult = finfo.result;
+            const fresult = finfo.result;
 
+            if ( fresult ) {
                 if ( typeof fresult === 'string' ) {
                     finfo.expect_result = true;
-                } else if ( typeof fresult == 'object' ) {
+                    this._checkKnownType( as, info, fresult );
+                } else if ( typeof fresult === 'object' ) {
                     for ( let rn in fresult ) {
+                        if ( rn.match( PARAM_RE ) === null ) {
+                            as.error( FutoInError.InternalError,
+                                `Invalid resultvar name: ${f}(${rn})` );
+                        }
+
                         const rinfo = fresult[ rn ];
 
                         if ( typeof rinfo !== 'string' ) {
                             if ( typeof rinfo !== 'object' ) {
-                                as.error( FutoInError.InternalError, "Invalid resultvar object" );
+                                as.error( FutoInError.InternalError,
+                                    `Invalid resultvar definition: ${f}(${rn})` );
                             }
 
-                            if ( !( 'type' in rinfo ) ) {
-                                as.error( FutoInError.InternalError, "Missing type for result" );
+                            const rt = rinfo.type;
+
+                            if ( rt ) {
+                                this._checkKnownType( as, info, rt );
+                            } else {
+                                as.error( FutoInError.InternalError,
+                                    `Missing type for resultvar: ${f}(${rn})` );
                             }
+
+                            Object.freeze( rinfo );
                         }
 
                         finfo.expect_result = true;
                     }
+
+                    Object.freeze( fresult );
                 } else {
-                    as.error( FutoInError.InternalError, "Invalid result object" );
+                    as.error( FutoInError.InternalError,
+                        `Invalid result object: ${f}` );
                 }
             } else {
                 finfo.result = {};
+                Object.freeze( finfo.result );
             }
 
+            //---
             if ( !( 'rawupload' in finfo ) ) {
                 finfo.rawupload = false;
             }
@@ -744,25 +804,43 @@ const spectools =
                 finfo.rawresult = false;
             }
 
+            //---
             if ( finfo.rawresult ) {
                 finfo.expect_result = true;
             }
 
-            if ( 'throws' in finfo ) {
-                if ( !finfo.expect_result ) {
-                    as.error( FutoInError.InternalError, '"throws" without result' );
-                }
+            //---
+            const throws = finfo.throws;
 
-                const throws = finfo.throws;
+            if ( throws ) {
+                if ( !finfo.expect_result ) {
+                    as.error( FutoInError.InternalError,
+                        `"throws" without result: ${f}` );
+                }
 
                 if ( !Array.isArray( throws ) ) {
-                    as.error( FutoInError.InternalError, '"throws" is not array' );
+                    as.error( FutoInError.InternalError,
+                        `"throws" is not array: ${f}` );
                 }
+
+                for ( let t of throws ) {
+                    if ( !t.match( THROWS_RE ) ) {
+                        as.error( FutoInError.InternalError,
+                            `Invalid "throws": ${t}` );
+                    }
+                }
+
+                finfo._raw_throws = throws;
+                Object.freeze( throws );
 
                 finfo.throws = _zipObject( throws, throws );
             } else {
+                finfo._raw_throws = undefined;
                 finfo.throws = {};
             }
+
+            Object.freeze( finfo.throws );
+            //---
 
             finfo._max_req_size = this._maxSize( finfo.maxreqsize );
             finfo._max_rsp_size = this._maxSize( finfo.maxrspsize );
@@ -796,41 +874,98 @@ const spectools =
      */
     _parseTypes : function( as, info ) {
         for ( let t in info.types ) {
+            if ( !t.match( TYPE_RE ) ) {
+                as.error( FutoInError.InternalError,
+                    `Invalid type name: ${t}` );
+            }
+
             const tinfo = info.types[ t ];
 
             if ( typeof tinfo === 'string' ) {
-                continue;
-            }
+                this._checkKnownType( as, info, tinfo );
+            } else if ( tinfo instanceof Array ) {
+                for ( let bt of tinfo ) {
+                    this._checkKnownType( as, info, bt );
+                }
+            } else {
+                const base_type = tinfo.type;
 
-            if ( tinfo instanceof Array ) {
-                Object.freeze( tinfo );
-                continue;
-            }
-
-            if ( !( 'type' in tinfo ) ) {
-                as.error( FutoInError.InternalError, 'Missing "type" for custom type' );
-            }
-
-            if ( tinfo.type === 'map' ) {
-                if ( !( 'fields' in tinfo ) ) {
-                    tinfo.fields = {};
-                    Object.freeze( tinfo );
-                    continue;
+                if ( !base_type ) {
+                    as.error( FutoInError.InternalError,
+                        `Missing "type" for custom type: ${t}` );
                 }
 
-                for ( let f in tinfo.fields ) {
-                    const fdef = tinfo.fields[ f ];
+                this._checkKnownType( as, info, base_type );
 
-                    if ( ( typeof fdef !== 'string' ) &&
-                         !( fdef instanceof Array ) &&
-                         !( 'type' in fdef ) ) {
-                        as.error( FutoInError.InternalError, 'Missing "type" for custom type field' );
+                if ( base_type === 'map' ) {
+                    if ( !( 'fields' in tinfo ) ) {
+                        tinfo.fields = {};
                     }
                 }
 
+                const fields = tinfo.fields;
+
+                if ( fields ) {
+                    for ( let f in tinfo.fields ) {
+                        const fdef = tinfo.fields[ f ];
+
+                        if ( typeof fdef === 'string' ) {
+                            this._checkKnownType( as, info, fdef );
+                        } else if ( fdef instanceof Array ) {
+                            for ( let bt of fdef ) {
+                                this._checkKnownType( as, info, bt );
+                            }
+                        } else {
+                            const bt = fdef.type;
+
+                            if ( bt ) {
+                                this._checkKnownType( as, info, bt );
+                            } else {
+                                as.error( FutoInError.InternalError,
+                                    `Missing "type" for custom type field: ${t}[${f}]` );
+                            }
+                        }
+                    }
+
+                    Object.freeze( tinfo.fields );
+                }
+
+                const elemtype = tinfo.elemtype;
+
+                if ( elemtype ) {
+                    this._checkKnownType( as, info, elemtype );
+                }
+
                 Object.freeze( tinfo );
-                continue;
             }
+        }
+    },
+
+    /**
+     * Ensure type exists in spec
+     * @private
+     * @param {AsyncSteps} as - _
+     * @param {object} info - _
+     * @param {string} name - _
+     */
+    _checkKnownType( as, info, name ) {
+        switch ( name ) {
+        case 'any':
+        case 'boolean':
+        case 'integer':
+        case 'number':
+        case 'string':
+        case 'map':
+        case 'array':
+        case 'enum':
+        case 'set':
+        case 'data':
+            return;
+        }
+
+        if ( !info.types[name] ) {
+            as.error( FutoInError.InternalError,
+                `Unknown type ${name} in ${info.iface}:${info.version}` );
         }
     },
 
@@ -844,7 +979,8 @@ const spectools =
     _parseImportInherit : function( as, info, raw_spec, sup_info ) {
         for ( let t in sup_info.types ) {
             if ( t in info.types ) {
-                as.error( FutoInError.InternalError, `Iface type redifintion: ${t}` );
+                as.error( FutoInError.InternalError,
+                    `Iface "${info.iface}" type redifintion: ${t}` );
                 continue;
             }
 
@@ -855,57 +991,68 @@ const spectools =
             const fdef = sup_info.funcs[ f ];
 
             if ( !( f in info.funcs ) ) {
-                info.funcs[ f ] = fdef;
+                const fc = _cloneDeep( fdef );
+                fc.throws = fdef._raw_throws;
+                info.funcs[ f ] = fc;
                 continue;
             }
 
             const sup_params = fdef.params;
-            const params = info.funcs[ f ].params;
+            const params = info.funcs[ f ].params || {};
 
             const sup_params_keys = Object.keys( sup_params );
             const params_keys = Object.keys( params );
 
             if ( params_keys.length < sup_params_keys.length ) {
-                as.error( FutoInError.InternalError, `Invalid param count for "${f}"` );
-            }
-
-            let i = 0;
-
-            // Verify parameters are correctly duplicated
-            for ( ; i < sup_params_keys.length; ++i ) {
-                const pn = sup_params_keys[ i ];
-
-                if ( pn !== params_keys[ i ] ) {
-                    as.error( FutoInError.InternalError, `Invalid param order for "${f}/${pn}"` );
-                }
-
-                if ( sup_params[ pn ].type !== params[ pn ].type ) {
-                    as.error( FutoInError.InternalError, `Param type mismatch "${f}/${pn}"` );
-                }
+                as.error( FutoInError.InternalError,
+                    `Invalid parameter count for: "${f}"` );
             }
 
             // Verify that all added params have default value
-            for ( ; i < params_keys.length; ++i ) {
+            for ( let i = sup_params_keys.length; i < params_keys.length; ++i ) {
                 const pn = params_keys[ i ];
 
                 if ( !( pn in sup_params ) &&
-                     !( 'default' in params[ pn ] ||
-                        params[ pn ] === null ) ) {
-                    as.error( FutoInError.InternalError, `Missing default for "${f}/${pn}"` );
+                     ( params[ pn ].default === undefined )
+                ) {
+                    as.error( FutoInError.InternalError,
+                        `Missing default for "${f}/${pn}"` );
                 }
             }
 
-            if ( fdef.rawresult !== info.funcs[ f ].rawresult ) {
-                as.error( FutoInError.InternalError, `'rawresult' flag mismatch for "${f}"` );
+            // Verify parameters are correctly duplicated
+            for ( let i = 0; i < sup_params_keys.length; ++i ) {
+                const pn = sup_params_keys[ i ];
+
+                if ( pn !== params_keys[ i ] ) {
+                    as.error( FutoInError.InternalError,
+                        `Invalid parameter order for "${f}/${pn}"` );
+                }
+
+                const spdef = sup_params[ pn ];
+                const pdef = params[ pn ];
+
+                if ( ( typeof spdef === 'string' && ( spdef !== pdef ) ) ||
+                     ( spdef.type && ( spdef.type !== pdef.type ) )
+                ) {
+                    as.error( FutoInError.InternalError,
+                        `Parameter type mismatch "${f}/${pn}"` );
+                }
+            }
+
+            if ( fdef.rawresult !== ( info.funcs[ f ].rawresult || false ) ) {
+                as.error( FutoInError.InternalError,
+                    `'rawresult' flag mismatch for "${f}"` );
             }
 
             if ( fdef.seclvl !== info.funcs[ f ].seclvl ) {
-                as.error( FutoInError.InternalError, `'seclvl' mismatch for "${f}"` );
+                as.error( FutoInError.InternalError,
+                    `'seclvl' mismatch for "${f}"` );
             }
 
-            if ( fdef.rawupload &&
-                 !info.funcs[ f ].rawupload ) {
-                as.error( FutoInError.InternalError, `'rawupload' flag is missing for "${f}"` );
+            if ( fdef.rawupload !== ( info.funcs[ f ].rawupload || false ) ) {
+                as.error( FutoInError.InternalError,
+                    `'rawupload' flag mismatch for "${f}"` );
             }
         }
 
@@ -914,20 +1061,9 @@ const spectools =
             raw_spec.requires );
 
         if ( constraint_diff.length ) {
-            as.error( FutoInError.InternalError, `Missing constraints from inherited: ${constraint_diff}` );
+            as.error( FutoInError.InternalError,
+                `Missing constraints from inherited: ${constraint_diff}` );
         }
-    },
-
-    /**
-     * Deeply check consistency of loaded interface.
-     *
-     * NOTE: not yet implemented
-     * @param {AsyncSteps} as - step interface
-     * @param {Object} info - previously loaded iface
-     * @alias SpecTools.checkConsistency
-     */
-    checkConsistency : function( as, info ) {
-        void info;
     },
 
     /**
