@@ -43,6 +43,9 @@ const PARAM_RE = /^[a-z][a-z0-9_]*$/;
 const TYPE_RE = /^[A-Z][a-zA-Z0-9]*$/;
 const THROWS_RE = /^([A-Z][a-zA-Z0-9]*|[A-Z][A-Z0-9_]*)$/;
 
+const EMPTY_OBJECT = {};
+Object.freeze( EMPTY_OBJECT );
+
 /**
  * SpecTools
  * @class
@@ -273,19 +276,18 @@ const spectools =
 
         // Process Constraints
         // ---
-        if ( 'requires' in raw_spec ) {
-            const requires = raw_spec.requires;
+        const requires = raw_spec.requires;
 
+        if ( requires ) {
             if ( !Array.isArray( requires ) ) {
                 as.error( InternalError, '"requires" is not array' );
             }
 
             info.constraints = _zipObject( requires, requires );
+            Object.freeze( info.constraints );
         } else {
-            info.constraints = {};
+            info.constraints = EMPTY_OBJECT;
         }
-
-        Object.freeze( info.constraints );
 
         // Check "ftn3rev" field
         // ---
@@ -294,50 +296,50 @@ const spectools =
         // Process inherited interface
         // ---
         info.inherits = [];
+        const inherit = raw_spec.inherit;
 
-        if ( 'inherit' in raw_spec ) {
-            const m = raw_spec.inherit.match( IFACE_RE );
+        if ( inherit ) {
+            const m = inherit.match( IFACE_RE );
 
             if ( m === null ) {
                 as.error( InvokerError,
-                    "Invalid inherit ifacever: " + raw_spec.inherit );
+                    "Invalid inherit ifacever: " + inherit );
             }
 
-            const sup_info = {};
-
-            sup_info.iface = m[ common._ifacever_pattern_name ];
-            sup_info.version = m[ common._ifacever_pattern_ver ];
-            sup_info._invoker_use = info._invoker_use;
+            const sup_info = {
+                iface : m[ common._ifacever_pattern_name ],
+                version : m[ common._ifacever_pattern_ver ],
+                _invoker_use : info._invoker_use,
+            };
             spectools.loadIface( as, sup_info, specdirs, load_cache );
 
             as.add( ( as ) => {
                 spectools._parseImportInherit( as, info, raw_spec, sup_info );
 
-                info.inherits.push( raw_spec.inherit );
+                info.inherits.push( inherit );
                 info.inherits = info.inherits.concat( sup_info.inherits );
             } );
         }
 
         // Process Imports / mixins
         // ---
-        if ( 'imports' in raw_spec ) {
-            const iface_pattern = IFACE_RE;
+        let all_imports = raw_spec.imports;
+
+        if ( all_imports ) {
             const imp_load_cache = load_cache || {}; // make sure we always use cache here
 
-            let all_imports = raw_spec.imports;
-
-            as.forEach( raw_spec.imports, ( as, _k, v ) => {
-                const m = v.match( iface_pattern );
+            as.forEach( all_imports, ( as, _k, v ) => {
+                const m = v.match( IFACE_RE );
 
                 if ( m === null ) {
                     as.error( InvokerError, "Invalid import ifacever: " + v );
                 }
 
-                const imp_info = {};
-
-                imp_info.iface = m[ common._ifacever_pattern_name ];
-                imp_info.version = m[ common._ifacever_pattern_ver ];
-                imp_info._import_use = true;
+                const imp_info = {
+                    iface : m[ common._ifacever_pattern_name ],
+                    version : m[ common._ifacever_pattern_ver ],
+                    _import_use : true,
+                };
                 spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
                 as.add( ( as ) => {
@@ -353,7 +355,7 @@ const spectools =
 
                     for ( let i = all_imports.length - 1; i >= 0; --i ) {
                         const imp_ifacever = all_imports[i];
-                        const m = imp_ifacever.match( iface_pattern );
+                        const m = imp_ifacever.match( IFACE_RE );
                         const iface = m[ common._ifacever_pattern_name ];
                         const ver = m[ common._ifacever_pattern_ver ];
                         let curr_ver = import_candidates[iface];
@@ -379,14 +381,14 @@ const spectools =
 
                     const imports = info.imports = [];
 
-                    as.forEach( import_candidates, ( as, iface, ver ) => {
-                        imports.push( iface + ':' + ver );
+                    as.forEach( import_candidates, ( as, iface, version ) => {
+                        imports.push( iface + ':' + version );
 
-                        const imp_info = {};
-
-                        imp_info.iface = iface;
-                        imp_info.version = ver;
-                        imp_info._import_use = true;
+                        const imp_info = {
+                            iface,
+                            version,
+                            _import_use : true,
+                        };
                         spectools.loadIface( as, imp_info, specdirs, imp_load_cache );
 
                         as.add( ( as ) => {
@@ -569,7 +571,7 @@ const spectools =
                          tt.type === 'enum' || tt.type === 'set' ) {
                         as.error( InternalError,
                             "Enum/Set is FTN3 v1.6 feature" );
-                    } else if ( tt.elemtype !== undefined ) {
+                    } else if ( tt.elemtype ) {
                         const ts = {};
                         this._checkType( info, t, '', ts );
 
@@ -740,11 +742,11 @@ const spectools =
                         Object.freeze( pinfo );
                     }
                 }
-            } else {
-                finfo.params = {};
-            }
 
-            Object.freeze( finfo.params );
+                Object.freeze( finfo.params );
+            } else {
+                finfo.params = EMPTY_OBJECT;
+            }
 
             //---
             finfo.expect_result = false;
@@ -791,8 +793,7 @@ const spectools =
                         `Invalid result object: ${f}` );
                 }
             } else {
-                finfo.result = {};
-                Object.freeze( finfo.result );
+                finfo.result = EMPTY_OBJECT;
             }
 
             //---
@@ -834,12 +835,12 @@ const spectools =
                 Object.freeze( throws );
 
                 finfo.throws = _zipObject( throws, throws );
+                Object.freeze( finfo.throws );
             } else {
                 finfo._raw_throws = undefined;
-                finfo.throws = {};
+                finfo.throws = EMPTY_OBJECT;
             }
 
-            Object.freeze( finfo.throws );
             //---
 
             finfo._max_req_size = this._maxSize( finfo.maxreqsize );
@@ -897,12 +898,6 @@ const spectools =
 
                 this._checkKnownType( as, info, base_type );
 
-                if ( base_type === 'map' ) {
-                    if ( !( 'fields' in tinfo ) ) {
-                        tinfo.fields = {};
-                    }
-                }
-
                 const fields = tinfo.fields;
 
                 if ( fields ) {
@@ -928,13 +923,74 @@ const spectools =
                     }
 
                     Object.freeze( tinfo.fields );
+                } else if ( base_type === 'map' ) {
+                    tinfo.fields = EMPTY_OBJECT;
                 }
 
+                // ---
                 const elemtype = tinfo.elemtype;
 
                 if ( elemtype ) {
                     this._checkKnownType( as, info, elemtype );
                 }
+
+                // ---
+                switch ( base_type ) {
+                case 'string':
+                    for ( let c of [ 'regex', 'minlen', 'maxlen' ] ) {
+                        if ( !( c in tinfo ) ) {
+                            tinfo[c] = undefined;
+                        }
+                    }
+
+                    break;
+                case 'integer':
+                case 'number':
+                    for ( let c of [ 'min', 'max' ] ) {
+                        if ( !( c in tinfo ) ) {
+                            tinfo[c] = undefined;
+                        }
+                    }
+
+                    break;
+                case 'map':
+                    if ( !( 'elemtype' in tinfo ) ) {
+                        tinfo.elemtype = undefined;
+                    }
+
+                    break;
+                case 'array':
+                    for ( let c of [ 'elemtype', 'minlen', 'maxlen' ] ) {
+                        if ( !( c in tinfo ) ) {
+                            tinfo[c] = undefined;
+                        }
+                    }
+
+                    break;
+
+                case 'set':
+                case 'enum': {
+                    const items = tinfo.items;
+
+                    if ( items ) {
+                        Object.freeze( items );
+                    } else {
+                        as.error( InternalError,
+                            `Missing "items" for ${t}` );
+                    }
+
+                    break;
+                }
+                case 'data':
+                    for ( let c of [ 'minlen', 'maxlen' ] ) {
+                        if ( !( c in tinfo ) ) {
+                            tinfo[c] = undefined;
+                        }
+                    }
+
+                    break;
+                }
+                // ---
 
                 Object.freeze( tinfo );
             }
@@ -998,7 +1054,7 @@ const spectools =
             }
 
             const sup_params = fdef.params;
-            const params = info.funcs[ f ].params || {};
+            const params = info.funcs[ f ].params || EMPTY_OBJECT;
 
             const sup_params_keys = Object.keys( sup_params );
             const params_keys = Object.keys( params );
@@ -1106,12 +1162,15 @@ const spectools =
                 return false;
             }
 
-            if ( 'regex' in tdef ) {
+            //---
+            const regex = tdef.regex;
+
+            if ( regex ) {
                 const comp_regex = info._comp_regex;
                 let regex_obj = comp_regex[ type_path ];
 
                 if ( !regex_obj ) {
-                    regex_obj = new RegExp( tdef.regex );
+                    regex_obj = new RegExp( regex );
                     comp_regex[ type_path ] = regex_obj;
                 }
 
@@ -1125,16 +1184,22 @@ const spectools =
 
             const val_len = val.length;
 
-            if ( ( 'minlen' in tdef ) &&
-                        ( val_len < tdef.minlen ) ) {
+            //---
+            const minlen = tdef.minlen;
+
+            if ( ( minlen !== undefined ) &&
+                 ( val_len < minlen ) ) {
                 spectools.emit( 'error',
                     `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
 
-            if ( ( 'maxlen' in tdef ) &&
-                        ( val_len > tdef.maxlen ) ) {
+            //---
+            const maxlen = tdef.maxlen;
+
+            if ( ( minlen !== undefined ) &&
+                 ( val_len > maxlen ) ) {
                 spectools.emit( 'error',
                     `Value max length "${val_len}" mismatch for ${type_path}` );
 
@@ -1152,9 +1217,10 @@ const spectools =
                 return false;
             }
 
+            //---
             const fields = tdef.fields;
 
-            if ( typeof fields !== 'undefined' ) {
+            if ( fields ) {
                 for ( let f in fields ) {
                     let field_def = fields[ f ];
 
@@ -1179,9 +1245,10 @@ const spectools =
                 }
             }
 
+            //---
             const elemtype = tdef.elemtype;
 
-            if ( typeof elemtype !== 'undefined' ) {
+            if ( elemtype ) {
                 for ( let ft in val ) {
                     if ( !this._checkType( info, elemtype, val[ ft ], null ) ) {
                         spectools.emit( 'error',
@@ -1205,16 +1272,20 @@ const spectools =
                 return false;
             }
 
-            if ( ( 'min' in tdef ) &&
-                        ( val < tdef.min ) ) {
+            //---
+            const min = tdef.min;
+
+            if ( ( min !== undefined ) && ( val < min ) ) {
                 spectools.emit( 'error',
                     `Value min range mismatch for ${type_path}` );
 
                 return false;
             }
 
-            if ( ( 'max' in tdef ) &&
-                        ( val > tdef.max ) ) {
+            //---
+            const max = tdef.max;
+
+            if ( ( max !== undefined ) && ( val > max ) ) {
                 spectools.emit( 'error',
                     `Value max range mismatch for ${type_path}` );
 
@@ -1231,15 +1302,20 @@ const spectools =
 
             const val_len = val.length;
 
-            if ( ( 'minlen' in tdef ) &&
-                        ( val_len < tdef.minlen ) ) {
+            //---
+            const minlen = tdef.minlen;
+
+            if ( ( minlen !== undefined ) && ( val_len < minlen ) ) {
                 spectools.emit( 'error',
                     `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
 
-            if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
+            //---
+            const maxlen = tdef.maxlen;
+
+            if ( ( maxlen !== undefined ) && ( val_len > maxlen ) ) {
                 spectools.emit( 'error',
                     `Value max length "${val_len}" mismatch for ${type_path}` );
 
@@ -1249,7 +1325,7 @@ const spectools =
             //--
             const elemtype = tdef.elemtype;
 
-            if ( typeof elemtype !== 'undefined' ) {
+            if ( elemtype ) {
                 for ( let i = 0; i < val_len; ++i ) {
                     // Note, new type stack
                     if ( !this._checkType( info, elemtype, val[ i ], null ) ) {
@@ -1317,14 +1393,20 @@ const spectools =
 
             const val_len = val.length;
 
-            if ( ( 'minlen' in tdef ) && ( val_len < tdef.minlen ) ) {
+            //---
+            const minlen = tdef.minlen;
+
+            if ( ( minlen !== undefined ) && ( val_len < minlen ) ) {
                 spectools.emit( 'error',
                     `Value min length "${val_len}" mismatch for ${type_path}` );
 
                 return false;
             }
 
-            if ( ( 'maxlen' in tdef ) && ( val_len > tdef.maxlen ) ) {
+            //---
+            const maxlen = tdef.maxlen;
+
+            if ( ( maxlen !== undefined ) && ( val_len > maxlen ) ) {
                 spectools.emit( 'error',
                     `Value max length "${val_len}" mismatch for ${type_path}` );
 
@@ -1334,14 +1416,15 @@ const spectools =
             return true;
         }
 
-        default:
+        default: {
             // Custom Types
             // ---
-            if ( type in info.types ) {
-                let tdef_part = info.types[ type ];
+            let tdef_part = info.types[ type ];
 
+            if ( tdef_part ) {
                 if ( ( typeof tdef_part === 'string' ) ||
-                    ( tdef_part instanceof Array ) ) {
+                     ( tdef_part instanceof Array )
+                ) {
                     tdef_part = { type : tdef_part };
                 }
 
@@ -1379,6 +1462,7 @@ const spectools =
                 console.log( "[ERROR] missing type: " + type );
                 throw new Error( InternalError );
             }
+        }
         }
     },
 
