@@ -246,5 +246,11 @@ exports.closeTestHttpServer = closeTestHttpServer;
 if ( require.main === module ) {
     createTestHttpServer( function() {
         console.log( 'LISTENING' );
+
+        try {
+            process.send( { ready : 'ok' } );
+        } catch ( e ) {
+            console.log( e );
+        }
     } );
 }
