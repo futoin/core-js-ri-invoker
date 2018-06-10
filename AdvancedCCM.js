@@ -20,7 +20,7 @@
  */
 
 const common = require( './lib/common' );
-const futoin_error = common.FutoInError;
+const { NotImplemented } = common.FutoInError;
 const _extend = require( 'lodash/extend' );
 const AdvancedCCMImpl = require( './lib/AdvancedCCMImpl' );
 const SimpleCCM = require( './SimpleCCM' );
@@ -49,7 +49,7 @@ class AdvancedCCM extends SimpleCCM {
     */
     initFromCache( as, cache_l1_endpoint ) {
         void cache_l1_endpoint;
-        as.error( futoin_error.NotImplemented, "Caching is not supported yet" );
+        as.error( NotImplemented, "Caching is not supported yet" );
     }
 
     /**

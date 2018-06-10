@@ -20,7 +20,7 @@
  */
 
 const common = require( './lib/common' );
-const FutoInError = common.FutoInError;
+const { InternalError, InvokerError, InvalidRequest } = common.FutoInError;
 
 let fs;
 let request;
@@ -240,7 +240,7 @@ const spectools =
         as.add( ( as ) => {
             if ( raw_spec === null ) {
                 as.error(
-                    FutoInError.InternalError,
+                    InternalError,
                     `Failed to load valid spec for ${info.iface}:${info.version}`
                 );
             }
@@ -277,7 +277,7 @@ const spectools =
             const requires = raw_spec.requires;
 
             if ( !Array.isArray( requires ) ) {
-                as.error( FutoInError.InternalError, '"requires" is not array' );
+                as.error( InternalError, '"requires" is not array' );
             }
 
             info.constraints = _zipObject( requires, requires );
@@ -299,7 +299,7 @@ const spectools =
             const m = raw_spec.inherit.match( IFACE_RE );
 
             if ( m === null ) {
-                as.error( FutoInError.InvokerError,
+                as.error( InvokerError,
                     "Invalid inherit ifacever: " + raw_spec.inherit );
             }
 
@@ -330,7 +330,7 @@ const spectools =
                 const m = v.match( iface_pattern );
 
                 if ( m === null ) {
-                    as.error( FutoInError.InvokerError, "Invalid import ifacever: " + v );
+                    as.error( InvokerError, "Invalid import ifacever: " + v );
                 }
 
                 const imp_info = {};
@@ -363,7 +363,7 @@ const spectools =
                             const new_ver = ver.split( '.' );
 
                             if ( curr_ver[0] !== new_ver[0] ) {
-                                as.error( FutoInError.InvokerError,
+                                as.error( InvokerError,
                                     "Incompatible iface versions: " +
                                           iface + " " +
                                           ver + "/" + import_candidates[iface] );
@@ -432,7 +432,7 @@ const spectools =
         const rv = ftn3rev.match( VERSION_RE );
 
         if ( rv === null ) {
-            as.error( FutoInError.InternalError, "Invalid ftn3rev field" );
+            as.error( InternalError, "Invalid ftn3rev field" );
         }
 
         const mjr = parseInt( rv[ 1 ] );
@@ -445,24 +445,24 @@ const spectools =
         if ( mjr === 1 ) {
             if ( mnr < 1 ) {
                 if ( raw_spec.imports ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "Import is FTN3 v1.1 feature" );
                 }
 
                 if ( raw_spec.types ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "Custom types is FTN3 v1.1 feature" );
                 }
 
                 if ( 'BiDirectChannel' in info.constraints ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "BiDirectChannel is FTN3 v1.1 feature" );
                 }
             }
 
             if ( mnr < 2 ) {
                 if ( 'MessageSignature' in info.constraints ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "MessageSignature is FTN3 v1.2 feature" );
                 }
             }
@@ -470,7 +470,7 @@ const spectools =
             if ( mnr < 3 ) {
                 for ( let f in funcs ) {
                     if ( funcs[f].seclvl ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Function seclvl is FTN3 v1.3 feature" );
                     }
                 }
@@ -483,7 +483,7 @@ const spectools =
                     if ( params ) {
                         for ( let t in params ) {
                             if ( typeof params[t] === 'string' ) {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     "Type shortcut is FTN3 v1.4 feature" );
                             }
                         }
@@ -496,12 +496,12 @@ const spectools =
                             t = result[t];
 
                             if ( typeof t === 'string' ) {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     "Type shortcut is FTN3 v1.4 feature" );
                             } else if ( t.type === 'map' && t.fields ) {
                                 for ( t in t.fields ) {
                                     if ( typeof t === 'string' ) {
-                                        as.error( FutoInError.InternalError,
+                                        as.error( InternalError,
                                             "Type shortcut is FTN3 v1.4 feature" );
                                     }
                                 }
@@ -512,7 +512,7 @@ const spectools =
 
                 for ( let t in types ) {
                     if ( typeof types[t] === 'string' ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Type shortcut is FTN3 v1.4 feature" );
                     }
                 }
@@ -527,7 +527,7 @@ const spectools =
                         this._checkType( info, t, '', ts );
 
                         if ( ts['#last_base'] === 'string' ) {
-                            as.error( FutoInError.InternalError,
+                            as.error( InternalError,
                                 "String min/maxlen is FTN3 v1.5 feature" );
                         }
                     }
@@ -541,7 +541,7 @@ const spectools =
                     if ( params ) {
                         for ( let t in params ) {
                             if ( params[t] instanceof Array ) {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     "Type variant is FTN3 v1.6 feature" );
                             }
                         }
@@ -552,7 +552,7 @@ const spectools =
                     if ( result && typeof result === 'object' ) {
                         for ( let t in result ) {
                             if ( result[t] instanceof Array ) {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     "Type variant is FTN3 v1.6 feature" );
                             }
                         }
@@ -563,18 +563,18 @@ const spectools =
                     const tt = types[t];
 
                     if ( tt instanceof Array ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Type variant is FTN3 v1.6 feature" );
                     } else if ( tt === 'enum' || tt === 'set' ||
                          tt.type === 'enum' || tt.type === 'set' ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Enum/Set is FTN3 v1.6 feature" );
                     } else if ( tt.elemtype !== undefined ) {
                         const ts = {};
                         this._checkType( info, t, '', ts );
 
                         if ( ts['#last_base'] === 'map' ) {
-                            as.error( FutoInError.InternalError,
+                            as.error( InternalError,
                                 "Map elemtype is FTN3 v1.6 feature" );
                         }
                     }
@@ -586,7 +586,7 @@ const spectools =
                     f = funcs[f];
 
                     if ( f.result && typeof f.result === 'string' ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Custom result type FTN3 v1.7 feature" );
                     }
                 }
@@ -595,7 +595,7 @@ const spectools =
             if ( mnr < 8 ) {
                 for ( let f in funcs ) {
                     if ( funcs[f].maxreqsize || funcs[f].maxrspsize ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
                     }
                 }
@@ -603,7 +603,7 @@ const spectools =
 
             if ( mnr < 9 ) {
                 if ( 'BinaryData' in info.constraints ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "BinaryData is FTN3 v1.9 feature" );
                 }
 
@@ -662,7 +662,7 @@ const spectools =
                 }
 
                 if ( found_data ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         "'data' type is FTN3 v1.9 feature" );
                 }
             }
@@ -675,10 +675,10 @@ const spectools =
             // ---
             if ( !info._invoker_use &&
                  ( mnr > spectools._max_supported_v1_minor ) ) {
-                as.error( FutoInError.InternalError, "Not supported FTN3 revision for Executor" );
+                as.error( InternalError, "Not supported FTN3 revision for Executor" );
             }
         } else {
-            as.error( FutoInError.InternalError, "Not supported FTN3 revision" );
+            as.error( InternalError, "Not supported FTN3 revision" );
         }
     },
 
@@ -690,7 +690,7 @@ const spectools =
     _parseFuncs : function( as, info ) {
         for ( let f in info.funcs ) {
             if ( !f.match( FUNC_RE ) ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `Invalid function name: ${f}` );
             }
 
@@ -701,13 +701,13 @@ const spectools =
 
             if ( fparams ) {
                 if ( typeof fparams !== 'object' ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Invalid params object: ${f}` );
                 }
 
                 for ( let pn in fparams ) {
                     if ( pn.match( PARAM_RE ) === null ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             `Invalid parameter name: ${f}(${pn})` );
                     }
 
@@ -718,7 +718,7 @@ const spectools =
                         this._checkKnownType( as, info, pinfo );
                     } else {
                         if ( typeof pinfo !== 'object' ) {
-                            as.error( FutoInError.InternalError,
+                            as.error( InternalError,
                                 `Invalid parameter definition: ${f}(${pn})` );
                         }
 
@@ -727,7 +727,7 @@ const spectools =
                         if ( pt ) {
                             this._checkKnownType( as, info, pt );
                         } else {
-                            as.error( FutoInError.InternalError, "Missing type for params" );
+                            as.error( InternalError, "Missing type for params" );
                         }
 
                         if ( pinfo.default === undefined ) {
@@ -758,7 +758,7 @@ const spectools =
                 } else if ( typeof fresult === 'object' ) {
                     for ( let rn in fresult ) {
                         if ( rn.match( PARAM_RE ) === null ) {
-                            as.error( FutoInError.InternalError,
+                            as.error( InternalError,
                                 `Invalid resultvar name: ${f}(${rn})` );
                         }
 
@@ -766,7 +766,7 @@ const spectools =
 
                         if ( typeof rinfo !== 'string' ) {
                             if ( typeof rinfo !== 'object' ) {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     `Invalid resultvar definition: ${f}(${rn})` );
                             }
 
@@ -775,7 +775,7 @@ const spectools =
                             if ( rt ) {
                                 this._checkKnownType( as, info, rt );
                             } else {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     `Missing type for resultvar: ${f}(${rn})` );
                             }
 
@@ -787,7 +787,7 @@ const spectools =
 
                     Object.freeze( fresult );
                 } else {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Invalid result object: ${f}` );
                 }
             } else {
@@ -814,18 +814,18 @@ const spectools =
 
             if ( throws ) {
                 if ( !finfo.expect_result ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `"throws" without result: ${f}` );
                 }
 
                 if ( !Array.isArray( throws ) ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `"throws" is not array: ${f}` );
                 }
 
                 for ( let t of throws ) {
                     if ( !t.match( THROWS_RE ) ) {
-                        as.error( FutoInError.InternalError,
+                        as.error( InternalError,
                             `Invalid "throws": ${t}` );
                     }
                 }
@@ -875,7 +875,7 @@ const spectools =
     _parseTypes : function( as, info ) {
         for ( let t in info.types ) {
             if ( !t.match( TYPE_RE ) ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `Invalid type name: ${t}` );
             }
 
@@ -891,7 +891,7 @@ const spectools =
                 const base_type = tinfo.type;
 
                 if ( !base_type ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Missing "type" for custom type: ${t}` );
                 }
 
@@ -921,7 +921,7 @@ const spectools =
                             if ( bt ) {
                                 this._checkKnownType( as, info, bt );
                             } else {
-                                as.error( FutoInError.InternalError,
+                                as.error( InternalError,
                                     `Missing "type" for custom type field: ${t}[${f}]` );
                             }
                         }
@@ -964,7 +964,7 @@ const spectools =
         }
 
         if ( !info.types[name] ) {
-            as.error( FutoInError.InternalError,
+            as.error( InternalError,
                 `Unknown type ${name} in ${info.iface}:${info.version}` );
         }
     },
@@ -979,7 +979,7 @@ const spectools =
     _parseImportInherit : function( as, info, raw_spec, sup_info ) {
         for ( let t in sup_info.types ) {
             if ( t in info.types ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `Iface "${info.iface}" type redifintion: ${t}` );
                 continue;
             }
@@ -1004,7 +1004,7 @@ const spectools =
             const params_keys = Object.keys( params );
 
             if ( params_keys.length < sup_params_keys.length ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `Invalid parameter count for: "${f}"` );
             }
 
@@ -1015,7 +1015,7 @@ const spectools =
                 if ( !( pn in sup_params ) &&
                      ( params[ pn ].default === undefined )
                 ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Missing default for "${f}/${pn}"` );
                 }
             }
@@ -1025,7 +1025,7 @@ const spectools =
                 const pn = sup_params_keys[ i ];
 
                 if ( pn !== params_keys[ i ] ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Invalid parameter order for "${f}/${pn}"` );
                 }
 
@@ -1035,23 +1035,23 @@ const spectools =
                 if ( ( typeof spdef === 'string' && ( spdef !== pdef ) ) ||
                      ( spdef.type && ( spdef.type !== pdef.type ) )
                 ) {
-                    as.error( FutoInError.InternalError,
+                    as.error( InternalError,
                         `Parameter type mismatch "${f}/${pn}"` );
                 }
             }
 
             if ( fdef.rawresult !== ( info.funcs[ f ].rawresult || false ) ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `'rawresult' flag mismatch for "${f}"` );
             }
 
             if ( fdef.seclvl !== info.funcs[ f ].seclvl ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `'seclvl' mismatch for "${f}"` );
             }
 
             if ( fdef.rawupload !== ( info.funcs[ f ].rawupload || false ) ) {
-                as.error( FutoInError.InternalError,
+                as.error( InternalError,
                     `'rawupload' flag mismatch for "${f}"` );
             }
         }
@@ -1061,7 +1061,7 @@ const spectools =
             raw_spec.requires );
 
         if ( constraint_diff.length ) {
-            as.error( FutoInError.InternalError,
+            as.error( InternalError,
                 `Missing constraints from inherited: ${constraint_diff}` );
         }
     },
@@ -1272,7 +1272,7 @@ const spectools =
                 }
             } else {
                 console.log( "[ERROR] enum and set are allowed only in custom types: " + type_path );
-                throw new Error( FutoInError.InternalError );
+                throw new Error( InternalError );
             }
 
             const comp_set = info._comp_set;
@@ -1283,7 +1283,7 @@ const spectools =
 
                 if ( typeof set_items === 'undefined' ) {
                     console.log( "[ERROR] enum and set require items: " + type_path );
-                    throw new Error( FutoInError.InternalError );
+                    throw new Error( InternalError );
                 }
 
                 set_items = _zipObject( set_items, set_items );
@@ -1350,7 +1350,7 @@ const spectools =
                 // ---
                 if ( type in _type_stack ) {
                     console.log( "[ERROR] Custom type recursion: " + type_path );
-                    throw new Error( FutoInError.InternalError );
+                    throw new Error( InternalError );
                 }
 
                 _type_stack[ type ] = true;
@@ -1377,7 +1377,7 @@ const spectools =
                 }
             } else {
                 console.log( "[ERROR] missing type: " + type );
-                throw new Error( FutoInError.InternalError );
+                throw new Error( InternalError );
             }
         }
     },
@@ -1420,7 +1420,7 @@ const spectools =
             const msg = `Type mismatch for result: ${varname}`;
 
             spectools.emit( 'error', msg );
-            as.error( FutoInError.InvalidRequest, msg );
+            as.error( InvalidRequest, msg );
         }
     },
 
@@ -1438,7 +1438,7 @@ const spectools =
             const msg = `Type mismatch for parameter: ${varname}`;
 
             spectools.emit( 'error', msg );
-            as.error( FutoInError.InvalidRequest, msg );
+            as.error( InvalidRequest, msg );
         }
     },
 
@@ -1456,7 +1456,7 @@ const spectools =
         void as;
         void info;
         void ftnreq;
-        as.error( FutoInError.InvalidRequest, "HMAC generation is supported only for server environment" );
+        as.error( InvalidRequest, "HMAC generation is supported only for server environment" );
         return {}; // suppress eslint
     },
 

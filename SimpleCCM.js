@@ -20,7 +20,7 @@
  */
 
 const common = require( './lib/common' );
-const futoin_error = common.FutoInError;
+const { InvokerError, SecurityError } = common.FutoInError;
 const NativeIface = require( './NativeIface' );
 const _extend = require( 'lodash/extend' );
 const _defaults = require( 'lodash/defaults' );
@@ -111,14 +111,14 @@ class SimpleCCM {
         // Unregister First
         if ( !is_channel_reg &&
             ( name in this._iface_info ) ) {
-            as.error( futoin_error.InvokerError, "Already registered" );
+            as.error( InvokerError, "Already registered" );
         }
 
         // Check ifacever
         const m = ifacever.match( common._ifacever_pattern );
 
         if ( m === null ) {
-            as.error( futoin_error.InvokerError, "Invalid ifacever" );
+            as.error( InvokerError, "Invalid ifacever" );
         }
 
         const iface = m[ common._ifacever_pattern_name ];
@@ -170,7 +170,7 @@ class SimpleCCM {
                 break;
 
             default:
-                as.error( futoin_error.InvokerError, "Unknown endpoint schema" );
+                as.error( InvokerError, "Unknown endpoint schema" );
             }
         } else if ( 'onInternalRequest' in endpoint ) {
             secure_channel = true;
@@ -198,7 +198,7 @@ class SimpleCCM {
 
         if ( !( limitZone in this._impl.limiters ) ) {
             as.error(
-                futoin_error.InvokerError,
+                InvokerError,
                 `Unknown limit zone ${limitZone}`
             );
         }
@@ -229,18 +229,18 @@ class SimpleCCM {
         if ( info.creds_mac ) {
             if ( credentials.match( /^-hmac:/ ) ) {
                 if ( !options.hmacKey ) {
-                    as.error( futoin_error.InvokerError, "Missing options.hmacKey" );
+                    as.error( InvokerError, "Missing options.hmacKey" );
                 }
 
                 options.macKey = options.hmacKey;
                 options.macAlgo = options.hmacAlgo;
             } else if ( !options.macKey ) {
-                as.error( futoin_error.InvokerError, "Missing options.macKey" );
+                as.error( InvokerError, "Missing options.macKey" );
             }
         }
 
         if ( info.creds_master && !options.masterAuth ) {
-            as.error( futoin_error.InvokerError, "Missing options.masterAuth" );
+            as.error( InvokerError, "Missing options.masterAuth" );
         }
 
         if ( name ) {
@@ -258,13 +258,13 @@ class SimpleCCM {
                         if ( !( 'AllowAnonymous' in info.constraints ) &&
                             !info.creds
                         ) {
-                            as.error( futoin_error.SecurityError, "Requires authenticated user" );
+                            as.error( SecurityError, "Requires authenticated user" );
                         }
 
                         if ( ( 'SecureChannel' in info.constraints ) &&
                             !secure_channel
                         ) {
-                            as.error( futoin_error.SecurityError, "SecureChannel is required" );
+                            as.error( SecurityError, "SecureChannel is required" );
                         }
 
                         if ( ( 'MessageSignature' in info.constraints ) &&
@@ -272,13 +272,13 @@ class SimpleCCM {
                             !info.creds_mac &&
                             !is_internal
                         ) {
-                            as.error( futoin_error.SecurityError, "MessageSignature is required" );
+                            as.error( SecurityError, "MessageSignature is required" );
                         }
 
                         if ( ( 'BiDirectChannel' in info.constraints ) &&
                             !is_bidirect
                         ) {
-                            as.error( futoin_error.InvokerError, "BiDirectChannel is required" );
+                            as.error( InvokerError, "BiDirectChannel is required" );
                         }
                     }
 
@@ -309,7 +309,7 @@ class SimpleCCM {
         const info = this._iface_info[ name ];
 
         if ( !info ) {
-            throw new Error( futoin_error.InvokerError );
+            throw new Error( InvokerError );
         }
 
         const regname = info.regname;
@@ -342,7 +342,7 @@ class SimpleCCM {
         const info = this._iface_info[ name ];
 
         if ( !info ) {
-            throw new Error( futoin_error.InvokerError );
+            throw new Error( InvokerError );
         }
 
         const regname = info.regname;
@@ -410,13 +410,13 @@ class SimpleCCM {
         const info = this._iface_info[ name ];
 
         if ( !info ) {
-            throw new Error( futoin_error.InvokerError );
+            throw new Error( InvokerError );
         }
 
         const m = ifacever.match( common._ifacever_pattern );
 
         if ( m === null ) {
-            throw new Error( futoin_error.InvokerError );
+            throw new Error( InvokerError );
         }
 
         const iface = m[ common._ifacever_pattern_name ];
@@ -444,7 +444,7 @@ class SimpleCCM {
             }
         }
 
-        throw new Error( futoin_error.InvokerError );
+        throw new Error( InvokerError );
     }
 
     /**
@@ -459,7 +459,7 @@ class SimpleCCM {
 
         if ( !info ||
             this._iface_info[ alias ] ) {
-            throw new Error( futoin_error.InvokerError );
+            throw new Error( InvokerError );
         }
 
         this._iface_info[ alias ] = info;

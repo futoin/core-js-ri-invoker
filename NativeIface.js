@@ -24,7 +24,7 @@ const $asyncevent = require( 'futoin-asyncevent' );
 const $as = require( 'futoin-asyncsteps' );
 
 const common = require( './lib/common' );
-const futoin_error = common.FutoInError;
+const { InvokerError, CommError } = common.FutoInError;
 const InterfaceInfo = require( './InterfaceInfo' );
 const Options = common.Options;
 
@@ -174,11 +174,11 @@ class NativeIface {
                     }
                 } else if ( ctx.upload_data ) {
                     as.error(
-                        futoin_error.InvokerError,
+                        InvokerError,
                         'Upload data is allowed only for HTTP/WS endpoints' );
                 } else if ( ctx.download_stream ) {
                     as.error(
-                        futoin_error.InvokerError,
+                        InvokerError,
                         'Download stream is allowed only for HTTP/WS endpoints' );
                 } else if ( scheme === 'browser' ) {
                     ccmimpl.perfomBrowser( as, ctx, req );
@@ -187,7 +187,7 @@ class NativeIface {
                 } else if ( scheme === 'callback' ) {
                     ctx.endpoint( as, ctx, req );
                 } else {
-                    as.error( futoin_error.InvokerError, 'Unknown endpoint scheme' );
+                    as.error( InvokerError, 'Unknown endpoint scheme' );
                 }
 
                 if ( ctx.expect_response ) {
@@ -201,7 +201,7 @@ class NativeIface {
                                 try {
                                     rsp = ctx.msg_coder.decode( rsp );
                                 } catch ( e ) {
-                                    as.error( futoin_error.CommError, "Decode: " + e.message );
+                                    as.error( CommError, "Decode: " + e.message );
                                 }
                             }
 
@@ -229,9 +229,9 @@ class NativeIface {
         let keys = Object.keys( arginfo );
 
         if ( args.length > keys.length ) {
-            as.error( futoin_error.InvokerError, "Unknown parameters" );
+            as.error( InvokerError, "Unknown parameters" );
         } else if ( args.length < finfo.min_args ) {
-            as.error( futoin_error.InvokerError, "Missing parameters" );
+            as.error( InvokerError, "Missing parameters" );
         } else if ( args.length < keys.length ) {
             keys = keys.splice( 0, args.length );
         }
@@ -289,7 +289,7 @@ class NativeIface {
     * @alias NativeIface#bindDerivedKey
     */
     bindDerivedKey( as ) {
-        throw new Error( futoin_error.InvokerError, "Not Implemented" );
+        throw new Error( InvokerError, "Not Implemented" );
     }
 
     /**
