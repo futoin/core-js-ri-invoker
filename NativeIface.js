@@ -48,6 +48,8 @@ class NativeIface {
         this._iface_info = null;
         this._comms = {};
 
+        // Create Native interceptors for FutoIn interface functions
+        //---
         for ( let fn in this._raw_info.funcs ) {
             const finfo = this._raw_info.funcs[ fn ];
 
