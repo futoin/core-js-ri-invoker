@@ -91,6 +91,7 @@ const spectools =
             cached_info = {
                 _import_use : info._import_use,
                 _invoker_use : info._invoker_use,
+                _lazy_compile : info._lazy_compile,
             };
         } else {
             cached_info = info;
@@ -184,6 +185,7 @@ const spectools =
 
 // Common extensions
 require( './lib/spectools_types' )( spectools );
+require( './lib/spectools_compile' )( spectools );
 require( './lib/spectools_parse' )( spectools );
 require( './lib/spectools_deprecated' )( spectools );
 

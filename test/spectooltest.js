@@ -2223,10 +2223,18 @@ describe( 'SpecTools', function() {
                     if ( !SpecTools.checkType( info, type, t ) ) {
                         throw new Error( 'Failed at ' + type + " " + t );
                     }
+
+                    if ( !SpecTools.checkCompiledType( as, info, type, t ) ) {
+                        throw new Error( 'Failed at compiled ' + type + " " + t );
+                    }
                 } );
                 as.forEach( v.fail, ( as, i, t ) => {
                     if ( SpecTools.checkType( info, type, t ) ) {
-                        throw new Error( 'Failed at ' + type + " " + t );
+                        throw new Error( 'Failed at neg ' + type + " " + t );
+                    }
+
+                    if ( SpecTools.checkCompiledType( as, info, type, t ) ) {
+                        throw new Error( 'Failed at neg compiled ' + type + " " + t );
                     }
                 } );
             } );

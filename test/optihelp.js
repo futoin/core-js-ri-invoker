@@ -377,6 +377,20 @@ child.on( 'message', function() {
                 } );
             } );
         } ) )
+        .test( 'Type Compiled Test', $as_test( ( as ) => {
+            as.forEach( TYPE_TESTS, ( as, type, v ) => {
+                as.forEach( v.ok, ( as, i, t ) => {
+                    if ( !SpecTools.checkCompiledType( as, iface_info, type, t ) ) {
+                        throw new Error( 'Failed at ' + type + " " + t );
+                    }
+                } );
+                as.forEach( v.fail, ( as, i, t ) => {
+                    if ( SpecTools.checkCompiledType( as, iface_info, type, t ) ) {
+                        throw new Error( 'Failed at ' + type + " " + t );
+                    }
+                } );
+            } );
+        } ) )
         ;
 
     $as().add(

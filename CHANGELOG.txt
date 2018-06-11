@@ -8,6 +8,7 @@ FIXED: to make FTN3 revisions checks after full spec loading
 FIXED: improved FTN3 feature checks for v1.4 shortcuts
 NEW: more strict and verbose integrity checks during spec loading.
 NEW: NativeIface interceptors optimized with eval (~9% boost)
+NEW: type checking optimized with eval (~70% boost)
 NEW: options.secureChannel support
 
 === 1.10.2 (2018-06-09) ===

@@ -1331,6 +1331,7 @@ cache v1.x iface name prefix
     * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
     * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
+    * [.checkCompiledType(as, info, type, val)](#SpecTools.checkCompiledType) ⇒ <code>Boolean</code>
     * ~~[.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>~~
     * ~~[.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)~~
     * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
@@ -1419,6 +1420,21 @@ Secure compare to cover time-based side-channels for attacks
 | a | <code>Buffer</code> | first buffer |
 | b | <code>Buffer</code> | second buffer |
 
+<a name="SpecTools.checkCompiledType"></a>
+
+### SpecTools.checkCompiledType(as, info, type, val) ⇒ <code>Boolean</code>
+Check if value matches required type
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>Boolean</code> - true on success  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps interface |
+| info | <code>Object</code> | previously loaded iface |
+| type | <code>string</code> | standard or custom iface type |
+| val | <code>\*</code> | value to check |
+
 <a name="SpecTools.checkParameterType"></a>
 
 ### ~~SpecTools.checkParameterType(info, funcname, varname, value) ⇒ <code>boolean</code>~~
@@ -1475,6 +1491,8 @@ Check if value matches required type
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
 **Returns**: <code>Boolean</code> - true on success  
+**Note**: THIS ONE IS SLOW for debugging purposes  
+**See**: SpecTools#checkCompiledType  
 
 | Param | Type | Description |
 | --- | --- | --- |
