@@ -265,6 +265,32 @@ describe( 'SpecTools', function() {
                 }
             ) );
 
+            it( 'should check v1.4 type shortcut: map fields', $as_test(
+                ( as ) => {
+                    const iface = {
+                        iface : info.iface,
+                        version: info.version,
+                        ftn3rev: "1.3",
+                        types: {
+                            Map: {
+                                type: 'map',
+                                fields: {
+                                    p : 'string',
+                                },
+                            },
+                        },
+                    };
+
+                    SpecTools.loadIface( as, Object.assign( {}, info ), [ iface ] );
+                },
+                ( as, err ) => {
+                    expect( err ).equal( 'InternalError' );
+                    expect( as.state.error_info ).equal(
+                        "Type shortcut is FTN3 v1.4 feature" );
+                    as.success();
+                }
+            ) );
+
             it( 'should check v1.4 type shortcut: params', $as_test(
                 ( as ) => {
                     const iface = {
