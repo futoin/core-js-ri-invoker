@@ -113,9 +113,9 @@ const IFACE_SPEC = {
             result : {
                 e : 'MapElemType',
                 m : 'Map',
-            }
-        }
-    }
+            },
+        },
+    },
 };
 Object.freeze( IFACE_SPEC );
 
@@ -248,7 +248,7 @@ child.on( 'message', function() {
     let aiface_ws;
     let siface_internal;
     let aiface_internal;
-    
+
     let iface_info;
 
     const error_handler = ( as, err ) => {
@@ -258,13 +258,13 @@ child.on( 'message', function() {
     const suite = optihelp( 'Invoker', {
         //do_profile: true,
     } )
-        .test( 'SimpleCCM unregister-register', $as_test( (as) => {
+        .test( 'SimpleCCM unregister-register', $as_test( ( as ) => {
             sccm.unRegister( 'httpJSON' );
             sccm.register( as, 'httpJSON', 'fileface.a:1.1',
                 'secure+http://localhost:23456/ftn',
                 null );
         } ) )
-        .test( 'AdvancedCCM unregister-register', $as_test( (as) => {
+        .test( 'AdvancedCCM unregister-register', $as_test( ( as ) => {
             accm.unRegister( 'httpJSON' );
             accm.register( as, 'httpJSON', 'fileface.a:1.1',
                 'secure+http://localhost:23456/ftn',
@@ -274,7 +274,7 @@ child.on( 'message', function() {
             siface_http = sccm.iface( 'httpJSON' );
             aiface_http = accm.iface( 'httpJSON' );
         } )
-        .test( 'SimpleCCM INTERNAL call', $as_test( (as) => {
+        .test( 'SimpleCCM INTERNAL call', $as_test( ( as ) => {
             siface_internal.call(
                 as,
                 'testFunc',
@@ -286,7 +286,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'AdvancedCCM INTERNAL call', $as_test( (as) => {
+        .test( 'AdvancedCCM INTERNAL call', $as_test( ( as ) => {
             aiface_internal.call(
                 as,
                 'testFunc',
@@ -298,7 +298,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'SimpleCCM HTTP call', $as_test( (as) => {
+        .test( 'SimpleCCM HTTP call', $as_test( ( as ) => {
             siface_http.call(
                 as,
                 'testFunc',
@@ -310,7 +310,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'AdvancedCCM HTTP call', $as_test( (as) => {
+        .test( 'AdvancedCCM HTTP call', $as_test( ( as ) => {
             aiface_http.call(
                 as,
                 'testFunc',
@@ -322,7 +322,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'SimpleCCM WS call', $as_test( (as) => {
+        .test( 'SimpleCCM WS call', $as_test( ( as ) => {
             siface_ws.call(
                 as,
                 'testFunc',
@@ -334,7 +334,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'AdvancedCCM WS call', $as_test( (as) => {
+        .test( 'AdvancedCCM WS call', $as_test( ( as ) => {
             aiface_ws.call(
                 as,
                 'testFunc',
@@ -346,7 +346,7 @@ child.on( 'message', function() {
                 }
             );
         } ) )
-        .test( 'AdvancedCCM INTERNAL call with interceptor', $as_test( (as) => {
+        .test( 'AdvancedCCM INTERNAL call with interceptor', $as_test( ( as ) => {
             aiface_internal.testFunc(
                 as,
                 "1",
@@ -355,15 +355,15 @@ child.on( 'message', function() {
                 4
             );
         } ) )
-        .test( 'Load Spec', $as_test( (as) => {
+        .test( 'Load Spec', $as_test( ( as ) => {
             iface_info = {
                 iface: IFACE_SPEC.iface,
                 version: IFACE_SPEC.version,
             };
-            
+
             SpecTools.loadIface( as, iface_info, [ IFACE_SPEC ] );
         } ) )
-        .test( 'Type Test', $as_test( (as) => {
+        .test( 'Type Test', $as_test( ( as ) => {
             as.forEach( TYPE_TESTS, ( as, type, v ) => {
                 as.forEach( v.ok, ( as, i, t ) => {
                     if ( !SpecTools.checkType( iface_info, type, t ) ) {
@@ -398,13 +398,13 @@ child.on( 'message', function() {
                     internal_endpoint );
                 accm.register( as, 'internalJSON', 'fileface.a:1.1',
                     internal_endpoint );
-                
+
                 // ---
                 iface_info = {
                     iface: IFACE_SPEC.iface,
                     version: IFACE_SPEC.version,
                 };
-                
+
                 SpecTools.loadIface( as, iface_info, [ IFACE_SPEC ] );
             } );
             as.add( ( as ) => {
