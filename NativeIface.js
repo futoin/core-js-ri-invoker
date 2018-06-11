@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-const _zipObject = require( 'lodash/zipObject' );
 const $asyncevent = require( 'futoin-asyncevent' );
 const $as = require( 'futoin-asyncsteps' );
 
@@ -213,49 +212,6 @@ class NativeIface {
                 }
             }
         );
-    }
-
-    /**
-    * @ignore
-    * @param {AsyncSteps} as - _
-    * @param {string} name - _
-    * @param {object} finfo - _
-    * @param {array} args - _
-    */
-    _member_call_intercept( as, name, finfo, args ) {
-        $as.assertAS( as );
-
-        const arginfo = finfo.params;
-        let keys = Object.keys( arginfo );
-
-        if ( args.length > keys.length ) {
-            as.error( InvokerError, "Unknown parameters" );
-        } else if ( args.length < finfo.min_args ) {
-            as.error( InvokerError, "Missing parameters" );
-        } else if ( args.length < keys.length ) {
-            keys = keys.splice( 0, args.length );
-        }
-
-        const params = _zipObject( keys, args );
-
-        this.call( as, name, params );
-    }
-
-    /**
-    * @ignore
-    * @param {string} name - member name
-    * @param {InterfaceInfo} finfo - interface info
-    * @returns {function} call generator with bound parameters
-    */
-    _member_call_generate( name, finfo ) {
-        return function( as ) {
-            this._member_call_intercept(
-                as,
-                name,
-                finfo,
-                Array.prototype.slice.call( arguments, 1 )
-            );
-        };
     }
 
     /**

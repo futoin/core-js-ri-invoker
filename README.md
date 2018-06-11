@@ -1575,6 +1575,7 @@ Instance implementing MasterAuth interface
     * [.retryCount](#SimpleCCMOptions.retryCount)
     * [.defaultCoder](#SimpleCCMOptions.defaultCoder)
     * [.binaryCoder](#SimpleCCMOptions.binaryCoder)
+    * [.secureChannel](#SimpleCCMOptions.secureChannel)
     * [.messageSniffer()](#SimpleCCMOptions.messageSniffer)
     * [.disconnectSniffer()](#SimpleCCMOptions.disconnectSniffer)
 
@@ -1640,6 +1641,13 @@ Which message coder to use for BinaryData interfaces.
 
 **Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
 **Default**: <code>MPCK</code>  
+<a name="SimpleCCMOptions.secureChannel"></a>
+
+### SimpleCCMOptions.secureChannel
+Enables marking as SecureChannel through options.
+
+**Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
+**Default**: <code>false</code>  
 <a name="SimpleCCMOptions.messageSniffer"></a>
 
 ### SimpleCCMOptions.messageSniffer()

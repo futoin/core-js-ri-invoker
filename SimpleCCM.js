@@ -23,7 +23,7 @@ const common = require( './lib/common' );
 const { InvokerError, SecurityError } = common.FutoInError;
 const NativeIface = require( './NativeIface' );
 const _extend = require( 'lodash/extend' );
-const _defaults = require( 'lodash/defaults' );
+
 const SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
 const $asyncevent = require( 'futoin-asyncevent' );
 const Limiter = require( 'futoin-asyncsteps' ).Limiter;
@@ -105,7 +105,7 @@ class SimpleCCM {
     * @alias SimpleCCM#register
     * @fires SimpleCCM#register
     */
-    register( as, name, ifacever, endpoint, credentials, options ) {
+    register( as, name, ifacever, endpoint, credentials, options={} ) {
         const is_channel_reg = ( name === null );
 
         // Unregister First
@@ -121,12 +121,17 @@ class SimpleCCM {
             as.error( InvokerError, "Invalid ifacever" );
         }
 
+
+        // ---
+        options = Object.assign( {}, this._impl.options, options );
+
+        // ---
         const iface = m[ common._ifacever_pattern_name ];
         const mjrmnr = m[ common._ifacever_pattern_ver ];
         const mjr = m[ common._ifacever_pattern_mjr ];
         const mnr = m[ common._ifacever_pattern_mnr ];
 
-        let secure_channel = false;
+        let secure_channel = options.secureChannel || false;
         let impl = null;
         let endpoint_scheme;
         let is_bidirect = false;
@@ -162,7 +167,7 @@ class SimpleCCM {
                 break;
 
             case 'browser':
-                if ( options && options.targetOrigin ) {
+                if ( options.targetOrigin ) {
                     secure_channel = true;
                 }
 
@@ -188,10 +193,6 @@ class SimpleCCM {
             is_bidirect = true;
             is_internal = true;
         }
-
-        // ---
-        options = options || {};
-        _defaults( options, this._impl.options );
 
         // ---
         limitZone = options.limitZone || limitZone;
@@ -223,7 +224,9 @@ class SimpleCCM {
             options : options,
             _invoker_use : true,
             _user_info : null,
+            _server_executor_context : null,
             limitZone,
+            aliases: [],
         };
 
         if ( info.creds_mac ) {
@@ -287,6 +290,8 @@ class SimpleCCM {
                     if ( is_channel_reg ) {
                         as.success( info, this._native_iface_builder( this._impl, info ) );
                     }
+
+                    Object.seal( info );
 
                     this.emit( 'register', name, ifacever, info );
                 } );
@@ -356,12 +361,10 @@ class SimpleCCM {
                 delete this._iface_impl[ regname ];
             }
 
-            if ( info.aliases ) {
-                const aliases = info.aliases;
+            const { aliases } = info;
 
-                for ( let i = 0; i < aliases.length; ++i ) {
-                    delete this._iface_info[ aliases[ i ] ];
-                }
+            for ( let i = 0; i < aliases.length; ++i ) {
+                delete this._iface_info[ aliases[ i ] ];
             }
         } else {
             delete this._iface_info[ name ];
@@ -463,13 +466,7 @@ class SimpleCCM {
         }
 
         this._iface_info[ alias ] = info;
-
-        if ( !info.aliases ) {
-            info.aliases = [ alias ];
-        } else {
-            info.aliases.push( alias );
-        }
-
+        info.aliases.push( alias );
         this.emit( 'register', alias, `${info.iface}:${info.version}`, info );
     }
 
