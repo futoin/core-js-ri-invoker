@@ -94,7 +94,7 @@ module.exports = {
                 node: true,
                 browser: true,
             },
-            files: [ "LogFace.js", "SpecTools.js" ],
+            files: [ "LogFace.js" ],
             rules: {
                 "no-console" : ["off"],
             }

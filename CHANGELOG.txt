@@ -2,6 +2,7 @@
 === (next) ===
 CHANGED: minor performance and security improvements to use sealed and frozed objects.
 CHANGED: large refactoring of unit tests to be more clean and use AsyncSteps.testcase
+CHANGED: large refactoring of SpecTools
 FIXED: not to pollute raw specs objects provided in specDirs.
 NEW: more strict and verbose integrity checks during spec loading.
 NEW: NativeIface interceptors optimized with eval (~9% boost)

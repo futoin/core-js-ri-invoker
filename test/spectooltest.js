@@ -29,7 +29,7 @@ const {
     SpecTools,
 } = invoker;
 
-// SpecTools.on( 'error', (...args) => console.log( args ) );
+// SpecTools.on( 'error', ( ...args ) => console.log( args ) );
 
 describe( 'SpecTools', function() {
     let as;
@@ -964,7 +964,7 @@ describe( 'SpecTools', function() {
             },
             ( as, err ) => {
                 expect( as.state.error_info ).equal(
-                    'Iface "test.a" type redifintion: T' );
+                    'Iface "test.a" type redefinition: T' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
             }
@@ -2170,8 +2170,8 @@ describe( 'SpecTools', function() {
                     fail : [ [ 'one' ], false, null, 1 ],
                 },
                 DerivedVariant : {
-                    ok : [ 2, 3, 'abcde', false ],
-                    fail : [ 1, 4, 'abcdE', 'abc', null, {}, [] ],
+                    ok : [ 1, 2, 3, 'abcde', false ],
+                    fail : [ -4, 4, 'abcdE', 'abc', null, {}, [] ],
                 },
                 AnyType : {
                     ok: [ 1, "abc", null, true, false, 1.23, [], {} ],
@@ -2405,9 +2405,14 @@ describe( 'SpecTools', function() {
     } ) );
 
     it( 'convert maxsize', $as_test( ( as ) => {
-        expect( SpecTools._maxSize( '21M' ) ).equal( 21 * 1024 * 1024 );
-        expect( SpecTools._maxSize( '21K' ) ).equal( 21 * 1024 );
-        expect( SpecTools._maxSize( '21B' ) ).equal( 21 );
+        expect( SpecTools.parseSize( '21M' ) ).equal( 21 * 1024 * 1024 );
+        expect( SpecTools.parseSize( '21K' ) ).equal( 21 * 1024 );
+        expect( SpecTools.parseSize( '21B' ) ).equal( 21 );
+        expect( SpecTools.parseSize() ).equal( 64 * 1024 );
+
+        expect( () => SpecTools.parseSize( '21' ) ).throw( 'Invalid size specification: 21' );
+        expect( () => SpecTools.parseSize( '21b' ) ).throw( 'Invalid size specification: 21b' );
+        expect( () => SpecTools.parseSize( '21G' ) ).throw( 'Invalid size specification: 21G' );
     } ) );
 
     if ( isNode ) {

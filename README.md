@@ -1327,14 +1327,14 @@ cache v1.x iface name prefix
     * [new spectools()](#new_SpecTools_new)
     * [.standard_errors](#SpecTools.standard_errors)
     * [.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
-    * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
-    * [.checkType(info, type, val)](#SpecTools.checkType) ⇒ <code>Boolean</code>
-    * [.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>
-    * [.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
     * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
     * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
+    * ~~[.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>~~
+    * ~~[.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)~~
+    * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
+    * [.checkType(info, type, val)](#SpecTools.checkType) ⇒ <code>Boolean</code>
     * ["error"](#SpecTools.event_error)
 
 <a name="new_SpecTools_new"></a>
@@ -1363,65 +1363,6 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 | info | <code>Object</code> | destination object with "iface" and "version" fields already set |
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
 | [load_cache] | <code>Object</code> | arbitrary object to use for caching |
-
-<a name="SpecTools.parseIface"></a>
-
-### SpecTools.parseIface(as, info, specdirs, raw_spec, [load_cache])
-Parse raw futoin spec (preloaded)
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | destination object with "iface" and "version" fields already set |
-| specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
-| raw_spec | <code>Object</code> | iface definition object |
-| [load_cache] | <code>Object</code> | cache of already loaded interfaces |
-
-<a name="SpecTools.checkType"></a>
-
-### SpecTools.checkType(info, type, val) ⇒ <code>Boolean</code>
-Check if value matches required type
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>Boolean</code> - true on success  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| info | <code>Object</code> | previously loaded iface |
-| type | <code>string</code> | standard or custom iface type |
-| val | <code>\*</code> | value to check |
-
-<a name="SpecTools.checkParameterType"></a>
-
-### SpecTools.checkParameterType(info, funcname, varname, value) ⇒ <code>boolean</code>
-Check if parameter value matches required type
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>boolean</code> - true on success  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| info | <code>Object</code> | previously loaded iface |
-| funcname | <code>string</code> | function name |
-| varname | <code>string</code> | parameter name |
-| value | <code>\*</code> | value to check |
-
-<a name="SpecTools.checkResultType"></a>
-
-### SpecTools.checkResultType(as, info, funcname, varname, value)
-Check if result value matches required type
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | previously loaded iface |
-| funcname | <code>string</code> | function name |
-| varname | <code>string</code> | result variable name |
-| value | <code>\*</code> | value to check |
 
 <a name="SpecTools.genHMAC"></a>
 
@@ -1477,6 +1418,69 @@ Secure compare to cover time-based side-channels for attacks
 | --- | --- | --- |
 | a | <code>Buffer</code> | first buffer |
 | b | <code>Buffer</code> | second buffer |
+
+<a name="SpecTools.checkParameterType"></a>
+
+### ~~SpecTools.checkParameterType(info, funcname, varname, value) ⇒ <code>boolean</code>~~
+***Deprecated***
+
+Check if parameter value matches required type
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>boolean</code> - true on success  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| info | <code>Object</code> | previously loaded iface |
+| funcname | <code>string</code> | function name |
+| varname | <code>string</code> | parameter name |
+| value | <code>\*</code> | value to check |
+
+<a name="SpecTools.checkResultType"></a>
+
+### ~~SpecTools.checkResultType(as, info, funcname, varname, value)~~
+***Deprecated***
+
+Check if result value matches required type
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+| info | <code>Object</code> | previously loaded iface |
+| funcname | <code>string</code> | function name |
+| varname | <code>string</code> | result variable name |
+| value | <code>\*</code> | value to check |
+
+<a name="SpecTools.parseIface"></a>
+
+### SpecTools.parseIface(as, info, specdirs, raw_spec, [load_cache])
+Parse raw futoin spec (preloaded)
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+| info | <code>Object</code> | destination object with "iface" and "version" fields already set |
+| specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
+| raw_spec | <code>Object</code> | iface definition object |
+| [load_cache] | <code>Object</code> | cache of already loaded interfaces |
+
+<a name="SpecTools.checkType"></a>
+
+### SpecTools.checkType(info, type, val) ⇒ <code>Boolean</code>
+Check if value matches required type
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>Boolean</code> - true on success  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| info | <code>Object</code> | previously loaded iface |
+| type | <code>string</code> | standard or custom iface type |
+| val | <code>\*</code> | value to check |
 
 <a name="SpecTools.event_error"></a>
 
