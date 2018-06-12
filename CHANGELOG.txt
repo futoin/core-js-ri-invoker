@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 2.0.2 (2018-06-12) ===
 FIXED: lazy compilation issue of not compiling induced types used in funcs
 
 === 2.0.1 (2018-06-12) ===
