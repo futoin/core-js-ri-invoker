@@ -40,6 +40,8 @@ const STANDARD_ERRORS = {
 };
 Object.freeze( STANDARD_ERRORS );
 
+const g_load_cache = {};
+
 /**
  * SpecTools
  * @class
@@ -189,6 +191,12 @@ const spectools =
         // CVE-2018-3721
         Object.freeze( Object.prototype );
     },
+
+    /**
+     * Get process-wide load cache.
+     * @returns {object} Global load cache instance.
+     */
+    globalLoadCache : () => g_load_cache,
 };
 
 // Common extensions

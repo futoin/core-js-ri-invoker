@@ -1267,6 +1267,7 @@ cache v1.x iface name prefix
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
     * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
     * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
+    * [.globalLoadCache()](#SpecTools.globalLoadCache) ⇒ <code>object</code>
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
     * [.checkCompiledType(as, info, type, val)](#SpecTools.checkCompiledType) ⇒ <code>Boolean</code>
     * [.checkRequestMessage(as, info, name, req)](#SpecTools.checkRequestMessage) ⇒ <code>Boolean</code>
@@ -1365,6 +1366,13 @@ Call after loading all depedency modules.
 Mitigates CVE-2018-3721 and similar.
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+<a name="SpecTools.globalLoadCache"></a>
+
+### SpecTools.globalLoadCache() ⇒ <code>object</code>
+Get process-wide load cache.
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>object</code> - Global load cache instance.  
 <a name="SpecTools.secureEqualBuffer"></a>
 
 ### SpecTools.secureEqualBuffer(a, b) ⇒ <code>boolean</code>

@@ -211,6 +211,7 @@ class SimpleCCM {
             _invoker_use : true,
             _user_info : null,
             _server_executor_context : null,
+            _callback_context : null,
             limitZone,
             aliases: [],
         };
