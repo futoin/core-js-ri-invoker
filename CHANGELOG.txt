@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: to allow null for parameter value, if set in spec as default
+
 === 2.0.2 (2018-06-12) ===
 FIXED: lazy compilation issue of not compiling induced types used in funcs
 
