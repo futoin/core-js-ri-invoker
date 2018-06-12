@@ -632,7 +632,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.missingResultVar ) {
                 expect( err ).equal( "InternalError" );
                 expect( as.state.error_info )
-                    .equal( "Missing result variables: missingResultVar()" );
+                    .equal( "Missing result variable: missingResultVar(missing_var)" );
             } else {
                 expect( err ).equal( "NegativeTestMustThrow" );
             }
@@ -681,7 +681,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.wrongException ) {
                 expect( err ).equal( "InternalError" );
                 expect( as.state.error_info )
-                    .equal( 'Not expected exception from Executor: wrongException()' );
+                    .equal( 'Not expected exception from Executor: wrongException() = MY_ERROR()' );
             } else {
                 expect( err ).equal( "MY_ERROR" );
             }
@@ -701,7 +701,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.wrongException ) {
                 expect( err ).equal( "InvokerError" );
                 expect( as.state.error_info )
-                    .equal( 'Unknown interface function: unknownFunc()' );
+                    .equal( 'Unknown interface function: fileface.a:1.1:unknownFunc()' );
             } else {
                 expect( err ).equal( "MY_ERROR" );
             }
@@ -756,7 +756,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.noParams ) {
                 expect( err ).equal( "InvokerError" );
                 expect( as.state.error_info )
-                    .equal( 'No params are defined: noParams()' );
+                    .equal( 'No params are defined: fileface.a:1.1:noParams()' );
             } else {
                 expect( err ).equal( "NegativeTestMustThrow" );
             }
@@ -782,7 +782,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.unknownParam ) {
                 expect( err ).equal( "InvokerError" );
                 expect( as.state.error_info )
-                    .equal( 'Unknown parameter: unknownParam(b)' );
+                    .equal( 'Unknown parameter: fileface.a:1.1:unknownParam(b)' );
             } else {
                 expect( err ).equal( "NegativeTestMustThrow" );
             }
@@ -807,7 +807,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             if ( iface._raw_info.funcs.unknownParam ) {
                 expect( err ).equal( "InvokerError" );
                 expect( as.state.error_info )
-                    .equal( 'Missing parameter: unknownParam(a)' );
+                    .equal( 'Missing parameter: fileface.a:1.1:unknownParam(a)' );
             } else {
                 expect( err ).equal( "NegativeTestMustThrow" );
             }

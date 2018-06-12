@@ -50,7 +50,15 @@ const spectools =
     /**
      * Enumeration of standard errors
      * @const
+     * @alias SpecTools.STANDARD_ERRORS
+     */
+    STANDARD_ERRORS,
+
+    /**
+     * Enumeration of standard errors
+     * @const
      * @alias SpecTools.standard_errors
+     * @deprecated
      */
     standard_errors : STANDARD_ERRORS,
 

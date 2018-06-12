@@ -1325,13 +1325,16 @@ cache v1.x iface name prefix
 
 * [SpecTools](#SpecTools)
     * [new spectools()](#new_SpecTools_new)
-    * [.standard_errors](#SpecTools.standard_errors)
+    * [.STANDARD_ERRORS](#SpecTools.STANDARD_ERRORS)
+    * ~~[.standard_errors](#SpecTools.standard_errors)~~
     * [.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
     * [.genHMAC(as, info, ftnreq)](#SpecTools.genHMAC) ⇒ <code>Buffer</code>
     * [.secureEquals(a, b)](#SpecTools.secureEquals) ⇒ <code>boolean</code>
     * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
     * [.checkCompiledType(as, info, type, val)](#SpecTools.checkCompiledType) ⇒ <code>Boolean</code>
+    * [.checkRequestMessage(as, info, name, req)](#SpecTools.checkRequestMessage) ⇒ <code>Boolean</code>
+    * [.checkResponseMessage(as, info, name, rsp)](#SpecTools.checkResponseMessage) ⇒ <code>Boolean</code>
     * ~~[.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>~~
     * ~~[.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)~~
     * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
@@ -1343,9 +1346,17 @@ cache v1.x iface name prefix
 ### new spectools()
 SpecTools
 
+<a name="SpecTools.STANDARD_ERRORS"></a>
+
+### SpecTools.STANDARD_ERRORS
+Enumeration of standard errors
+
+**Kind**: static constant of [<code>SpecTools</code>](#SpecTools)  
 <a name="SpecTools.standard_errors"></a>
 
-### SpecTools.standard_errors
+### ~~SpecTools.standard_errors~~
+***Deprecated***
+
 Enumeration of standard errors
 
 **Kind**: static constant of [<code>SpecTools</code>](#SpecTools)  
@@ -1434,6 +1445,36 @@ Check if value matches required type
 | info | <code>Object</code> | previously loaded iface |
 | type | <code>string</code> | standard or custom iface type |
 | val | <code>\*</code> | value to check |
+
+<a name="SpecTools.checkRequestMessage"></a>
+
+### SpecTools.checkRequestMessage(as, info, name, req) ⇒ <code>Boolean</code>
+Check if request message is valid
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>Boolean</code> - true on success  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps interface |
+| info | <code>Object</code> | previously loaded iface |
+| name | <code>string</code> | interface function name |
+| req | <code>object</code> | request message |
+
+<a name="SpecTools.checkResponseMessage"></a>
+
+### SpecTools.checkResponseMessage(as, info, name, rsp) ⇒ <code>Boolean</code>
+Check if response message is valid
+
+**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
+**Returns**: <code>Boolean</code> - true on success  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | AsyncSteps interface |
+| info | <code>Object</code> | previously loaded iface |
+| name | <code>string</code> | interface function name |
+| rsp | <code>object</code> | response message |
 
 <a name="SpecTools.checkParameterType"></a>
 
