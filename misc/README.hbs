@@ -10,12 +10,14 @@
 
 # About
 
-FutoIn Invoker is a peer which initiates a request - invokes a FutoIn interface method
-as described in [FTN3: FutoIn Interface Definition](http://specs.futoin.org/final/preview/ftn3_iface_definition.html).
-It is not necessary a client - e.g. server may initiate request for event delivery to client.
+**Documentation** --> [FutoIn Guide](https://futoin.org/docs/microservices/).
 
-The method can be implemented locally or remotely - it is transparent to invoking code.
-A similar concept can be found in CORBA and other more heavy request brokers.
+FutoIn Invoker is request initiating part in FutoIn microservice concept.
+It invokes a FutoIn interface method as described in [FTN3: FutoIn Interface Definition](http://specs.futoin.org/final/preview/ftn3_iface_definition.html).
+Invoker is not necessary a client - e.g. server may initiate request for callback to client.
+
+Unlike HTTP REST API, FutoIn perfectly fits for "all-in-one" process model with efficient internal calls.
+Invoker is heavily optimized to reliably process input and output data checks.
 
 Strict FutoIn interface (iface) definition and transport protocol is defined in FTN3 spec mentioned above.
 **As it is based on JSON, both client and server can be implemented in a few minutes almost in
@@ -38,8 +40,8 @@ It has the following advantages:
 The primary communication channel is WebSockets. Large raw data upload and download
 is also supported through automatic fallback to HTTP(S).
 
-SimpleCCM - a light version without heavy processing of iface definition (ideal for browser)
-AdvancedCCM - full featured CCM (extends SimpleCCM)
+* `SimpleCCM` - a light version without heavy processing of iface definition (ideal for browser).
+* `AdvancedCCM` - full featured CCM (extends SimpleCCM).
 
 Communication methods:
 
@@ -56,9 +58,6 @@ Message coding formats:
 
 *Note: Invoker and Executor are platform/technology-neutral concepts. The implementation
 is already available in JS and PHP.*
-
-
-**Documentation** --> [FutoIn Guide](https://futoin.org/docs/microservices/)
 
 
 Reference implementation of:
@@ -136,16 +135,6 @@ to sites without build process.
 * SimpleCCM - global reference to futoin-invoker.SimpleCCM class
 * AdvancedCCM - global reference to futoin-invoker.AdvancedCCM class
 * futoin.Invoker - global reference to futoin-invoker module
-
-# CVE-2018-3721 mitigation
-
-To prevent attacks similar to CVE-2018-3721, Object.prototype can be frozen via `SpecTools.secureObjectPrototype()`.
-More info:  https://hackerone.com/reports/310443
-
-Some libraries which override `toString` and `valueOf` in own prototypes require minor
-modifications to define a property on derived prototype.
-
-It's possible to load all deps and then call `SpecTools.secureObjectPrototype()`.
 
 # Examples
 
