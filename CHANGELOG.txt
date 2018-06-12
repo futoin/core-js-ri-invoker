@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 2.0.0 (2018-06-12) ===
 CHANGED: minor performance and security improvements to use sealed and frozen objects.
 CHANGED: large refactoring of unit tests to be more clean and use AsyncSteps.testcase
 CHANGED: large refactoring of SpecTools
