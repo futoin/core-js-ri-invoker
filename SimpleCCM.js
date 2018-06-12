@@ -34,6 +34,12 @@ const Limiter = require( 'futoin-asyncsteps' ).Limiter;
  */
 const SimpleCCMPublic = common.Options;
 
+const SECURE_PREFIX_RE = /^secure\+/;
+const SECURE_PROTO_RE = /^(https|wss|unix):\/\//;
+const native_iface_builder = ( ccmimpl, info ) => {
+    return new NativeIface( ccmimpl, info );
+};
+
 /**
  * Simple CCM - Reference Implementation
  *
@@ -53,7 +59,7 @@ class SimpleCCM {
         ] );
 
         this._iface_info = {};
-        this._iface_impl = {};
+        this._iface_instance = {};
         this._impl = impl || new SimpleCCMImpl( options );
 
         this.limitZone(
@@ -66,26 +72,6 @@ class SimpleCCM {
                 burst: null,
             }
         );
-    }
-
-    /** @ignore */
-    get _secure_replace() {
-        return /^secure\+/;
-    }
-
-    /** @ignore */
-    get _secure_test() {
-        return /^(https|wss|unix):\/\//;
-    }
-
-    /**
-    * @ignore
-    * @param {SimpleCCMImpl} ccmimpl - _
-    * @param {InterfaceInfo} info - interface info
-    * @returns {NativeIface} new instance of native face
-    */
-    _native_iface_builder( ccmimpl, info ) {
-        return new NativeIface( ccmimpl, info );
     }
 
     /**
@@ -143,14 +129,14 @@ class SimpleCCM {
             endpoint_scheme = 'callback';
             is_bidirect = true;
         } else if ( typeof endpoint === "string" ) {
-            if ( this._secure_replace.test( endpoint ) ) {
+            if ( SECURE_PREFIX_RE.test( endpoint ) ) {
                 secure_channel = true;
-                endpoint = endpoint.replace( this._secure_replace, '' );
-            } else if ( this._secure_test.test( endpoint ) ) {
+                endpoint = endpoint.replace( SECURE_PREFIX_RE, '' );
+            } else if ( SECURE_PROTO_RE.test( endpoint ) ) {
                 secure_channel = true;
             }
 
-            impl = this._native_iface_builder;
+            impl = native_iface_builder;
 
             // ---
             endpoint_scheme = endpoint.split( ':' )[ 0 ];
@@ -179,7 +165,7 @@ class SimpleCCM {
             }
         } else if ( 'onInternalRequest' in endpoint ) {
             secure_channel = true;
-            impl = this._native_iface_builder;
+            impl = native_iface_builder;
             endpoint_scheme = '#internal#';
             is_bidirect = true;
             is_internal = true;
@@ -288,7 +274,7 @@ class SimpleCCM {
                     // Must be last
                     // ---
                     if ( is_channel_reg ) {
-                        as.success( info, this._native_iface_builder( this._impl, info ) );
+                        as.success( info, native_iface_builder( this._impl, info ) );
                     }
 
                     Object.seal( info );
@@ -311,30 +297,39 @@ class SimpleCCM {
     * @alias SimpleCCM#iface
     */
     iface( name ) {
+        return this._iface_instance[ name ] || this._initIface( name );
+    }
+
+    _initIface( name ) {
         const info = this._iface_info[ name ];
 
         if ( !info ) {
             throw new Error( InvokerError );
         }
 
-        const regname = info.regname;
-        let impl = this._iface_impl[ regname ];
+        const { regname } = info;
 
-        if ( !impl ) {
+        const instances = this._iface_instance;
+        let instance = instances[ regname ];
+
+        if ( !instance ) {
             const NativeImpl = info.options.nativeImpl;
 
             if ( NativeImpl ) {
-                impl = new NativeImpl( this._impl, info );
+                instance = new NativeImpl( this._impl, info );
             } else {
-                impl = info.impl( this._impl, info );
+                instance = info.impl( this._impl, info );
             }
 
-            Object.seal( impl ); // make sure it's optimized
-
-            this._iface_impl[ regname ] = impl;
+            Object.seal( instance ); // make sure it's optimized
+            instances[ regname ] = instance;
         }
 
-        return impl;
+        if ( regname !== name ) {
+            instances[ name ] = instance;
+        }
+
+        return instance;
     }
 
     /**
@@ -344,32 +339,33 @@ class SimpleCCM {
     * @fires SimpleCCM#unregister
     */
     unRegister( name ) {
-        const info = this._iface_info[ name ];
+        const ifaces = this._iface_info;
+        const instances = this._iface_instance;
+        const info = ifaces[ name ];
 
         if ( !info ) {
             throw new Error( InvokerError );
         }
 
-        const regname = info.regname;
-
-        if ( regname === name ) {
-            delete this._iface_info[ regname ];
-            let impl = this._iface_impl[ regname ];
-
-            if ( impl ) {
-                impl._close();
-                delete this._iface_impl[ regname ];
-            }
-
+        if ( info.regname === name ) {
             const { aliases } = info;
+            const instance = instances[ name ];
+
+            if ( instance ) {
+                instance._close();
+            }
 
             for ( let i = 0; i < aliases.length; ++i ) {
-                delete this._iface_info[ aliases[ i ] ];
+                const alias = aliases[ i ];
+                delete ifaces[ alias ];
+                delete instances[ alias ];
             }
         } else {
-            delete this._iface_info[ name ];
             info.aliases.splice( info.aliases.indexOf( name ), 0 );
         }
+
+        delete ifaces[ name ];
+        delete instances[ name ];
 
         this.emit( 'unregister', name, info );
     }
@@ -458,14 +454,14 @@ class SimpleCCM {
     * @fires SimpleCCM#register
     */
     alias( name, alias ) {
-        const info = this._iface_info[ name ];
+        const ifaces = this._iface_info;
+        const info = ifaces[ name ];
 
-        if ( !info ||
-            this._iface_info[ alias ] ) {
+        if ( !info || ifaces[ alias ] ) {
             throw new Error( InvokerError );
         }
 
-        this._iface_info[ alias ] = info;
+        ifaces[ alias ] = info;
         info.aliases.push( alias );
         this.emit( 'register', alias, `${info.iface}:${info.version}`, info );
     }
@@ -476,18 +472,30 @@ class SimpleCCM {
     * @fires SimpleCCM#close
     */
     close() {
-        const impls = this._iface_impl;
+        const instances = this._iface_instance;
+        const ifaces = this._iface_info;
 
-        for ( let n in impls ) {
-            impls[ n ]._close();
+        for ( let n in ifaces ) {
+            const info = ifaces[n];
+            const instance = instances[n];
+
+            if ( instance && ( n === info.regname ) ) {
+                instance._close();
+            }
         }
 
+        this._iface_instance = {};
+        this._iface_info = {};
+
         // ---
-        const comms = this._impl.comms;
+        const impl = this._impl;
+        const comms = impl.comms;
 
         for ( let k in comms ) {
             comms[ k ].close();
         }
+
+        impl.comms = {};
 
         // ---
         this.emit( 'close' );
