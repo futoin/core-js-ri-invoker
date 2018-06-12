@@ -1672,6 +1672,37 @@ describe( 'SpecTools', function() {
             }
         ) );
 
+        it ( 'should fail on invalid "regex"', $as_test(
+            ( as ) => {
+                const spec = {
+                    iface : 'test.spec',
+                    version : '2.3',
+                    ftn3rev: '1.9',
+                    types: {
+                        RE: {
+                            type: 'string',
+                            regex: '[a-Z]',
+                        },
+                    },
+                };
+
+                SpecTools.loadIface(
+                    as,
+                    {
+                        iface : 'test.spec',
+                        version : '2.3',
+                    },
+                    [ spec ]
+                );
+            },
+            ( as, err ) => {
+                expect( err ).equal( 'InternalError' );
+                expect( as.state.error_info ).equal(
+                    'RE:string: Invalid regular expression: /[a-Z]/: Range out of order in character class' );
+                as.success();
+            }
+        ) );
+
         it ( 'should fail on throws not array', $as_test(
             ( as ) => {
                 const spec = _cloneDeep( testspec );
