@@ -10,6 +10,7 @@ NEW: more strict and verbose integrity checks during spec loading.
 NEW: NativeIface interceptors optimized with eval (~9% boost)
 NEW: type checking optimized with eval (~70% boost)
 NEW: options.secureChannel support
+NEW: type variants support in result vars, fields and elemtype
 
 === 1.10.2 (2018-06-09) ===
 CHANGED: upgrade futoin-asyncsteps & futoin-asyncevent

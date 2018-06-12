@@ -89,6 +89,7 @@ function processServerRequest( freq, data, coder ) {
         return {};
 
     case 'customResult':
+    case 'customResultVariant':
         return true;
 
     case "call" :

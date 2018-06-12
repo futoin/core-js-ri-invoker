@@ -82,6 +82,9 @@
         "customResult": {
             "result" : "boolean"
         },
+        "customResultVariant": {
+            "result" : [ "boolean", "string" ]
+        },
         "rawDownload" : {
             "rawresult" : true
         },

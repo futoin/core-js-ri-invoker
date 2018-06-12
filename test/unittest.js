@@ -488,6 +488,17 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
         } );
     } ) );
 
+    it( 'customResultVariant', $as_test( ( as ) => {
+        iface.call(
+            as,
+            "customResultVariant"
+        );
+
+        as.add( ( as, res ) => {
+            assert.strictEqual( true, res );
+        } );
+    } ) );
+
     it( 'call', $as_test( ( as ) => {
         iface.call(
             as,

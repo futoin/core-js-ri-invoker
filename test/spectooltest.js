@@ -961,6 +961,36 @@ describe( 'SpecTools', function() {
             }
         ) );
 
+        it ( 'should fail on invalid elemtype', $as_test(
+            ( as ) => {
+                SpecTools.loadIface(
+                    as,
+                    {
+                        iface : 'test.a',
+                        version : '1.0',
+                        ftn3rev : '1.9',
+                    },
+                    [ {
+                        iface : 'test.a',
+                        version : '1.0',
+                        types : {
+                            E : {
+                                type: 'array',
+                                elemtype: 123,
+                            },
+                        },
+                        ftn3rev : '1.9',
+                    } ]
+                );
+            },
+            ( as, err ) => {
+                expect( as.state.error_info ).equal(
+                    'Invalid "elemtype" for custom type: E' );
+                expect( err ).equal( 'InternalError' );
+                as.success();
+            }
+        ) );
+
         it ( 'should fail on type redefinition', $as_test(
             ( as ) => {
                 SpecTools.loadIface(
@@ -2079,6 +2109,7 @@ describe( 'SpecTools', function() {
                                 type:'StringRegex',
                                 optional: true,
                             },
+                            variant : [ 'IntMinMax', 'StringRegex', "boolean" ],
                         },
                     },
                     MapElemType : {
@@ -2111,7 +2142,7 @@ describe( 'SpecTools', function() {
                     },
                     Array : {
                         type: "array",
-                        elemtype: "Int",
+                        elemtype: [ "Int", "Int" ],
                         maxlen: 3,
                     },
                     Data : {
@@ -2161,11 +2192,15 @@ describe( 'SpecTools', function() {
                     fail : [ [], [ 1, 1, 1, 1 ], [ 1, -5, 1 ], [ 1, 's', true ], 1, false, null ],
                 },
                 Map : {
-                    ok: [ { int:1 }, { int:3,
-                        string:'abcde' } ],
-                    fail: [ { int:5,
-                        string:'abcde' }, { string:'abcde' }, { int:3,
-                        string:'abcdE' } ],
+                    ok: [
+                        { int:1, variant: 1 },
+                        { int:3, string:'abcde', variant: 'abcde' },
+                    ],
+                    fail: [
+                        { int:5, string:'abcde', variant: 1 },
+                        { string:'abcde', variant: 1 },
+                        { int:3, string:'abcdE', variant: 1 },
+                    ],
                 },
                 MapElemType : {
                     ok: [ { int:1 }, { int:3 } ],
@@ -2217,6 +2252,7 @@ describe( 'SpecTools', function() {
                 },
             };
 
+            SpecTools.loadIface( as, Object.assign( { _invoker_use: true }, info ), [ iface ] );
             SpecTools.loadIface( as, info, [ iface ] );
             as.forEach( tests, ( as, type, v ) => {
                 as.forEach( v.ok, ( as, i, t ) => {
