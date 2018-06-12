@@ -556,7 +556,6 @@ interface, include separately
     * [new CacheFace(_ccm, info)](#new_CacheFace_new)
     * _instance_
         * [.getOrSet(as, key_prefix, callable, params, ttl_ms)](#CacheFace+getOrSet)
-        * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
         * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
         * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
@@ -592,23 +591,6 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 | callable | <code>function</code> | func( as, params.. ) - a callable      which is called to generated value on cache miss |
 | params | <code>Array</code> | parameters to be passed to *callable* |
 | ttl_ms | <code>integer</code> | time to live in ms to use, if value is set on cache miss |
-
-<a name="NativeIface+call"></a>
-
-### cacheFace.call(as, name, params, upload_data, [download_stream], [timeout])
-Generic FutoIn function call interface
-Result is passed through AsyncSteps.success() as a map.
-
-**Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | AsyncSteps object |
-| name | <code>string</code> | FutoIn iface function name |
-| params | <code>object</code> | map of func parameters |
-| upload_data | <code>string</code> \| <code>stream.Readable</code> | raw upload data or input stram |
-| [download_stream] | <code>stream.Writable</code> | output stream for raw download data |
-| [timeout] | <code>int</code> | if provided, overrides the default. <=0 - disables timeout |
 
 <a name="NativeIface+ifaceInfo"></a>
 
@@ -751,7 +733,6 @@ interface, include separately
         * [.warn(txt)](#LogFace+warn)
         * [.error(txt)](#LogFace+error)
         * [.security(txt)](#LogFace+security)
-        * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
         * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
         * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
@@ -845,23 +826,6 @@ Log message in security level
 | Param | Type | Description |
 | --- | --- | --- |
 | txt | <code>string</code> | message to log |
-
-<a name="NativeIface+call"></a>
-
-### logFace.call(as, name, params, upload_data, [download_stream], [timeout])
-Generic FutoIn function call interface
-Result is passed through AsyncSteps.success() as a map.
-
-**Kind**: instance method of [<code>LogFace</code>](#LogFace)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | AsyncSteps object |
-| name | <code>string</code> | FutoIn iface function name |
-| params | <code>object</code> | map of func parameters |
-| upload_data | <code>string</code> \| <code>stream.Readable</code> | raw upload data or input stram |
-| [download_stream] | <code>stream.Writable</code> | output stream for raw download data |
-| [timeout] | <code>int</code> | if provided, overrides the default. <=0 - disables timeout |
 
 <a name="NativeIface+ifaceInfo"></a>
 
@@ -962,7 +926,6 @@ Native Interface for FutoIn ifaces
 * [NativeIface](#NativeIface)
     * [new NativeIface(ccmimpl, info)](#new_NativeIface_new)
     * _instance_
-        * [.call(as, name, params, upload_data, [download_stream], [timeout])](#NativeIface+call)
         * [.ifaceInfo()](#NativeIface+ifaceInfo) ⇒ [<code>InterfaceInfo</code>](#InterfaceInfo)
         * [.bindDerivedKey(as)](#NativeIface+bindDerivedKey)
         * ["connect"](#NativeIface+event_connect)
@@ -982,23 +945,6 @@ Native Interface for FutoIn ifaces
 | --- | --- | --- |
 | ccmimpl | [<code>AdvancedCCMImpl</code>](#new_AdvancedCCMImpl_new) | CCM instance |
 | info | [<code>InterfaceInfo</code>](#InterfaceInfo) | interface info |
-
-<a name="NativeIface+call"></a>
-
-### nativeIface.call(as, name, params, upload_data, [download_stream], [timeout])
-Generic FutoIn function call interface
-Result is passed through AsyncSteps.success() as a map.
-
-**Kind**: instance method of [<code>NativeIface</code>](#NativeIface)  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| as | <code>AsyncSteps</code> | AsyncSteps object |
-| name | <code>string</code> | FutoIn iface function name |
-| params | <code>object</code> | map of func parameters |
-| upload_data | <code>string</code> \| <code>stream.Readable</code> | raw upload data or input stram |
-| [download_stream] | <code>stream.Writable</code> | output stream for raw download data |
-| [timeout] | <code>int</code> | if provided, overrides the default. <=0 - disables timeout |
 
 <a name="NativeIface+ifaceInfo"></a>
 

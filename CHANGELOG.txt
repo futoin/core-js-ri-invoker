@@ -9,6 +9,7 @@ FIXED: improved FTN3 feature checks for v1.4 shortcuts
 NEW: more strict and verbose integrity checks during spec loading.
 NEW: NativeIface interceptors optimized with eval (~9% boost)
 NEW: type checking optimized with eval (~70% boost)
+NEW: huge optimization of NativeIface/CCM for calls (~53% boost for internal)
 NEW: optimized message checking SpecTools API
 NEW: options.secureChannel support
 NEW: type variants support in result vars, fields and elemtype

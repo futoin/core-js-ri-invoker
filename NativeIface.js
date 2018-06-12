@@ -27,6 +27,12 @@ const { InvokerError, CommError } = common.FutoInError;
 const InterfaceInfo = require( './InterfaceInfo' );
 const Options = common.Options;
 
+const { SAFE_PAYLOAD_LIMIT } = Options;
+
+const assertAS = Options.prodMode
+    ? () => {}
+    : $as.assertAS;
+
 /**
  * Native Interface for FutoIn ifaces
  * @class
@@ -35,7 +41,7 @@ const Options = common.Options;
  * @alias NativeIface
  */
 class NativeIface {
-    constructor( ccmimpl, info ) {
+    constructor( _ccmimpl, _info ) {
         $asyncevent( this, [
             'connect',
             'disconnect',
@@ -43,15 +49,265 @@ class NativeIface {
             'commError',
         ] );
 
+        const ccmimpl = _ccmimpl;
+        const info = _info;
         this._ccmimpl = ccmimpl;
         this._raw_info = info;
         this._iface_info = null;
         this._comms = {};
 
+        //---
+        const {
+            limitZone,
+            options,
+            endpoint,
+            endpoint_scheme,
+            coder,
+            funcs,
+            signMessage,
+        } = info;
+
+        const {
+            callTimeoutMS,
+        } = options;
+
+        //---
+        let custom_create_ctx;
+        let custom_perform;
+
+        switch ( endpoint_scheme ) {
+        case '#internal#':
+            custom_create_ctx = ( name, upload_data, download_stream ) => {
+                return {
+                    ccmimpl,
+                    name,
+                    info,
+                    upload_data,
+                    download_stream,
+                    options,
+                    endpoint,
+                    expect_response : true,
+                    max_rsp_size: 0,
+                    max_req_size: 0,
+                };
+            };
+            custom_perform = ( as, ctx, req ) => {
+                signMessage( as, ctx, req );
+                endpoint.onInternalRequest( as, info, req, ctx.upload_data, ctx.download_stream );
+            };
+            break;
+        case 'http':
+        case 'https':
+            custom_perform = ( as, ctx, req ) => {
+                ccmimpl.perfomHTTP( as, ctx, req );
+            };
+            break;
+        case 'ws':
+        case 'wss':
+            custom_perform = ( as, ctx, req ) => {
+                let finfo;
+                const rawresult = (
+                    ctx.download_stream ||
+                    ( funcs && ( finfo = funcs[ ctx.name ] ) && finfo.rawresult )
+                );
+
+                if ( rawresult || ctx.upload_data ) {
+                    ctx.endpoint = endpoint.replace( 'ws', 'http' );
+                    ctx.rawresult = rawresult;
+                    ccmimpl.perfomHTTP( as, ctx, req );
+                } else {
+                    ccmimpl.perfomWebSocket( as, ctx, req );
+                }
+            };
+            break;
+        case 'browser':
+            custom_perform = ( as, ctx, req ) => {
+                forbid_rawdata( as, ctx );
+                ccmimpl.perfomBrowser( as, ctx, req );
+            };
+            break;
+        case 'unix':
+            custom_perform = ( as, ctx, req ) => {
+                forbid_rawdata( as, ctx );
+                ccmimpl.perfomUNIX( as, ctx, req );
+            };
+            break;
+        case 'callback':
+            custom_perform = ( as, ctx, req ) => {
+                forbid_rawdata( as, ctx );
+                endpoint( as, ctx, req );
+            };
+            break;
+        default:
+            custom_perform = ( as ) => {
+                as.error( InvokerError, `Unknown endpoint scheme: ${endpoint_scheme}` );
+            };
+        }
+
+        //---
+        const create_ctx = custom_create_ctx || ( ( name, upload_data, download_stream ) => {
+            return {
+                ccmimpl,
+                name,
+                info,
+                upload_data,
+                download_stream,
+                rawresult : false,
+                rsp_content_type : null,
+                native_iface : this,
+                options,
+                endpoint,
+                msg_coder : coder,
+                expect_response : true,
+                signMessage,
+                max_rsp_size: SAFE_PAYLOAD_LIMIT,
+                max_req_size: SAFE_PAYLOAD_LIMIT,
+            };
+        } );
+        const perform = custom_perform;
+        const handle_timeout = ( as, timeout ) => {
+            if ( typeof timeout !== 'number' ) {
+                timeout = callTimeoutMS;
+            }
+
+            if ( timeout > 0 ) {
+                as.setTimeout( timeout );
+            }
+        };
+        const forbid_rawdata = ( as, ctx ) => {
+            if ( ctx.upload_data ) {
+                as.error(
+                    InvokerError,
+                    'Upload data is allowed only for HTTP/WS endpoints' );
+            } else if ( ctx.download_stream ) {
+                as.error(
+                    InvokerError,
+                    'Download stream is allowed only for HTTP/WS endpoints' );
+            }
+        };
+
+        //---
+        const { limiters } = ccmimpl;
+        const sync_limit = ( () => {
+            if ( limitZone === 'unlimited' ) {
+                const unlim_timeout_handler = ( as, handler, ctx, req, timeout ) => {
+                    as.add( ( as ) => {
+                        handle_timeout( as, timeout );
+                        handler( as, ctx, req );
+                    } );
+                };
+
+                if ( endpoint_scheme === '#internal#' ) {
+                    return ( as, handler, ctx, req, timeout ) => {
+                        if ( timeout ) {
+                            unlim_timeout_handler( as, handler, ctx, req, timeout );
+                        } else {
+                            handler( as, ctx, req );
+                        }
+                    };
+                } else {
+                    return unlim_timeout_handler;
+                }
+            }
+
+            return ( as, handler, ctx, req, timeout ) => {
+                as.sync( limiters[limitZone], ( as ) => {
+                    handle_timeout( as, timeout );
+                    handler( as, ctx, req );
+                } );
+            };
+        } )();
+
+        //---
+        const handle_response = ( as, ctx, rsp, is_futoin_message ) => {
+            if ( ctx.download_stream ) {
+                as.success( true );
+            } else if ( is_futoin_message ) {
+                if ( ( rsp instanceof Uint8Array ) ||
+                        ( typeof rsp === 'string' )
+                ) {
+                    try {
+                        rsp = ctx.msg_coder.decode( rsp );
+                    } catch ( e ) {
+                        as.error( CommError, "Decode: " + e.message );
+                    }
+                }
+
+                ccmimpl.onMessageResponse( as, ctx, rsp );
+            } else {
+                ccmimpl.onDataResponse( as, ctx, rsp );
+            }
+        };
+
+        //---
+        const call = ( as, name, params, upload_data=null, download_stream=null, timeout=null ) => {
+            assertAS( as );
+
+            params = params || {}; // null or undefined may still be passed by caller
+
+            // Create context
+            // ---
+            const ctx = create_ctx( name, upload_data, download_stream );
+            Object.seal( ctx );
+
+            // Create message
+            // ---
+            const req = ccmimpl.createMessage( as, ctx, params );
+
+            // Perform request
+            // ---
+            sync_limit( as, perform, ctx, req, timeout );
+
+            // Handle response
+            // ---
+            if ( ctx.expect_response ) {
+                as.add( ( as, rsp, is_futoin_message ) =>
+                    handle_response( as, ctx, rsp, is_futoin_message ) );
+            }
+        };
+        Object.defineProperty( this, 'call', {
+            value: call,
+            configurable: false,
+            enumerable: false,
+            writeable: false,
+        } );
+
+
         // Create Native interceptors for FutoIn interface functions
         //---
-        for ( let fn in this._raw_info.funcs ) {
-            const finfo = this._raw_info.funcs[ fn ];
+        const member_call_generate_eval = ( name, finfo ) => {
+            const src = [];
+            const { params } = finfo;
+
+            const plist = Object.keys( params );
+            const pmap = [];
+
+            for ( let p of plist ) {
+                if ( params[p].default === undefined ) {
+                    pmap.push( `${p}:${p}` );
+                }
+            }
+
+            const args = [ 'as' ].concat( plist );
+
+            src.push( `(function (${args.join( ',' )}) {` );
+            src.push( `'use strict';` );
+            src.push( `var params = {${pmap.join( ',' )}};` );
+
+            for ( let p of plist ) {
+                if ( params[p].default !== undefined ) {
+                    src.push( `if (${p} !== undefined) params.${p} = ${p};` );
+                }
+            }
+
+            src.push( `return call(as, "${name}", params);` );
+            src.push( '})' );
+
+            return eval( src.join( '' ) );
+        };
+
+        for ( let fn in funcs ) {
+            const finfo = funcs[ fn ];
 
             // Not allowed
             if ( finfo.rawupload ) {
@@ -63,7 +319,7 @@ class NativeIface {
             }
 
             Object.defineProperty( this, fn, {
-                value: this._member_call_generate_eval( fn, finfo ),
+                value: member_call_generate_eval( fn, finfo ),
                 configurable: false,
                 enumerable: false,
                 writeable: false,
@@ -106,152 +362,6 @@ class NativeIface {
     * @param {int=} timeout - if provided, overrides the default. <=0 - disables timeout
     * @alias NativeIface#call
     */
-    call( as, name, params, upload_data, download_stream, timeout ) {
-        $as.assertAS( as );
-
-        params = params || {};
-        const raw_info = this._raw_info;
-
-        const ctx = {
-            ccmimpl : this._ccmimpl,
-            name : name,
-            info : raw_info,
-            upload_data : upload_data,
-            download_stream : download_stream,
-            rawresult : false,
-            rsp_content_type : null,
-            native_iface : this,
-            options : raw_info.options,
-            endpoint : raw_info.endpoint,
-            msg_coder : raw_info.coder,
-            expect_response : true,
-            signMessage : this._signMessageDummy,
-            max_rsp_size: Options.SAFE_PAYLOAD_LIMIT,
-            max_req_size: Options.SAFE_PAYLOAD_LIMIT,
-        };
-        Object.seal( ctx );
-
-        const ccmimpl = this._ccmimpl;
-
-        // Create message
-        // ---
-        as.add( ( as ) => ccmimpl.createMessage( as, ctx, params ) );
-
-        // Perform request
-        // ---
-        as.sync(
-            ccmimpl.limiters[raw_info.limitZone],
-            ( as, req ) => {
-                if ( ctx.expect_response ) {
-                    if ( typeof timeout !== 'number' ) {
-                        timeout = ctx.info.options.callTimeoutMS;
-                    }
-
-                    if ( timeout > 0 ) {
-                        as.setTimeout( timeout );
-                    }
-                }
-
-                const scheme = raw_info.endpoint_scheme;
-
-                if ( scheme === '#internal#' ) {
-                    ctx.endpoint.onInternalRequest( as, raw_info, req, upload_data, download_stream );
-                } else if ( ( scheme === 'http' ) ||
-                            ( scheme === 'https' ) ) {
-                    ccmimpl.perfomHTTP( as, ctx, req );
-                } else if ( ( scheme === 'ws' ) ||
-                            ( scheme === 'wss' ) ) {
-                    let finfo;
-                    const rawresult = ctx.download_stream || ( ctx.info.funcs &&
-                            ( finfo = ctx.info.funcs[ name ] ) &&
-                            finfo.rawresult );
-
-                    if ( ctx.upload_data || rawresult ) {
-                        ctx.endpoint = ctx.endpoint.replace( 'ws', 'http' );
-                        ctx.rawresult = rawresult;
-                        ccmimpl.perfomHTTP( as, ctx, req );
-                    } else {
-                        ccmimpl.perfomWebSocket( as, ctx, req );
-                    }
-                } else if ( ctx.upload_data ) {
-                    as.error(
-                        InvokerError,
-                        'Upload data is allowed only for HTTP/WS endpoints' );
-                } else if ( ctx.download_stream ) {
-                    as.error(
-                        InvokerError,
-                        'Download stream is allowed only for HTTP/WS endpoints' );
-                } else if ( scheme === 'browser' ) {
-                    ccmimpl.perfomBrowser( as, ctx, req );
-                } else if ( scheme === 'unix' ) {
-                    ccmimpl.perfomUNIX( as, ctx, req );
-                } else if ( scheme === 'callback' ) {
-                    ctx.endpoint( as, ctx, req );
-                } else {
-                    as.error( InvokerError, 'Unknown endpoint scheme' );
-                }
-
-                if ( ctx.expect_response ) {
-                    as.add( ( as, rsp, is_futoin_message ) => {
-                        if ( ctx.download_stream ) {
-                            as.success( true );
-                        } else if ( is_futoin_message ) {
-                            if ( ( rsp instanceof Uint8Array ) ||
-                                 ( typeof rsp === 'string' )
-                            ) {
-                                try {
-                                    rsp = ctx.msg_coder.decode( rsp );
-                                } catch ( e ) {
-                                    as.error( CommError, "Decode: " + e.message );
-                                }
-                            }
-
-                            ccmimpl.onMessageResponse( as, ctx, rsp );
-                        } else {
-                            ccmimpl.onDataResponse( as, ctx, rsp );
-                        }
-                    } );
-                }
-            }
-        );
-    }
-
-    /**
-    * @ignore
-    * @param {string} name - member name
-    * @param {InterfaceInfo} finfo - interface info
-    * @returns {function} call generator with bound parameters
-    */
-    _member_call_generate_eval( name, finfo ) {
-        const src = [];
-        const { params } = finfo;
-
-        const plist = Object.keys( params );
-        const pmap = [];
-
-        for ( let p of plist ) {
-            if ( params[p].default === undefined ) {
-                pmap.push( `${p}:${p}` );
-            }
-        }
-
-        const args = [ 'as' ].concat( plist );
-
-        src.push( `(function (${args.join( ',' )}) {` );
-        src.push( `'use strict';` );
-        src.push( `var params = {${pmap.join( ',' )}};` );
-
-        for ( let p of plist ) {
-            if ( params[p].default !== undefined ) {
-                src.push( `if (${p} !== undefined) params.${p} = ${p};` );
-            }
-        }
-
-        src.push( `return this.call(as, "${name}", params);` );
-        src.push( '})' );
-
-        return eval( src.join( '' ) );
-    }
 
     /**
     * Get interface info
@@ -259,11 +369,13 @@ class NativeIface {
     * @alias NativeIface#ifaceInfo
     */
     ifaceInfo() {
-        if ( !this._iface_info ) {
-            this._iface_info = new InterfaceInfo( this._raw_info );
+        const info = this._iface_info;
+
+        if ( info ) {
+            return info;
         }
 
-        return this._iface_info;
+        return ( this._iface_info = new InterfaceInfo( this._raw_info ) );
     }
 
     /**
@@ -288,12 +400,6 @@ class NativeIface {
 
         this.emit( 'close' );
     }
-
-    /**
-    * Dummy sign function
-    * @private
-    */
-    _signMessageDummy() {}
 }
 
 /**
