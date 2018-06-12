@@ -1271,6 +1271,7 @@ cache v1.x iface name prefix
 
 * [SpecTools](#SpecTools)
     * [new spectools()](#new_SpecTools_new)
+    * [.enableSchemaValidator](#SpecTools.enableSchemaValidator)
     * [.STANDARD_ERRORS](#SpecTools.STANDARD_ERRORS)
     * ~~[.standard_errors](#SpecTools.standard_errors)~~
     * [.loadIface(as, info, specdirs, [load_cache])](#SpecTools.loadIface)
@@ -1291,6 +1292,17 @@ cache v1.x iface name prefix
 
 ### new spectools()
 SpecTools
+
+<a name="SpecTools.enableSchemaValidator"></a>
+
+### SpecTools.enableSchemaValidator
+Control JSON Schema validation in development.
+
+**Kind**: static property of [<code>SpecTools</code>](#SpecTools)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| set | <code>boolean</code> | value to set |
 
 <a name="SpecTools.STANDARD_ERRORS"></a>
 

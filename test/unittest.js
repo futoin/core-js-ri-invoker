@@ -69,6 +69,8 @@ const break_burst = ( as ) => {
     async_steps.ActiveAsyncTool.callImmediate( () => as.state && as.success(), 0 );
 };
 
+invoker.SpecTools.enableSchemaValidator( false );
+
 class TestMasterAuth extends invoker.MasterAuth {
     constructor() {
         super();
@@ -76,7 +78,7 @@ class TestMasterAuth extends invoker.MasterAuth {
             macKey: '111222333444555666777888999',
             macAlgo : null,
         };
-        this._spectools = module.require( '../SpecTools' );
+        this._spectools = invoker.SpecTools;
     }
 
     signMessage( ctx, req ) {

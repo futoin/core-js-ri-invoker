@@ -1,6 +1,6 @@
 
 === (next) ===
-CHANGED: minor performance and security improvements to use sealed and frozed objects.
+CHANGED: minor performance and security improvements to use sealed and frozen objects.
 CHANGED: large refactoring of unit tests to be more clean and use AsyncSteps.testcase
 CHANGED: large refactoring of SpecTools
 FIXED: not to pollute raw specs objects provided in specDirs.
@@ -13,6 +13,7 @@ NEW: huge optimization of NativeIface/CCM for calls (~53% boost for internal)
 NEW: optimized message checking SpecTools API
 NEW: options.secureChannel support
 NEW: type variants support in result vars, fields and elemtype
+NEW: JSON Schema validation in development
 
 === 1.10.2 (2018-06-09) ===
 CHANGED: upgrade futoin-asyncsteps & futoin-asyncevent

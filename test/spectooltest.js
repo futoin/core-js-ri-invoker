@@ -29,6 +29,8 @@ const {
     SpecTools,
 } = invoker;
 
+SpecTools.enableSchemaValidator( false );
+
 // SpecTools.on( 'error', ( ...args ) => console.log( args ) );
 
 describe( 'SpecTools', function() {
@@ -683,7 +685,7 @@ describe( 'SpecTools', function() {
                 }
             ) );
 
-            it( 'should alow unsupported minor revision for Invoker', $as_test(
+            it( 'should allow unsupported minor revision for Invoker', $as_test(
                 ( as ) => {
                     const iface = {
                         iface : info.iface,
@@ -2542,6 +2544,114 @@ describe( 'SpecTools', function() {
                     } );
                 } )( i );
             }
+        } );
+
+        describe( 'JSON Schema', function() {
+            before( () => {
+                SpecTools.enableSchemaValidator( true );
+            } );
+            after( () => {
+                SpecTools.enableSchemaValidator( false );
+            } );
+
+            it ( 'should validate spec against schema', $as_test( ( as ) => {
+                SpecTools.loadIface(
+                    as,
+                    {
+                        iface : 'test.a',
+                        version : '1.0',
+                    },
+                    [ {
+                        iface : 'test.a',
+                        version : '1.0',
+                        funcs : {
+                            fnc : {
+                                params : {
+                                    a: {
+                                        type: 'string',
+                                    },
+                                    b: {
+                                        type: 'integer',
+                                    },
+                                },
+                            },
+                        },
+                    } ]
+                );
+                SpecTools.loadIface(
+                    as,
+                    {
+                        iface : 'test.a',
+                        version : '1.0',
+                    },
+                    [ {
+                        iface : 'test.a',
+                        version : '1.0',
+                        ftn3rev : '1.9',
+                        funcs : {
+                            fnc : {
+                                params : {
+                                    a: 'string',
+                                    b: 'integer',
+                                },
+                            },
+                        },
+                    } ]
+                );
+            } ) );
+
+            it ( 'should detect errors in spec', $as_test(
+                ( as ) => {
+                    SpecTools.loadIface(
+                        as,
+                        {
+                            iface : 'test.a',
+                            version : '1.0',
+                        },
+                        [ {
+                            iface : 'test.a',
+                            version : '1.0',
+                            funcs : {
+                                fnc : {
+                                    params : {
+                                        a: 'string',
+                                        b: 'integer',
+                                    },
+                                },
+                            },
+                        } ]
+                    );
+                },
+                ( as, err ) => {
+                    expect( as.state.error_info ).to.equal(
+                        `JSON Schema validation failed: data.funcs['fnc'].params['a'] should be object` );
+                    expect( err ).to.equal( 'InternalError' );
+                    as.success();
+                }
+            ) );
+
+            it ( 'should detect invalid ftn3rev', $as_test(
+                ( as ) => {
+                    SpecTools.loadIface(
+                        as,
+                        {
+                            iface : 'test.a',
+                            version : '1.0',
+                        },
+                        [ {
+                            iface : 'test.a',
+                            version : '1.0',
+                            ftn3rev : '1.0.b',
+                        } ]
+                    );
+                },
+                ( as, err ) => {
+                    expect( as.state.error_info ).to.equal(
+                        `Invalid ftn3rev field` );
+                    expect( err ).to.equal( 'InternalError' );
+                    as.success();
+                }
+            ) );
         } );
     }
 } );
