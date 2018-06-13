@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 2.0.3 (2018-06-13) ===
 FIXED: to allow null for parameter value, if set in spec as default
 FIXED: not to check for unknown type in incomplete mixins for import use
 FIXED: to properly work with very deep import chain
