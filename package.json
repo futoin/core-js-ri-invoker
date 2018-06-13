@@ -54,12 +54,12 @@
   "dependencies": {
     "agentkeepalive": "^3.4.1",
     "detect-node": "^2.0.3",
-    "faye-websocket": "^0.11.1",
     "futoin-asyncevent": "^2.2.0",
     "lodash": "^4.17.10",
     "msgpack-lite": "^0.1.26",
     "performance-now": "^2.1.0",
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "ws": "^5.2.0"
   },
   "devDependencies": {
     "@futoin/optihelp": "^1.1.0",
@@ -93,6 +93,8 @@
   },
   "optionalDependencies": {
     "ajv": "^6.5.1",
-    "borc": "^2.0.3"
+    "borc": "^2.0.3",
+    "bufferutil": "^3.0.5",
+    "utf-8-validate": "^4.0.2"
   }
 }

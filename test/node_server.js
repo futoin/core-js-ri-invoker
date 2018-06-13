@@ -2,11 +2,11 @@
 
 require( './prepare' );
 
-var http = require( 'http' );
-var url = require( 'url' );
-var WebSocket = require( 'faye-websocket' );
-var processServerRequest = require( './server_func' );
-var enableDestroy = require( 'server-destroy' );
+const http = require( 'http' );
+const url = require( 'url' );
+const WebSocket = require( 'ws' );
+const processServerRequest = require( './server_func' );
+const enableDestroy = require( 'server-destroy' );
 var httpsrv = null;
 var wssrv = null;
 
@@ -164,6 +164,8 @@ function createTestHttpServer( cb ) {
     } );
     httpsrv.listen( 23456, '127.0.0.1', 10, cb );
 
+    const wss = new WebSocket.Server( { noServer: true } );
+
     httpsrv.on( 'upgrade', function( req, sock, body ) {
         if ( !httpsrv ) {
             return;
@@ -173,48 +175,49 @@ function createTestHttpServer( cb ) {
             return;
         }
 
-        var ws = new WebSocket( req, sock, body );
+        wss.handleUpgrade( req, sock, body, ( _ws ) => {
+            const ws = _ws;
+            wss.emit( 'connection', ws, req );
 
-        var req_close = function() {
-            ws.close();
-        };
+            const req_close = function() {
+                ws.terminate();
+            };
 
-        httpsrv.once( 'close', req_close );
-        httpsrv.once( 'preclose', req_close );
-        ws.on( 'close', function() {
-            if ( httpsrv ) {
-                httpsrv.removeListener( 'close', req_close );
-                httpsrv.removeListener( 'preclose', req_close );
-            }
-        } );
+            httpsrv.once( 'close', req_close );
+            httpsrv.once( 'preclose', req_close );
+            ws.on( 'close', function() {
+                if ( httpsrv ) {
+                    httpsrv.removeListener( 'close', req_close );
+                    httpsrv.removeListener( 'preclose', req_close );
+                }
+            } );
 
-        ws.on( 'message', function( event ) {
-            var msg = event.data;
+            ws.on( 'message', function( msg ) {
+                let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg );
 
-            let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg );
+                if ( frsp === null ) {
+                    sock.destroy();
+                    return;
+                }
 
-            if ( frsp === null ) {
-                sock.destroy();
-                return;
-            }
+                if ( typeof frsp === 'boolean' ) {
+                    frsp = { r : frsp };
+                } else if ( typeof frsp !== "object" ) {
+                    sock.destroy();
+                    return;
+                } else if ( !( 'e' in frsp ) ) {
+                    frsp = { r : frsp };
+                }
 
-            if ( typeof frsp === 'boolean' ) {
-                frsp = { r : frsp };
-            } else if ( typeof frsp !== "object" ) {
-                sock.destroy();
-                return;
-            } else if ( !( 'e' in frsp ) ) {
-                frsp = { r : frsp };
-            }
+                frsp.rid = freq.rid;
 
-            frsp.rid = freq.rid;
+                if ( macopt ) {
+                    frsp.sec = SpecTools.genHMAC( {}, macopt, frsp ).toString( 'base64' );
+                }
 
-            if ( macopt ) {
-                frsp.sec = SpecTools.genHMAC( {}, macopt, frsp ).toString( 'base64' );
-            }
-
-            frsp = coder.encode( frsp );
-            ws.send( frsp );
+                frsp = coder.encode( frsp );
+                ws.send( frsp );
+            } );
         } );
     } );
 

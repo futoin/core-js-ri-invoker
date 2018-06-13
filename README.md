@@ -1594,6 +1594,7 @@ Instance implementing MasterAuth interface
     * [.defaultCoder](#SimpleCCMOptions.defaultCoder)
     * [.binaryCoder](#SimpleCCMOptions.binaryCoder)
     * [.secureChannel](#SimpleCCMOptions.secureChannel)
+    * [.commConcurrency](#SimpleCCMOptions.commConcurrency)
     * [.messageSniffer()](#SimpleCCMOptions.messageSniffer)
     * [.disconnectSniffer()](#SimpleCCMOptions.disconnectSniffer)
 
@@ -1666,6 +1667,13 @@ Enables marking as SecureChannel through options.
 
 **Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
 **Default**: <code>false</code>  
+<a name="SimpleCCMOptions.commConcurrency"></a>
+
+### SimpleCCMOptions.commConcurrency
+Maximum number of concurrent requests per communication channel.
+
+**Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
+**Default**: <code>16</code>  
 <a name="SimpleCCMOptions.messageSniffer"></a>
 
 ### SimpleCCMOptions.messageSniffer()
