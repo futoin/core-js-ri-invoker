@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 2.1.0 (2018-06-13) ===
 CHANGED: to use "ws" instead of "faye-websockets"
 CHANGED: HTTP(S) comms a limited to "commConcurrency" simultaneous connections
 FIXED: to control message size for Node.js WS messages
