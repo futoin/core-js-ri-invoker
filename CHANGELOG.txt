@@ -1,4 +1,8 @@
 
+=== (next) ===
+CHANGED: dependency maintenance
+FIXED: invalid AsyncSteps usage on JSON error in spec loading
+
 === 2.1.0 (2018-06-13) ===
 CHANGED: to use "ws" instead of "faye-websockets"
 CHANGED: HTTP(S) comms a limited to "commConcurrency" simultaneous connections
