@@ -1498,7 +1498,8 @@ describe( 'CacheFace', function() {
 //============================================================================
 if ( isNode ) {
     describe( 'PingFace', function() {
-        var PingFace = module.require( '../PingFace' );
+        const mod = module.require;
+        var PingFace = mod.require( '../PingFace' );
 
         before( $as_test( ( as ) => {
             var opts = {};
