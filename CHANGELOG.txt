@@ -1,4 +1,4 @@
-=== (next) ===
+=== 2.1.2 (2018-08-17) ===
 FIXED: added workaround for webpack 4.16.2+
 
 === 2.1.1 (2018-08-11) ===
