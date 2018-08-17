@@ -344,8 +344,8 @@ class NativeIface {
 
         if ( !iface && this._specs_module_prefix ) {
             const mod = this._specs_module_prefix + version.replace( '.', '_' );
-
-            iface = module.require( mod );
+            const this_mod = module;
+            iface = this_mod.require( mod );
         }
 
         return iface;

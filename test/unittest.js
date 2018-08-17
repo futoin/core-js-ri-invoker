@@ -5,9 +5,10 @@ require( './prepare' );
 const _isEmpty = require( 'lodash/isEmpty' );
 
 const is_browser = ( typeof window !== 'undefined' );
+const mod = module;
 const invoker = is_browser
     ? require( 'futoin-invoker' )
-    : module.require( '../lib/invoker' );
+    : mod.require( '../lib/invoker' );
 
 const isNode = !is_browser;
 const chai = require( 'chai' );
@@ -50,7 +51,8 @@ if ( is_browser ) {
         // MPCK: true,
     };
 } else {
-    var node_server = module.require( './node_server.js' );
+    const mod = module;
+    var node_server = mod.require( './node_server.js' );
 
     createTestHttpServer = node_server.createTestHttpServer;
     closeTestHttpServer = node_server.closeTestHttpServer;

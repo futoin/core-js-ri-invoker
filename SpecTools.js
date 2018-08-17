@@ -207,8 +207,9 @@ require( './lib/spectools_deprecated' )( spectools );
 
 // Node.js extensions
 if ( common._isNode ) {
-    module.require( './lib/node/spectools' )( spectools );
-    module.require( './lib/node/spectools_hmac' )( spectools );
+    const mod = module;
+    mod.require( './lib/node/spectools' )( spectools );
+    mod.require( './lib/node/spectools_hmac' )( spectools );
 // Browser extensions
 } else {
     require( './lib/browser/spectools' )( spectools );

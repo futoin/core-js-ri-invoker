@@ -86,13 +86,13 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "server-destroy": "^1.0.1",
-    "webpack": "4.16.1"
+    "webpack": "4.16.5"
   },
   "peerDependencies": {
     "futoin-asyncsteps": "^2.3.2"
   },
   "optionalDependencies": {
-    "ajv": "^6.5.2",
+    "ajv": "^6.5.3",
     "borc": "^2.0.3",
     "bufferutil": "^4.0.0",
     "utf-8-validate": "^5.0.1"

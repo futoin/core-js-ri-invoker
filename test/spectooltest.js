@@ -10,9 +10,10 @@ const is_browser = ( typeof window !== 'undefined' );
 const isNode = !is_browser;
 
 const async_steps = require( 'futoin-asyncsteps' );
+const mod = module;
 const invoker = is_browser
     ? require( 'futoin-invoker' )
-    : module.require( '../lib/invoker' );
+    : mod.require( '../lib/invoker' );
 
 const $as_test = require( 'futoin-asyncsteps/testcase' );
 
@@ -22,7 +23,7 @@ if ( !isNode ) {
     thisDir = '.';
 } else {
     thisDir = __dirname;
-    var crypto = module.require( 'crypto' );
+    var crypto = mod.require( 'crypto' );
 }
 
 const {
