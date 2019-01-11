@@ -861,31 +861,31 @@ Interface communication error. Fired during call processing.
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_DEBUG"></a>
 
-### LogFace.LVL_DEBUG
+### LogFace.LVL\_DEBUG
 Debug log level
 
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_INFO"></a>
 
-### LogFace.LVL_INFO
+### LogFace.LVL\_INFO
 Info log level
 
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_WARN"></a>
 
-### LogFace.LVL_WARN
+### LogFace.LVL\_WARN
 Warn log level
 
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_ERROR"></a>
 
-### LogFace.LVL_ERROR
+### LogFace.LVL\_ERROR
 Error log level
 
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
 <a name="LogFace.LVL_SECURITY"></a>
 
-### LogFace.LVL_SECURITY
+### LogFace.LVL\_SECURITY
 Security log level
 
 **Kind**: static constant of [<code>LogFace</code>](#LogFace)  
@@ -980,13 +980,13 @@ Interface communication error. Fired during call processing.
 **Kind**: event emitted by [<code>NativeIface</code>](#NativeIface)  
 <a name="NativeIface._specs"></a>
 
-### NativeIface._specs
+### NativeIface.\_specs
 Must be object with version => spec pairs in child class, if set.
 
 **Kind**: static property of [<code>NativeIface</code>](#NativeIface)  
 <a name="NativeIface._specs_module_prefix"></a>
 
-### NativeIface._specs_module_prefix
+### NativeIface.\_specs\_module\_prefix
 Must be module name prefix, example: 'MyModule/specs/name_'.
 
 If version 1.0 is requested then spec is loaded from
@@ -1212,44 +1212,44 @@ CCM close event. Fired on CCM shutdown.
 **Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 
-### SimpleCCM.SAFE_PAYLOAD_LIMIT
+### SimpleCCM.SAFE\_PAYLOAD\_LIMIT
 Maximum FutoIn message payload size (not related to raw data)
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Default**: <code>65536</code>  
 <a name="SimpleCCM.SVC_RESOLVER"></a>
 
-### SimpleCCM.SVC_RESOLVER
+### SimpleCCM.SVC\_RESOLVER
 Runtime iface resolution v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_AUTH"></a>
 
-### SimpleCCM.SVC_AUTH
+### SimpleCCM.SVC\_AUTH
 AuthService v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_DEFENSE"></a>
 
-### SimpleCCM.SVC_DEFENSE
+### SimpleCCM.SVC\_DEFENSE
 Defense system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_ACL"></a>
 
-### SimpleCCM.SVC_ACL
+### SimpleCCM.SVC\_ACL
 Access Control system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_LOG"></a>
 
-### SimpleCCM.SVC_LOG
+### SimpleCCM.SVC\_LOG
 Audit Logging v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_CACHE_"></a>
 
-### SimpleCCM.SVC_CACHE_
+### SimpleCCM.SVC\_CACHE\_
 cache v1.x iface name prefix
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
@@ -1296,13 +1296,13 @@ Control JSON Schema validation in development.
 
 <a name="SpecTools.STANDARD_ERRORS"></a>
 
-### SpecTools.STANDARD_ERRORS
+### SpecTools.STANDARD\_ERRORS
 Enumeration of standard errors
 
 **Kind**: static constant of [<code>SpecTools</code>](#SpecTools)  
 <a name="SpecTools.standard_errors"></a>
 
-### ~~SpecTools.standard_errors~~
+### ~~SpecTools.standard\_errors~~
 ***Deprecated***
 
 Enumeration of standard errors
@@ -1864,44 +1864,44 @@ CCM close event. Fired on CCM shutdown.
 **Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 
-### SimpleCCM.SAFE_PAYLOAD_LIMIT
+### SimpleCCM.SAFE\_PAYLOAD\_LIMIT
 Maximum FutoIn message payload size (not related to raw data)
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Default**: <code>65536</code>  
 <a name="SimpleCCM.SVC_RESOLVER"></a>
 
-### SimpleCCM.SVC_RESOLVER
+### SimpleCCM.SVC\_RESOLVER
 Runtime iface resolution v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_AUTH"></a>
 
-### SimpleCCM.SVC_AUTH
+### SimpleCCM.SVC\_AUTH
 AuthService v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_DEFENSE"></a>
 
-### SimpleCCM.SVC_DEFENSE
+### SimpleCCM.SVC\_DEFENSE
 Defense system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_ACL"></a>
 
-### SimpleCCM.SVC_ACL
+### SimpleCCM.SVC\_ACL
 Access Control system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_LOG"></a>
 
-### SimpleCCM.SVC_LOG
+### SimpleCCM.SVC\_LOG
 Audit Logging v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_CACHE_"></a>
 
-### SimpleCCM.SVC_CACHE_
+### SimpleCCM.SVC\_CACHE\_
 cache v1.x iface name prefix
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
@@ -2079,44 +2079,44 @@ CCM close event. Fired on CCM shutdown.
 **Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 
-### SimpleCCM.SAFE_PAYLOAD_LIMIT
+### SimpleCCM.SAFE\_PAYLOAD\_LIMIT
 Maximum FutoIn message payload size (not related to raw data)
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Default**: <code>65536</code>  
 <a name="SimpleCCM.SVC_RESOLVER"></a>
 
-### SimpleCCM.SVC_RESOLVER
+### SimpleCCM.SVC\_RESOLVER
 Runtime iface resolution v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_AUTH"></a>
 
-### SimpleCCM.SVC_AUTH
+### SimpleCCM.SVC\_AUTH
 AuthService v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_DEFENSE"></a>
 
-### SimpleCCM.SVC_DEFENSE
+### SimpleCCM.SVC\_DEFENSE
 Defense system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_ACL"></a>
 
-### SimpleCCM.SVC_ACL
+### SimpleCCM.SVC\_ACL
 Access Control system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_LOG"></a>
 
-### SimpleCCM.SVC_LOG
+### SimpleCCM.SVC\_LOG
 Audit Logging v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_CACHE_"></a>
 
-### SimpleCCM.SVC_CACHE_
+### SimpleCCM.SVC\_CACHE\_
 cache v1.x iface name prefix
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
@@ -2294,44 +2294,44 @@ CCM close event. Fired on CCM shutdown.
 **Kind**: event emitted by [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SAFE_PAYLOAD_LIMIT"></a>
 
-### SimpleCCM.SAFE_PAYLOAD_LIMIT
+### SimpleCCM.SAFE\_PAYLOAD\_LIMIT
 Maximum FutoIn message payload size (not related to raw data)
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Default**: <code>65536</code>  
 <a name="SimpleCCM.SVC_RESOLVER"></a>
 
-### SimpleCCM.SVC_RESOLVER
+### SimpleCCM.SVC\_RESOLVER
 Runtime iface resolution v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_AUTH"></a>
 
-### SimpleCCM.SVC_AUTH
+### SimpleCCM.SVC\_AUTH
 AuthService v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_DEFENSE"></a>
 
-### SimpleCCM.SVC_DEFENSE
+### SimpleCCM.SVC\_DEFENSE
 Defense system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_ACL"></a>
 
-### SimpleCCM.SVC_ACL
+### SimpleCCM.SVC\_ACL
 Access Control system v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_LOG"></a>
 
-### SimpleCCM.SVC_LOG
+### SimpleCCM.SVC\_LOG
 Audit Logging v1.x
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  
 <a name="SimpleCCM.SVC_CACHE_"></a>
 
-### SimpleCCM.SVC_CACHE_
+### SimpleCCM.SVC\_CACHE\_
 cache v1.x iface name prefix
 
 **Kind**: static constant of [<code>SimpleCCM</code>](#SimpleCCM)  

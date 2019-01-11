@@ -6,7 +6,7 @@ const expect = require( 'chai' ).expect;
 const performance_now = require( "performance-now" );
 
 const is_browser = ( typeof window !== 'undefined' );
-const mod = module.require;
+const mod = module;
 const { MessageCoder } = is_browser
     ? require( 'futoin-invoker' )
     : mod.require( '../lib/invoker' );
