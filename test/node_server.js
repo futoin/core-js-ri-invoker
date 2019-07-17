@@ -195,6 +195,10 @@ function createTestHttpServer( cb ) {
             ws.on( 'message', function( msg ) {
                 let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg );
 
+                if ( frsp === '' ) {
+                    return;
+                }
+
                 if ( frsp === null ) {
                     sock.destroy();
                     return;

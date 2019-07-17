@@ -49,18 +49,6 @@ module.exports = {
             commonjs: "msgpack-lite",
             commonjs2: "msgpack-lite",
         },
-        chai : {
-            root: "chai",
-            amd: "chai",
-            commonjs: "chai",
-            commonjs2: "chai",
-        },
-        mocha : {
-            root: "mocha",
-            amd: "mocha",
-            commonjs: "mocha",
-            commonjs2: "mocha",
-        },
     },
     node : false,
 };

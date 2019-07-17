@@ -70,6 +70,7 @@ class MessageCoder {
     }
 
     static get( name ) {
+        // eslint-disable-next-line no-prototype-builtins
         const res = coders.hasOwnProperty( name ) && coders[name];
 
         if ( !res ) {

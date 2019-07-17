@@ -41,7 +41,7 @@ if ( is_browser ) {
         done();
     };
 
-    thisDir = '.';
+    thisDir = '/test';
 
     expect( window.FutoInInvoker ).to.equal( invoker );
 
@@ -1015,7 +1015,7 @@ describe( 'NativeIface', function() {
                     ccm.register(
                         as, 'myiface', 'fileface.a:1.1',
                         'browser://server_frame', null,
-                        { targetOrigin: 'http://localhost:8000' } );
+                        { targetOrigin: 'http://localhost:8001' } );
                 } ) );
 
                 create_remote_call_tests();
@@ -1145,7 +1145,7 @@ describe( 'NativeIface', function() {
                     ccm.register(
                         as, 'myiface', 'fileface.a:1.1',
                         'browser://server_frame', null,
-                        { targetOrigin: 'http://localhost:8000' } );
+                        { targetOrigin: 'http://localhost:8001' } );
                 } ) );
 
                 after( after_common );
@@ -1496,54 +1496,52 @@ describe( 'CacheFace', function() {
 
 
 //============================================================================
-if ( isNode ) {
-    describe( 'PingFace', function() {
-        const mod = module;
-        var PingFace = mod.require( '../PingFace' );
+describe( 'PingFace', function() {
+    var PingFace = require( '../PingFace' );
 
-        before( $as_test( ( as ) => {
-            var opts = {};
+    before( $as_test( ( as ) => {
+        var opts = {};
 
-            opts.specDirs = thisDir + '/specs';
-            ccm = new invoker.AdvancedCCM( opts );
-            ccm.limitZone( 'default', {
-                concurrent: 0xFFFF,
-                rate: 0xFFFF,
-            } );
-
-            as.add( $as_test( ( as ) => {
-                PingFace.register( as, ccm, 'ping', 'secure+ws://localhost:23456/ftn', 'login:pass' );
-
-                as.add( ( as ) => {
-                    as.waitExternal();
-                    createTestHttpServer( () => as.success() );
-                } );
-            } ) );
-        } ) );
-
-        after( ( done ) => {
-            closeTestHttpServer( done );
+        opts.specDirs = thisDir + '/specs';
+        ccm = new invoker.AdvancedCCM( opts );
+        ccm.limitZone( 'default', {
+            concurrent: 0xFFFF,
+            rate: 0xFFFF,
         } );
 
-        it( 'should call futoin.ping through native interface', $as_test( ( as ) => {
+        as.add( $as_test( ( as ) => {
+            PingFace.register( as, ccm, 'ping', 'secure+ws://localhost:23456/ftn', 'login:pass' );
+
             as.add( ( as ) => {
-                ccm.iface( 'ping' ).ping( as, 123 );
-
-                as.add( ( as, echo ) => {
-                    expect( echo ).equal( 123 );
-                } );
+                as.waitExternal();
+                createTestHttpServer( () => as.success() );
             } );
         } ) );
+    } ) );
+
+    after( ( done ) => {
+        closeTestHttpServer( done );
     } );
 
-    describe( 'MasterAuth', function() {
-        it( 'should raise default errors', function() {
-            const ma = new invoker.MasterAuth;
-            expect( () => ma.signMessage() ).throw(
-                'Missing signMessage() implementation' );
-            expect( () => ma.genMAC() ).throw(
-                'Missing genMAC() implementation' );
+    it( 'should call futoin.ping through native interface', $as_test( ( as ) => {
+        as.add( ( as ) => {
+            ccm.iface( 'ping' ).ping( as, 123 );
+
+            as.add( ( as, echo ) => {
+                expect( echo ).equal( 123 );
+            } );
         } );
+    } ) );
+} );
+
+//============================================================================
+describe( 'MasterAuth', function() {
+    it( 'should raise default errors', function() {
+        const ma = new invoker.MasterAuth;
+        expect( () => ma.signMessage() ).throw(
+            'Missing signMessage() implementation' );
+        expect( () => ma.genMAC() ).throw(
+            'Missing genMAC() implementation' );
     } );
-}
+} );
 

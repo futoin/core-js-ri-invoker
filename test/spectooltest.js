@@ -17,12 +17,15 @@ const invoker = is_browser
 
 const $as_test = require( 'futoin-asyncsteps/testcase' );
 
-var thisDir;
+let thisDir;
+let specsURL;
 
 if ( !isNode ) {
-    thisDir = '.';
+    thisDir = '/test';
+    specsURL = 'http://localhost:8001/test/specs';
 } else {
     thisDir = __dirname;
+    specsURL = 'http://localhost:8000/test/specs';
     var crypto = mod.require( 'crypto' );
 }
 
@@ -85,7 +88,7 @@ describe( 'SpecTools', function() {
             SpecTools.loadIface(
                 as,
                 info,
-                [ 'not_existing', 'http://localhost:8000/test/specs' ]
+                [ 'not_existing', specsURL ]
             );
 
             as.add( ( as ) => {
@@ -104,7 +107,7 @@ describe( 'SpecTools', function() {
             SpecTools.loadIface(
                 as,
                 info,
-                [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                [ 'not_existing', specsURL ],
                 load_cache
             );
 
@@ -117,7 +120,7 @@ describe( 'SpecTools', function() {
                 SpecTools.loadIface(
                     as,
                     info,
-                    [ 'not_existing', 'http://localhost:8000/test/specs' ],
+                    [ 'not_existing', specsURL ],
                     load_cache
                 );
             } ) ;
@@ -1698,8 +1701,15 @@ describe( 'SpecTools', function() {
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
-                expect( as.state.error_info ).equal(
-                    'RE:string: Invalid regular expression: /[a-Z]/: Range out of order in character class' );
+
+                try {
+                    expect( as.state.error_info ).equal(
+                        'RE:string: Invalid regular expression: /[a-Z]/: Range out of order in character class' );
+                } catch ( e ) {
+                    expect( as.state.error_info ).equal(
+                        'RE:string: invalid range in character class' );
+                }
+
                 as.success();
             }
         ) );
