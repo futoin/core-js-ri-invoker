@@ -1,3 +1,6 @@
+=== (next) ===
+CHANGED: to use @futoin/specs
+
 === 2.3.1 (2019-09-27) ===
 CHANGED: dependency maintenance
 

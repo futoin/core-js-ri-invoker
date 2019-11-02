@@ -649,6 +649,11 @@
   resolved "https://registry.yarnpkg.com/@futoin/optihelp/-/optihelp-1.2.2.tgz#9e5d628a5d458e827c4d0f806d31599819a2417e"
   integrity sha512-8WL4EwcVd3XJupHPmkOInySmQC1m7Wk5/O+KQGr7DGMOkLQhv50AgVPEEHp+mVRIlktSrgn5Zm9i9yNyfXPJvg==
 
+"@futoin/specs@>=2019.1102.3":
+  version "2019.1102.3"
+  resolved "https://registry.yarnpkg.com/@futoin/specs/-/specs-2019.1102.3.tgz#8d80bc3d47e3ffd48a34c0a243cd684241510e5f"
+  integrity sha512-HwcKbtqFuWrJloW4cLUyJKmKGP98xMhT4ehLRcDZ9OmNvhj6RK8jXCkKVzeaNhN4e04NgTomqRJtUW1/ajzYFA==
+
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.8.5.tgz#51b1c5fe6576a34953bf4b253df9f0d490d9e359"

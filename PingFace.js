@@ -66,26 +66,4 @@ module.exports = PingFace;
 const specs = {};
 PingFace._specs = specs;
 
-PingFace._specs['1.0'] = {
-    iface : "futoin.ping",
-    version : "1.0",
-    ftn3rev : "1.1",
-    funcs : {
-        ping : {
-            params : {
-                echo : {
-                    type : "integer",
-                    desc : "Arbitrary integer",
-                },
-            },
-            result : {
-                echo : {
-                    type : "integer",
-                    desc : "See params",
-                },
-            },
-            desc : "Check if peer is accessible",
-        },
-    },
-    desc : "Ping-pong interface",
-};
+PingFace._specs['1.0'] = require( '@futoin/specs/final/meta/futoin.ping-1.0-iface.json' );
