@@ -402,6 +402,7 @@ Advanced CCM - Reference Implementation
 Register standard MasterService end-point (adds steps to *as*)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+register)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -419,6 +420,7 @@ Register standard MasterService end-point (adds steps to *as*)
 Get native interface wrapper for invocation of iface methods
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>iface</code>](#SimpleCCM+iface)  
 **Returns**: <code>NativeInterface</code> - - native interface  
 
 | Param | Type | Description |
@@ -431,6 +433,7 @@ Get native interface wrapper for invocation of iface methods
 Unregister previously registered interface (should not be used, unless really needed)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unRegister</code>](#SimpleCCM+unRegister)  
 **Emits**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 
 | Param | Type | Description |
@@ -443,6 +446,7 @@ Unregister previously registered interface (should not be used, unless really ne
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>defense</code>](#SimpleCCM+defense)  
 **Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
@@ -450,6 +454,7 @@ Shortcut to iface( "#defense" )
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>log</code>](#SimpleCCM+log)  
 **Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
@@ -457,6 +462,7 @@ Returns extended API interface as defined in FTN9 IF AuditLogService
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
 | Param | Type | Default | Description |
@@ -470,6 +476,7 @@ Assert that interface registered by name matches major version and minor is not 
 This function must generate fatal error and forbid any further execution
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>assertIface</code>](#SimpleCCM+assertIface)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -482,6 +489,7 @@ This function must generate fatal error and forbid any further execution
 Alias interface name with another name
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>alias</code>](#SimpleCCM+alias)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -495,6 +503,7 @@ Alias interface name with another name
 Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+close)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="SimpleCCM+limitZone"></a>
 
@@ -502,6 +511,7 @@ Shutdown CCM (close all active comms)
 Configure named AsyncSteps Limiter instance
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>limitZone</code>](#SimpleCCM+limitZone)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -515,6 +525,7 @@ CCM regiser event. Fired on new interface registration.
 ( name, ifacever, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+event_register)  
 <a name="SimpleCCM+event_unregister"></a>
 
 ### "unregister"
@@ -522,12 +533,14 @@ CCM regiser event. Fired on interface unregistration.
 ( name, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 <a name="SimpleCCM+event_close"></a>
 
 ### "close"
 CCM close event. Fired on CCM shutdown.
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="CacheFace"></a>
 
 ## CacheFace ⇐ [<code>NativeIface</code>](#NativeIface)
@@ -587,6 +600,7 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 Get interface info
 
 **Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>ifaceInfo</code>](#NativeIface+ifaceInfo)  
 **Returns**: [<code>InterfaceInfo</code>](#InterfaceInfo) - - interface info  
 <a name="NativeIface+bindDerivedKey"></a>
 
@@ -594,6 +608,7 @@ Get interface info
 Results with DerivedKeyAccessor through as.success()
 
 **Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>bindDerivedKey</code>](#NativeIface+bindDerivedKey)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -605,18 +620,21 @@ Results with DerivedKeyAccessor through as.success()
 Fired when interface establishes connection.
 
 **Kind**: event emitted by [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>connect</code>](#NativeIface+event_connect)  
 <a name="NativeIface+event_disconnect"></a>
 
 ### "disconnect"
 Fired when interface connection is closed.
 
 **Kind**: event emitted by [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>disconnect</code>](#NativeIface+event_disconnect)  
 <a name="NativeIface+event_close"></a>
 
 ### "close"
 Interface close event. Fired on interface unregistration.
 
 **Kind**: event emitted by [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>close</code>](#NativeIface+event_close)  
 <a name="NativeIface+event_commError"></a>
 
 ### "commError"
@@ -624,6 +642,7 @@ Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
 **Kind**: event emitted by [<code>CacheFace</code>](#CacheFace)  
+**Overrides**: [<code>commError</code>](#NativeIface+event_commError)  
 <a name="CacheFace.register"></a>
 
 ### CacheFace.register(as, ccm, name, endpoint, [credentials], [options])
@@ -822,6 +841,7 @@ Log message in security level
 Get interface info
 
 **Kind**: instance method of [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>ifaceInfo</code>](#NativeIface+ifaceInfo)  
 **Returns**: [<code>InterfaceInfo</code>](#InterfaceInfo) - - interface info  
 <a name="NativeIface+bindDerivedKey"></a>
 
@@ -829,6 +849,7 @@ Get interface info
 Results with DerivedKeyAccessor through as.success()
 
 **Kind**: instance method of [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>bindDerivedKey</code>](#NativeIface+bindDerivedKey)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -840,18 +861,21 @@ Results with DerivedKeyAccessor through as.success()
 Fired when interface establishes connection.
 
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>connect</code>](#NativeIface+event_connect)  
 <a name="NativeIface+event_disconnect"></a>
 
 ### "disconnect"
 Fired when interface connection is closed.
 
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>disconnect</code>](#NativeIface+event_disconnect)  
 <a name="NativeIface+event_close"></a>
 
 ### "close"
 Interface close event. Fired on interface unregistration.
 
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>close</code>](#NativeIface+event_close)  
 <a name="NativeIface+event_commError"></a>
 
 ### "commError"
@@ -859,6 +883,7 @@ Interface communication error. Fired during call processing.
 ( error_info, rawreq )
 
 **Kind**: event emitted by [<code>LogFace</code>](#LogFace)  
+**Overrides**: [<code>commError</code>](#NativeIface+event_commError)  
 <a name="LogFace.LVL_DEBUG"></a>
 
 ### LogFace.LVL\_DEBUG
@@ -2372,6 +2397,7 @@ cache v1.x iface name prefix
 Register standard MasterService end-point (adds steps to *as*)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+register)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -2389,6 +2415,7 @@ Register standard MasterService end-point (adds steps to *as*)
 Get native interface wrapper for invocation of iface methods
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>iface</code>](#SimpleCCM+iface)  
 **Returns**: <code>NativeInterface</code> - - native interface  
 
 | Param | Type | Description |
@@ -2401,6 +2428,7 @@ Get native interface wrapper for invocation of iface methods
 Unregister previously registered interface (should not be used, unless really needed)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unRegister</code>](#SimpleCCM+unRegister)  
 **Emits**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 
 | Param | Type | Description |
@@ -2413,6 +2441,7 @@ Unregister previously registered interface (should not be used, unless really ne
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>defense</code>](#SimpleCCM+defense)  
 **Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
@@ -2420,6 +2449,7 @@ Shortcut to iface( "#defense" )
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>log</code>](#SimpleCCM+log)  
 **Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
@@ -2427,6 +2457,7 @@ Returns extended API interface as defined in FTN9 IF AuditLogService
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
 | Param | Type | Default | Description |
@@ -2440,6 +2471,7 @@ Assert that interface registered by name matches major version and minor is not 
 This function must generate fatal error and forbid any further execution
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>assertIface</code>](#SimpleCCM+assertIface)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2452,6 +2484,7 @@ This function must generate fatal error and forbid any further execution
 Alias interface name with another name
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>alias</code>](#SimpleCCM+alias)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -2465,6 +2498,7 @@ Alias interface name with another name
 Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+close)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="SimpleCCM+limitZone"></a>
 
@@ -2472,6 +2506,7 @@ Shutdown CCM (close all active comms)
 Configure named AsyncSteps Limiter instance
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>limitZone</code>](#SimpleCCM+limitZone)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2485,6 +2520,7 @@ CCM regiser event. Fired on new interface registration.
 ( name, ifacever, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+event_register)  
 <a name="SimpleCCM+event_unregister"></a>
 
 ### "unregister"
@@ -2492,12 +2528,14 @@ CCM regiser event. Fired on interface unregistration.
 ( name, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 <a name="SimpleCCM+event_close"></a>
 
 ### "close"
 CCM close event. Fired on CCM shutdown.
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="AdvancedCCM"></a>
 
 ## AdvancedCCM
@@ -2535,6 +2573,7 @@ CCM close event. Fired on CCM shutdown.
 Register standard MasterService end-point (adds steps to *as*)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+register)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -2552,6 +2591,7 @@ Register standard MasterService end-point (adds steps to *as*)
 Get native interface wrapper for invocation of iface methods
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>iface</code>](#SimpleCCM+iface)  
 **Returns**: <code>NativeInterface</code> - - native interface  
 
 | Param | Type | Description |
@@ -2564,6 +2604,7 @@ Get native interface wrapper for invocation of iface methods
 Unregister previously registered interface (should not be used, unless really needed)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unRegister</code>](#SimpleCCM+unRegister)  
 **Emits**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 
 | Param | Type | Description |
@@ -2576,6 +2617,7 @@ Unregister previously registered interface (should not be used, unless really ne
 Shortcut to iface( "#defense" )
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>defense</code>](#SimpleCCM+defense)  
 **Returns**: <code>object</code> - native defense interface  
 <a name="SimpleCCM+log"></a>
 
@@ -2583,6 +2625,7 @@ Shortcut to iface( "#defense" )
 Returns extended API interface as defined in FTN9 IF AuditLogService
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>log</code>](#SimpleCCM+log)  
 **Returns**: <code>object</code> - FTN9 native face  
 <a name="SimpleCCM+cache"></a>
 
@@ -2590,6 +2633,7 @@ Returns extended API interface as defined in FTN9 IF AuditLogService
 Returns extended API interface as defined in [FTN14 Cache][]
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
 | Param | Type | Default | Description |
@@ -2603,6 +2647,7 @@ Assert that interface registered by name matches major version and minor is not 
 This function must generate fatal error and forbid any further execution
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>assertIface</code>](#SimpleCCM+assertIface)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2615,6 +2660,7 @@ This function must generate fatal error and forbid any further execution
 Alias interface name with another name
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>alias</code>](#SimpleCCM+alias)  
 **Emits**: [<code>register</code>](#SimpleCCM+event_register)  
 
 | Param | Type | Description |
@@ -2628,6 +2674,7 @@ Alias interface name with another name
 Shutdown CCM (close all active comms)
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+close)  
 **Emits**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="SimpleCCM+limitZone"></a>
 
@@ -2635,6 +2682,7 @@ Shutdown CCM (close all active comms)
 Configure named AsyncSteps Limiter instance
 
 **Kind**: instance method of [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>limitZone</code>](#SimpleCCM+limitZone)  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2648,6 +2696,7 @@ CCM regiser event. Fired on new interface registration.
 ( name, ifacever, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>register</code>](#SimpleCCM+event_register)  
 <a name="SimpleCCM+event_unregister"></a>
 
 ### "unregister"
@@ -2655,12 +2704,14 @@ CCM regiser event. Fired on interface unregistration.
 ( name, info )
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>unregister</code>](#SimpleCCM+event_unregister)  
 <a name="SimpleCCM+event_close"></a>
 
 ### "close"
 CCM close event. Fired on CCM shutdown.
 
 **Kind**: event emitted by [<code>AdvancedCCM</code>](#AdvancedCCM)  
+**Overrides**: [<code>close</code>](#SimpleCCM+event_close)  
 <a name="Invoker"></a>
 
 ## Invoker

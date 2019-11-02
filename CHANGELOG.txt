@@ -1,3 +1,6 @@
+=== (next) ===
+CHANGED: deps maintenance
+
 === 2.4.0 (2019-11-02) ===
 CHANGED: to use @futoin/specs
 
