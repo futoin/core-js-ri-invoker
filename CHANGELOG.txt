@@ -1,5 +1,5 @@
 === (next) ===
-CHANGED: deps maintenance
+CHANGED: dependency maintenance
 
 === 2.4.1 (2019-11-02) ===
 CHANGED: deps maintenance
