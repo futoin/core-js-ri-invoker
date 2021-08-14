@@ -2666,7 +2666,7 @@ describe( 'SpecTools', function() {
                 },
                 ( as, err ) => {
                     expect( as.state.error_info ).to.equal(
-                        `JSON Schema validation failed: data/funcs/fnc/params/a should be object` );
+                        `JSON Schema validation failed: data/funcs/fnc/params/a must be object` );
                     expect( err ).to.equal( 'InternalError' );
                     as.success();
                 }
