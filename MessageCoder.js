@@ -49,10 +49,6 @@ class MessageCoder {
     */
 
     static detect( data ) {
-        if ( typeof data === 'string' && ( data[0] == '{' ) ) {
-            return coders.JSON;
-        }
-
         for ( let k in coders ) {
             const c = coders[k];
 

@@ -220,7 +220,7 @@ function createTestHttpServer( cb ) {
                 }
 
                 frsp = coder.encode( frsp );
-                ws.send( frsp );
+                ws.send( frsp, { binary: true } );
             } );
         } );
     } );

@@ -50,6 +50,18 @@ for ( let coder_name of [ 'JSON', 'CBOR', 'MPCK' ] ) {
             expect( res.name() ).to.equal( coder_name );
         } );
 
+        it ( 'should auto-detect binary', function() {
+            const m = coder.encode( msg );
+            const res = MessageCoder.detect( Buffer.from( m ) );
+            expect( res.name() ).to.equal( coder_name );
+        } );
+
+        it ( 'should detect binary', function() {
+            const m = coder.encode( msg );
+            const res = coder.detect( Buffer.from( m ) );
+            expect( res ).to.be.true;
+        } );
+
         it ( 'encode benchmark', function() {
             this.timeout( 30e3 );
             const count = BENCH_COUNT;
