@@ -1,4 +1,4 @@
-=== (next) ===
+=== 2.4.8 (2021-08-14) ===
 FIXED: support binary message support in JSON coder
 
 === 2.4.7 (2021-08-14) ===
