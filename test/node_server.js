@@ -162,7 +162,7 @@ function createTestHttpServer( cb ) {
             response.end();
         } );
     } );
-    httpsrv.listen( 23456, '127.0.0.1', 10, cb );
+    httpsrv.listen( 23456, 'localhost', 10, cb );
 
     const wss = new WebSocket.Server( { noServer: true } );
 
