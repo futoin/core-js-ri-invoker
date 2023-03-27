@@ -56,10 +56,11 @@
     "agentkeepalive": "^4.3.0",
     "detect-node": "^2.1.0",
     "futoin-asyncevent": "^2.3.7",
-    "futoin-request": "^2.1.2",
     "lodash": "^4.17.21",
     "msgpack-lite": "^0.1.26",
     "performance-now": "^2.1.0",
+    "tiny-json-http": "^7.5.0",
+    "tough-cookie": "^4.1.2",
     "ws": "^8.13.0"
   },
   "devDependencies": {
