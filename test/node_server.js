@@ -16,7 +16,7 @@ require( '../lib/JSONCoder' ).register();
 require( '../lib/CBORCoder' ).register();
 require( '../lib/MsgPackCoder' ).register();
 
-function processTestServerRequest( request, data ) {
+function processTestServerRequest( request, data, expect ) {
     let freq;
     let coder = MessageCoder.detect( data );
 
@@ -83,7 +83,7 @@ function processTestServerRequest( request, data ) {
         }
     }
 
-    const frsp = processServerRequest( freq, data, coder );
+    const frsp = processServerRequest( freq, data, coder, expect );
     return {
         frsp,
         freq,
@@ -92,7 +92,7 @@ function processTestServerRequest( request, data ) {
     };
 }
 
-function createTestHttpServer( cb ) {
+function createTestHttpServer( cb, expect ) {
     if ( httpsrv ) {
         cb();
         return;
@@ -114,7 +114,7 @@ function createTestHttpServer( cb ) {
             let macopt;
 
             if ( request.method !== 'OPTIONS' ) {
-                let res = processTestServerRequest( request, freq );
+                let res = processTestServerRequest( request, freq, expect );
                 frsp = res.frsp;
                 coder = res.coder;
                 macopt = res.macopt;
@@ -193,7 +193,7 @@ function createTestHttpServer( cb ) {
             } );
 
             ws.on( 'message', function( msg ) {
-                let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg );
+                let { frsp, coder, freq, macopt } = processTestServerRequest( null, msg, expect );
 
                 if ( frsp === '' ) {
                     return;
@@ -251,13 +251,19 @@ exports.createTestHttpServer = createTestHttpServer;
 exports.closeTestHttpServer = closeTestHttpServer;
 
 if ( require.main === module ) {
-    createTestHttpServer( function() {
-        console.log( 'LISTENING' );
+    const init = async () => {
+        const { expect } = await import( 'chai' );
 
-        try {
-            process.send( { ready : 'ok' } );
-        } catch ( e ) {
-            console.log( e );
-        }
-    } );
+        createTestHttpServer( function() {
+            console.log( 'LISTENING' );
+
+            try {
+                process.send( { ready : 'ok' } );
+            } catch ( e ) {
+                console.log( e );
+            }
+        }, expect );
+    };
+
+    init();
 }

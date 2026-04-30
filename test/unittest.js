@@ -11,8 +11,6 @@ const invoker = is_browser
     : mod.require( '../lib/invoker' );
 
 const isNode = !is_browser;
-const chai = require( 'chai' );
-const { assert, expect } = chai;
 const async_steps = require( 'futoin-asyncsteps' );
 const $as_test = async_steps.testcase;
 
@@ -32,6 +30,12 @@ var thisDir;
 var coder;
 var coders;
 
+let assert;
+let expect;
+before( async () => {
+    ( { assert, expect } = ( await import( 'chai' ) ) );
+} );
+
 if ( is_browser ) {
     createTestHttpServer = function( cb ) {
         cb();
@@ -43,7 +47,9 @@ if ( is_browser ) {
 
     thisDir = '/test';
 
-    expect( window.FutoInInvoker ).to.equal( invoker );
+    describe( 'browser', () => {
+        it( 'should be invoker', () => expect( window.FutoInInvoker ).to.equal( invoker ) );
+    } );
 
     coders = {
         JSON: true,
@@ -51,11 +57,7 @@ if ( is_browser ) {
         // MPCK: true,
     };
 } else {
-    const mod = module;
-    var node_server = mod.require( './node_server.js' );
-
-    createTestHttpServer = node_server.createTestHttpServer;
-    closeTestHttpServer = node_server.closeTestHttpServer;
+    ( { createTestHttpServer, closeTestHttpServer } = mod.require( './node_server' ) );
 
     thisDir = __dirname;
 
@@ -191,7 +193,7 @@ describe( 'SimpleCCM', function() {
             expect( err ).equal( 'InvokerError' );
             expect( as.state.error_info ).equal( 'Already registered' );
             as.success();
-        }
+        },
     ) );
 
     it( 'should fail on invalid ifacever at registration/assert', function() {
@@ -338,7 +340,7 @@ describe( 'SimpleCCM', function() {
                 if ( err === 'SecurityError' ) {
                     as.success();
                 }
-            }
+            },
         );
     } ) );
 } );
@@ -369,7 +371,7 @@ describe( 'AdvancedCCM', function() {
             expect( as.state.error_info ).equal( 'Caching is not supported yet' );
             ccm.register( as, 'myiface', 'fileface.a:1.1', 'secure+http://localhost:23456' );
             ccm.cacheInit( as );
-        }
+        },
     ) );
 
     it( 'should handle inheritted interface assert', $as_test( ( as ) => {
@@ -394,9 +396,9 @@ describe( 'AdvancedCCM', function() {
                     if ( err !== 'Fail' ) {
                         as.success();
                     }
-                }
+                },
             );
-        }
+        },
         );
     } ) );
 
@@ -434,7 +436,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
                 n : 2.8,
                 o : { m : 3 },
                 i : 4,
-            }
+            },
         );
 
         as.add( ( as, res ) => {
@@ -455,7 +457,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
                 n : 2.8,
                 o : { m : 3 },
                 i : 4,
-            }
+            },
         );
 
         as.add( ( as, res ) => {
@@ -469,7 +471,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             "noResult",
             {
                 a : "123",
-            }
+            },
         );
 
         as.add( ( as, res ) => {
@@ -484,7 +486,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
     it( 'customResult', $as_test( ( as ) => {
         iface.call(
             as,
-            "customResult"
+            "customResult",
         );
 
         as.add( ( as, res ) => {
@@ -495,7 +497,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
     it( 'customResultVariant', $as_test( ( as ) => {
         iface.call(
             as,
-            "customResultVariant"
+            "customResultVariant",
         );
 
         as.add( ( as, res ) => {
@@ -506,7 +508,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
     it( 'call', $as_test( ( as ) => {
         iface.call(
             as,
-            "call"
+            "call",
         );
 
         as.add( ( as, res ) => {
@@ -528,7 +530,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             as,
             "rawUploadFunc",
             {},
-            "MY_UPLOAD"
+            "MY_UPLOAD",
         );
 
         as.add( ( as, res ) => {
@@ -552,7 +554,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             },
             "MY_UPLOAD",
             null,
-            3e3
+            3e3,
         );
 
         as.add( ( as, res ) => {
@@ -567,7 +569,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
 
         iface.call(
             as,
-            "rawDownload"
+            "rawDownload",
         );
 
         as.add( ( as, res ) => {
@@ -583,13 +585,13 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
 
             iface.call(
                 as,
-                "triggerError"
+                "triggerError",
             );
         },
         ( as, err ) => {
             expect( err ).equal( "MY_ERROR" );
             as.success();
-        }
+        },
     ) );
 
     it( 'wrongDataResult', $as_test(
@@ -601,7 +603,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
 
             iface.call(
                 as,
-                "wrongDataResult"
+                "wrongDataResult",
             );
 
             as.add( ( as, res ) => {
@@ -618,14 +620,14 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'missingResultVar', $as_test(
         ( as ) => {
             iface.call(
                 as,
-                "missingResultVar"
+                "missingResultVar",
             );
 
             as.add( ( as, res ) => {
@@ -642,7 +644,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'rawResultExpected', $as_test(
@@ -654,7 +656,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
 
             iface.call(
                 as,
-                "rawResultExpected"
+                "rawResultExpected",
             );
 
             as.add( ( as, res ) => {
@@ -671,14 +673,14 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'wrongException', $as_test(
         ( as ) => {
             iface.call(
                 as,
-                "wrongException"
+                "wrongException",
             );
         },
         ( as, err ) => {
@@ -691,14 +693,14 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'unknownFunc', $as_test(
         ( as ) => {
             iface.call(
                 as,
-                "unknownFunc"
+                "unknownFunc",
             );
         },
         ( as, err ) => {
@@ -711,7 +713,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'unexpectedUpload', $as_test(
@@ -720,7 +722,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
                 as,
                 "unexpectedUpload",
                 {},
-                "MY_UPLOAD"
+                "MY_UPLOAD",
             );
 
             as.add( ( as, res ) => {
@@ -741,7 +743,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'noParams', $as_test(
@@ -749,7 +751,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             iface.call(
                 as,
                 "noParams",
-                { a : "a" }
+                { a : "a" },
             );
 
             as.add( ( as, res ) => {
@@ -766,7 +768,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'unknownParam', $as_test(
@@ -775,7 +777,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
                 as,
                 "unknownParam",
                 { a : "a",
-                    b : "b" }
+                    b : "b" },
             );
 
             as.add( ( as, res ) => {
@@ -792,7 +794,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'missingParam', $as_test(
@@ -800,7 +802,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             iface.call(
                 as,
                 "unknownParam",
-                {}
+                {},
             );
 
             as.add( ( as, res ) => {
@@ -817,14 +819,14 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
             }
 
             as.success();
-        }
+        },
     ) );
 
     it( 'testUnicode', $as_test( ( as ) => {
         iface.call(
             as,
             "pingPong",
-            { ping : "Мои данные на русском un latviešu valodā" }
+            { ping : "Мои данные на русском un latviešu valodā" },
         );
 
         as.add( ( as, res ) => {
@@ -835,7 +837,7 @@ const create_remote_call_tests = ( coder = 'JSON' ) => {
     it( 'getCoder', $as_test( ( as ) => {
         iface.call(
             as,
-            "getCoder"
+            "getCoder",
         );
 
         as.add( ( as, res ) => {
@@ -880,7 +882,7 @@ const create_interceptor_call_tests = () => {
             "1",
             2.8,
             { m : 3 },
-            4
+            4,
         );
 
         as.add( ( as, res ) => {
@@ -891,7 +893,7 @@ const create_interceptor_call_tests = () => {
     it( 'noResult', $as_test( ( as ) => {
         iface.noResult(
             as,
-            "123"
+            "123",
         );
 
         as.add( ( as, res ) => {
@@ -922,7 +924,7 @@ const create_interceptor_call_tests = () => {
         ( as, err ) => {
             expect( err ).equal( "MY_ERROR" );
             as.success();
-        }
+        },
     ) );
 
     it ( 'should check stats', () => {
@@ -936,7 +938,7 @@ describe( 'NativeIface', function() {
     const start_server = ( as ) => {
         as.add( ( as ) => {
             as.setTimeout( 100 );
-            createTestHttpServer( () => as.success() );
+            createTestHttpServer( () => as.success(), expect );
         } );
     };
 
@@ -1247,7 +1249,7 @@ describe( 'NativeIface', function() {
                     } catch ( ex ) {
                         done( ex );
                     }
-                }
+                },
             );
             as.execute();
         } );
@@ -1296,7 +1298,7 @@ describe( 'NativeIface', function() {
                 expect( err ).equal( 'SecurityError' );
                 expect( as.state.error_info ).equal( "SecureChannel is required" );
                 as.success();
-            }
+            },
         ) );
 
         it( 'should throw on not implemented UNIX transport', $as_test(
@@ -1308,14 +1310,14 @@ describe( 'NativeIface', function() {
                         "noResult",
                         {
                             a : "123",
-                        }
+                        },
                     );
                 } );
             },
             ( as, err ) => {
                 expect( err ).equal( "InvokerError" );
                 as.success();
-            }
+            },
         ) );
 
         it( 'should throw on missing spec', $as_test(
@@ -1325,7 +1327,7 @@ describe( 'NativeIface', function() {
             ( as, err ) => {
                 expect( err ).equal( "InternalError" );
                 as.success();
-            }
+            },
         ) );
 
         it( 'should call internal effectively', $as_test( ( as ) => {
@@ -1339,7 +1341,7 @@ describe( 'NativeIface', function() {
                                     res : 'MY_RESULT',
                                 },
                             },
-                            true
+                            true,
                         );
                     } );
                 },
@@ -1378,7 +1380,7 @@ describe( 'LogFace', function() {
 
             as.add( function( as ) {
                 as.waitExternal();
-                createTestHttpServer( () => as.success() );
+                createTestHttpServer( () => as.success(), expect );
             } );
         } );
     } ) );
@@ -1454,7 +1456,7 @@ describe( 'CacheFace', function() {
 
             as.add( ( as ) => {
                 as.waitExternal();
-                createTestHttpServer( () => as.success() );
+                createTestHttpServer( () => as.success(), expect );
             } );
         } );
     } ) );
@@ -1514,7 +1516,7 @@ describe( 'PingFace', function() {
 
             as.add( ( as ) => {
                 as.waitExternal();
-                createTestHttpServer( () => as.success() );
+                createTestHttpServer( () => as.success(), expect );
             } );
         } ) );
     } ) );

@@ -21,6 +21,10 @@
 
 const NativeFace = require( './NativeIface' );
 
+
+/* global AsyncSteps */
+/* global AdvancedCCM */
+
 /**
  * Base for FTN4 ping-based interfaces
  */
@@ -38,10 +42,10 @@ class PingFace extends NativeFace {
      * @param {AdvancedCCM} ccm - CCM instance
      * @param {string} name - registration name for CCM
      * @param {string} endpoint - endpoint URL
-     * @param {*} [credentials=null] - see CCM register()
-     * @param {object} [options={}] - registration options
-     * @param {string} [options.version=1.0] - iface version
-     * @note Iface spec is embedded
+     * @param {any} [credentials] - see CCM register()
+     * @param {object} [options] - registration options
+     * @param {string} [options.version] - iface version
+     * **Iface spec is embedded**
      */
     static register( as, ccm, name, endpoint, credentials=null, options={} ) {
         const ifacever = options.version || '1.0';
@@ -56,7 +60,7 @@ class PingFace extends NativeFace {
             `${iface.iface}:${ifacever}`,
             endpoint,
             credentials,
-            options
+            options,
         );
     }
 }

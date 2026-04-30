@@ -5,7 +5,8 @@ const spectools = {};
 require( '../../lib/node/spectools_hmac' )( spectools );
 
 const Benchmark = require( 'benchmark' );
-const expect = require( 'chai' ).expect;
+import chai from 'chai';
+const { expect } = chai;
 const crypto = require( 'crypto' );
 
 var start;

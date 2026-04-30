@@ -2,7 +2,6 @@
 
 require( './prepare' );
 
-const expect = require( 'chai' ).expect;
 const performance_now = require( "performance-now" );
 
 const is_browser = ( typeof window !== 'undefined' );
@@ -25,6 +24,11 @@ const msg = {
     },
     rid: 'C123456',
 };
+
+let expect;
+before( async () => {
+    ( { expect } = ( await import( 'chai' ) ) );
+} );
 
 for ( let coder_name of [ 'JSON', 'CBOR', 'MPCK' ] ) {
     describe( coder_name, function() {

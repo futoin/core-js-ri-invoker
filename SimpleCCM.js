@@ -28,6 +28,10 @@ const SimpleCCMImpl = require( './lib/SimpleCCMImpl' );
 const $asyncevent = require( 'futoin-asyncevent' );
 const Limiter = require( 'futoin-asyncsteps' ).Limiter;
 
+
+/* global AsyncSteps */
+/* global NativeInterface */
+
 /**
  * SimpleCCM public properties
  * @ignore
@@ -70,27 +74,27 @@ class SimpleCCM {
                 rate: 10,
                 period_ms: 1e3,
                 burst: null,
-            }
+            },
         );
     }
 
     /**
-    * Register standard MasterService end-point (adds steps to *as*)
-    * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
-    * @param {string} name - unique identifier in scope of CCM instance
-    * @param {string} ifacever - interface identifier and its version separated by colon
-    * @param {string} endpoint - URI
-    *      OR any other resource identifier of function( ccmimpl, info )
-    *          returning iface implementing peer, accepted by CCM implementation
-    *      OR instance of Executor
-    * @param {string=} credentials - optional, authentication credentials:
-    * 'master' - enable MasterService authentication logic (Advanced CCM only)
-    * '{user}:{clear-text-password}' - send as is in the 'sec' section
-    * NOTE: some more reserved words and/or patterns can appear in the future
-    * @param {object=} options - fine tune global CCM options per endpoint
-    * @alias SimpleCCM#register
-    * @fires SimpleCCM#register
-    */
+     * Register standard MasterService end-point (adds steps to *as*)
+     * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
+     * @param {string} name - unique identifier in scope of CCM instance
+     * @param {string} ifacever - interface identifier and its version separated by colon
+     * @param {string} endpoint - URI
+     *      OR any other resource identifier of function( ccmimpl, info )
+     *          returning iface implementing peer, accepted by CCM implementation
+     *      OR instance of Executor
+     * @param {string=} credentials - optional, authentication credentials:
+     * 'master' - enable MasterService authentication logic (Advanced CCM only)
+     * '{user}:{clear-text-password}' - send as is in the 'sec' section
+     * NOTE: some more reserved words and/or patterns can appear in the future
+     * @param {object=} options - fine tune global CCM options per endpoint
+     * @alias SimpleCCM#register
+     * @fires SimpleCCM#register
+     */
     register( as, name, ifacever, endpoint, credentials, options={} ) {
         const is_channel_reg = ( name === null );
 
@@ -186,7 +190,7 @@ class SimpleCCM {
         if ( !( limitZone in this._impl.limiters ) ) {
             as.error(
                 InvokerError,
-                `Unknown limit zone ${limitZone}`
+                `Unknown limit zone ${limitZone}`,
             );
         }
 
@@ -287,16 +291,16 @@ class SimpleCCM {
                 if ( name ) {
                     delete this._iface_info[ name ];
                 }
-            }
+            },
         );
     }
 
     /**
-    * Get native interface wrapper for invocation of iface methods
-    * @param {string} name - see register()
-    * @returns {NativeInterface} - native interface
-    * @alias SimpleCCM#iface
-    */
+     * Get native interface wrapper for invocation of iface methods
+     * @param {string} name - see register()
+     * @returns {NativeInterface} - native interface
+     * @alias SimpleCCM#iface
+     */
     iface( name ) {
         return this._iface_instance[ name ] || this._initIface( name );
     }
@@ -334,11 +338,11 @@ class SimpleCCM {
     }
 
     /**
-    * Unregister previously registered interface (should not be used, unless really needed)
-    * @param {string} name - see register()
-    * @alias SimpleCCM#unRegister
-    * @fires SimpleCCM#unregister
-    */
+     * Unregister previously registered interface (should not be used, unless really needed)
+     * @param {string} name - see register()
+     * @alias SimpleCCM#unRegister
+     * @fires SimpleCCM#unregister
+     */
     unRegister( name ) {
         const ifaces = this._iface_info;
         const instances = this._iface_instance;
@@ -372,40 +376,40 @@ class SimpleCCM {
     }
 
     /**
-    * Shortcut to iface( "#defense" )
-    * @returns {object} native defense interface
-    * @alias SimpleCCM#defense
-    */
+     * Shortcut to iface( "#defense" )
+     * @returns {object} native defense interface
+     * @alias SimpleCCM#defense
+     */
     defense() {
         return this.iface( this.SVC_DEFENSE );
     }
 
     /**
-    * Returns extended API interface as defined in FTN9 IF AuditLogService
-    * @returns {object} FTN9 native face
-    * @alias SimpleCCM#log
-    */
+     * Returns extended API interface as defined in FTN9 IF AuditLogService
+     * @returns {object} FTN9 native face
+     * @alias SimpleCCM#log
+     */
     log() {
         return this.iface( this.SVC_LOG );
     }
 
     /**
-    * Returns extended API interface as defined in [FTN14 Cache][]
-    * @param {string} [bucket=default] - cache bucket name
-    * @returns {object} FTN14 native face
-    * @alias SimpleCCM#cache
-    */
+     * Returns extended API interface as defined in [FTN14 Cache][]
+     * @param {string} [bucket] - cache bucket name
+     * @returns {object} FTN14 native face
+     * @alias SimpleCCM#cache
+     */
     cache( bucket ) {
         return this.iface( this.SVC_CACHE_ + ( bucket || "default" ) );
     }
 
     /**
-    * Assert that interface registered by name matches major version and minor is not less than required.
-    * This function must generate fatal error and forbid any further execution
-    * @param {string} name - unique identifier in scope of CCM instance
-    * @param {string} ifacever - interface identifier and its version separated by colon
-    * @alias SimpleCCM#assertIface
-    */
+     * Assert that interface registered by name matches major version and minor is not less than required.
+     * This function must generate fatal error and forbid any further execution
+     * @param {string} name - unique identifier in scope of CCM instance
+     * @param {string} ifacever - interface identifier and its version separated by colon
+     * @alias SimpleCCM#assertIface
+     */
     assertIface( name, ifacever ) {
         const info = this._iface_info[ name ];
 
@@ -448,12 +452,12 @@ class SimpleCCM {
     }
 
     /**
-    * Alias interface name with another name
-    * @param {string} name - unique identifier in scope of CCM instance
-    * @param {string} alias - alternative name for registered interface
-    * @alias SimpleCCM#alias
-    * @fires SimpleCCM#register
-    */
+     * Alias interface name with another name
+     * @param {string} name - unique identifier in scope of CCM instance
+     * @param {string} alias - alternative name for registered interface
+     * @alias SimpleCCM#alias
+     * @fires SimpleCCM#register
+     */
     alias( name, alias ) {
         const ifaces = this._iface_info;
         const info = ifaces[ name ];
@@ -468,10 +472,10 @@ class SimpleCCM {
     }
 
     /**
-    * Shutdown CCM (close all active comms)
-    * @alias SimpleCCM#close
-    * @fires SimpleCCM#close
-    */
+     * Shutdown CCM (close all active comms)
+     * @alias SimpleCCM#close
+     * @fires SimpleCCM#close
+     */
     close() {
         const instances = this._iface_instance;
         const ifaces = this._iface_info;

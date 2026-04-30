@@ -222,7 +222,7 @@ child.on( 'message', function() {
                             res : 'MY_RESULT',
                         },
                     },
-                    true
+                    true,
                 );
             } );
         },
@@ -283,7 +283,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'AdvancedCCM INTERNAL call', $as_test( ( as ) => {
@@ -295,7 +295,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'SimpleCCM HTTP call', $as_test( ( as ) => {
@@ -307,7 +307,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'AdvancedCCM HTTP call', $as_test( ( as ) => {
@@ -319,7 +319,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'SimpleCCM WS call', $as_test( ( as ) => {
@@ -331,7 +331,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'AdvancedCCM WS call', $as_test( ( as ) => {
@@ -343,7 +343,7 @@ child.on( 'message', function() {
                     n : 2.8,
                     o : { m : 3 },
                     i : 4,
-                }
+                },
             );
         } ) )
         .test( 'AdvancedCCM INTERNAL call with interceptor', $as_test( ( as ) => {
@@ -352,7 +352,7 @@ child.on( 'message', function() {
                 "1",
                 2.8,
                 { m : 3 },
-                4
+                4,
             );
         } ) )
         .test( 'Load Spec', $as_test( ( as ) => {

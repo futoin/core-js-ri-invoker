@@ -22,6 +22,10 @@
 const NativeIface = require( './NativeIface' );
 const common = require( './lib/common' );
 
+/* global AsyncSteps */
+/* global AdvancedCCM */
+/* global SimpleCCM */
+
 /**
  * Cache Native interface
  *
@@ -42,17 +46,17 @@ class CacheFace extends NativeIface {
     }
 
     /**
-    * Cache Native interface registration helper
-    * @param {AsyncSteps} as - step interface
-    * @param {AdvancedCCM} ccm - CCM instance
-    * @param {string} name - registration name for CCM
-    * @param {string} endpoint - endpoint URL
-    * @param {*} [credentials=null] - see CCM register()
-    * @param {object} [options={}] - registration options
-    * @param {string} [options.version=1.0] - iface version
-    * @param {integer} [options.ttl_ms=1000] - default TTL
-    * @alias CacheFace.register
-    */
+     * Cache Native interface registration helper
+     * @param {AsyncSteps} as - step interface
+     * @param {AdvancedCCM} ccm - CCM instance
+     * @param {string} name - registration name for CCM
+     * @param {string} endpoint - endpoint URL
+     * @param {any} [credentials] - see CCM register()
+     * @param {object} [options] - registration options
+     * @param {string} [options.version] - iface version
+     * @param {number} [options.ttl_ms] - default TTL
+     * @alias CacheFace.register
+     */
     static register( as, ccm, name, endpoint, credentials, options ) {
         options = options || {};
         const ifacever = options.version || '1.0';
@@ -67,25 +71,23 @@ class CacheFace extends NativeIface {
             `${iface.iface}:${iface.version}`,
             endpoint,
             credentials,
-            options
+            options,
         );
     }
 
     /**
-    * Get or Set cached value
-    *
-    * NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
-    *   of *params* values
-    *
-    * @param {AsyncSteps} as - step interface
-    * @param {string} key_prefix - unique key prefix
-    * @param {Function} callable - func( as, params.. ) - a callable
-    *      which is called to generated value on cache miss
-    * @param {Array?} params - parameters to be passed to *callable*
-    * @param {integer?} ttl_ms - time to live in ms to use, if value is set on cache miss
-    *
-    * @alias CacheFace#getOrSet
-    */
+     * Get or Set cached value
+     *
+     * NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
+     * of *params* values
+     * @param {AsyncSteps} as - step interface
+     * @param {string} key_prefix - unique key prefix
+     * @param {AsyncSteps.ExecFunc} callable - func( as, params.. ) - a callable
+     *      which is called to generated value on cache miss
+     * @param {Array?} params - parameters to be passed to *callable*
+     * @param {number?} ttl_ms - time to live in ms to use, if value is set on cache miss
+     * @alias CacheFace#getOrSet
+     */
     getOrSet( as, key_prefix, callable, params, ttl_ms ) {
         params = params || [];
         ttl_ms = ttl_ms || this._ttl_ms;
@@ -100,7 +102,7 @@ class CacheFace extends NativeIface {
                 if ( err === 'CacheMiss' ) {
                     as.success();
                 }
-            }
+            },
         ).add(
             ( as, res ) => {
                 if ( res ) {
@@ -121,7 +123,7 @@ class CacheFace extends NativeIface {
                         as.add( ( as ) => as.success( value ) );
                     } );
                 }
-            }
+            },
         );
     }
 }

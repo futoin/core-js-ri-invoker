@@ -28,6 +28,10 @@ const btoa = ( typeof window !== 'undefined' ) ? window.btoa :
         return new Buffer( str ).toString( 'base64' );
     };
 
+
+/* global AsyncSteps */
+/* global AdvancedCCM */
+
 /**
  * AuditLog Native interface
  *
@@ -47,15 +51,15 @@ class LogFace extends NativeIface {
     }
 
     /**
-    * AuditLog Native interface registration helper
-    * @param {AsyncSteps} as - step interface
-    * @param {AdvancedCCM} ccm - CCM instance
-    * @param {string} endpoint - endpoint URL
-    * @param {*} [credentials=null] - see CCM register()
-    * @param {object} [options={}] - registration options
-    * @param {string} [options.version=1.0] - iface version
-    * @alias LogFace.register
-    */
+     * AuditLog Native interface registration helper
+     * @param {AsyncSteps} as - step interface
+     * @param {AdvancedCCM} ccm - CCM instance
+     * @param {string} endpoint - endpoint URL
+     * @param {any} [credentials] - see CCM register()
+     * @param {object} [options] - registration options
+     * @param {string} [options.version] - iface version
+     * @alias LogFace.register
+     */
     static register( as, ccm, endpoint, credentials, options ) {
         options = options || {};
         const ifacever = options.version || '1.0';
@@ -70,60 +74,60 @@ class LogFace extends NativeIface {
             iface.iface + ':' + iface.version,
             endpoint,
             credentials,
-            options
+            options,
         );
     }
 
     /**
-    * Debug log level
-    * @const
-    * @alias LogFace.LVL_DEBUG
-    */
+     * Debug log level
+     * @constant
+     * @alias LogFace.LVL_DEBUG
+     */
     get LVL_DEBUG() {
         return 'debug';
     }
 
     /**
-    * Info log level
-    * @const
-    * @alias LogFace.LVL_INFO
-    */
+     * Info log level
+     * @constant
+     * @alias LogFace.LVL_INFO
+     */
     get LVL_INFO() {
         return 'info';
     }
 
     /**
-    * Warn log level
-    * @const
-    * @alias LogFace.LVL_WARN
-    */
+     * Warn log level
+     * @constant
+     * @alias LogFace.LVL_WARN
+     */
     get LVL_WARN() {
         return 'warn';
     }
 
     /**
-    * Error log level
-    * @const
-    * @alias LogFace.LVL_ERROR
-    */
+     * Error log level
+     * @constant
+     * @alias LogFace.LVL_ERROR
+     */
     get LVL_ERROR() {
         return 'error';
     }
 
     /**
-    * Security log level
-    * @const
-    * @alias LogFace.LVL_SECURITY
-    */
+     * Security log level
+     * @constant
+     * @alias LogFace.LVL_SECURITY
+     */
     get LVL_SECURITY() {
         return 'security';
     }
 
     /**
-    * Generate 'ts' field log messages
-    * @private
-    * @returns {string} current timestamp
-    */
+     * Generate 'ts' field log messages
+     * @private
+     * @returns {string} current timestamp
+     */
     _ts() {
         const d = new Date();
 
@@ -137,11 +141,11 @@ class LogFace extends NativeIface {
     }
 
     /**
-    * Log message
-    * @param {string} lvl - debug|info|warn|error|security
-    * @param {string} txt - message to log
-    * @alias LogFace#msg
-    */
+     * Log message
+     * @param {string} lvl - debug|info|warn|error|security
+     * @param {string} txt - message to log
+     * @alias LogFace#msg
+     */
     msg( lvl, txt ) {
         this._add_queue(
             'msg', {
@@ -152,12 +156,12 @@ class LogFace extends NativeIface {
     }
 
     /**
-    * Log message
-    * @param {string} lvl - debug|info|warn|error|security
-    * @param {string} txt - message to log
-    * @param {string} data - raw data
-    * @alias LogFace#hexdump
-    */
+     * Log message
+     * @param {string} lvl - debug|info|warn|error|security
+     * @param {string} txt - message to log
+     * @param {string} data - raw data
+     * @alias LogFace#hexdump
+     */
     hexdump( lvl, txt, data ) {
         this._add_queue(
             'hexdump', {
@@ -169,56 +173,56 @@ class LogFace extends NativeIface {
     }
 
     /**
-    * Log message in debug level
-    * @param {string} txt - message to log
-    * @alias LogFace#debug
-    */
+     * Log message in debug level
+     * @param {string} txt - message to log
+     * @alias LogFace#debug
+     */
     debug( txt ) {
         this.msg( 'debug', txt );
     }
 
     /**
-    * Log message in info level
-    * @param {string} txt - message to log
-    * @alias LogFace#info
-    */
+     * Log message in info level
+     * @param {string} txt - message to log
+     * @alias LogFace#info
+     */
     info( txt ) {
         this.msg( 'info', txt );
     }
 
     /**
-    * Log message in warn level
-    * @param {string} txt - message to log
-    * @alias LogFace#warn
-    */
+     * Log message in warn level
+     * @param {string} txt - message to log
+     * @alias LogFace#warn
+     */
     warn( txt ) {
         this.msg( 'warn', txt );
     }
 
     /**
-    * Log message in error level
-    * @param {string} txt - message to log
-    * @alias LogFace#error
-    */
+     * Log message in error level
+     * @param {string} txt - message to log
+     * @alias LogFace#error
+     */
     error( txt ) {
         this.msg( 'error', txt );
     }
 
     /**
-    * Log message in security level
-    * @param {string} txt - message to log
-    * @alias LogFace#security
-    */
+     * Log message in security level
+     * @param {string} txt - message to log
+     * @alias LogFace#security
+     */
     security( txt ) {
         this.msg( 'security', txt );
     }
 
     /**
-    * Make sure to keep only one pending async request
-    * @private
-    * @param {string} func - log/hexdump
-    * @param {object} args - call args
-    */
+     * Make sure to keep only one pending async request
+     * @private
+     * @param {string} func - log/hexdump
+     * @param {object} args - call args
+     */
     _add_queue( func, args ) {
         const log_queue = this._log_queue;
 
@@ -249,14 +253,14 @@ class LogFace extends NativeIface {
                             console.log( `ERROR: ${err}:${as.state.error_info}` );
                             //console.log( as.state.last_exception.stack );
                             as.success();
-                        }
+                        },
                     );
                 } ),
                 ( as, err ) => {
                     this._active_runner = false;
                     console.log( `ERROR: ${err}:${as.state.error_info}` );
                     //console.log( as.state.last_exception.stack );
-                }
+                },
             )
             .execute();
     }

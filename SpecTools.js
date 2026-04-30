@@ -27,6 +27,10 @@ const { InternalError, InvalidRequest } = common.FutoInError;
 
 const $asyncevent = require( 'futoin-asyncevent' );
 
+
+/* global AsyncSteps */
+/* global FutoInError */
+
 const STANDARD_ERRORS = {
     UnknownInterface : true,
     NotSupportedVersion : true,
@@ -51,14 +55,14 @@ const spectools =
 {
     /**
      * Enumeration of standard errors
-     * @const
+     * @constant
      * @alias SpecTools.STANDARD_ERRORS
      */
     STANDARD_ERRORS,
 
     /**
      * Enumeration of standard errors
-     * @const
+     * @constant
      * @alias SpecTools.standard_errors
      * @deprecated
      */
@@ -69,9 +73,9 @@ const spectools =
      *
      * NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
      * @param {AsyncSteps} as - step interface
-     * @param {Object} info - destination object with "iface" and "version" fields already set
+     * @param {object} info - destination object with "iface" and "version" fields already set
      * @param {Array} specdirs - each element - search path/url (string) or raw iface (object)
-     * @param {Object=} load_cache - arbitrary object to use for caching
+     * @param {object=} load_cache - arbitrary object to use for caching
      * @alias SpecTools.loadIface
      */
     loadIface : ( as, info, specdirs, load_cache ) => {
@@ -132,7 +136,7 @@ const spectools =
             if ( raw_spec === null ) {
                 as.error(
                     InternalError,
-                    `Failed to load valid spec for ${info.iface}:${info.version}`
+                    `Failed to load valid spec for ${info.iface}:${info.version}`,
                 );
             }
 
@@ -167,7 +171,7 @@ const spectools =
 
     /**
      * Secure compare to cover time-based side-channels for attacks
-     * @note Pure JS is used in browser and crypto-based in Node.js
+     * **Pure JS is used in browser and crypto-based in Node.js**
      * @param {string} a - first string
      * @param {string} b - second String
      * @returns {boolean} true, if match

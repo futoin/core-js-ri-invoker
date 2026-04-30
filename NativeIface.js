@@ -33,6 +33,12 @@ const assertAS = Options.prodMode
     ? () => {}
     : $as.assertAS;
 
+
+/* global AsyncSteps */
+/* global AdvancedCCMImpl */
+// eslint-disable-next-line no-unused-vars
+/* global stream */
+
 /**
  * Native Interface for FutoIn ifaces
  * @class
@@ -328,13 +334,13 @@ class NativeIface {
     }
 
     /**
-    * Get hardcoded iface definition, if available.
-    * @param {string} version - iface version
-    * @returns {object} interface spec of required version
-    * @alias NativeIface.spec
-    * @note this helper is designed for derived native interfaces
-    *      which define _specs or _specs_module_prefix static members.
-    */
+     * Get hardcoded iface definition, if available.
+     * @param {string} version - iface version
+     * @returns {object} interface spec of required version
+     * @alias NativeIface.spec
+     * **This helper is designed for derived native interfaces
+     * which define _specs or _specs_module_prefix static members.**
+     */
     static spec( version ) {
         let iface;
 
@@ -352,22 +358,22 @@ class NativeIface {
     }
 
     /**
-    * Generic FutoIn function call interface
-    * Result is passed through AsyncSteps.success() as a map.
-    * @param {AsyncSteps} as - AsyncSteps object
-    * @param {string} name - FutoIn iface function name
-    * @param {object} params - map of func parameters
-    * @param {string|stream.Readable=} upload_data - raw upload data or input stram
-    * @param {stream.Writable=} download_stream - output stream for raw download data
-    * @param {int=} timeout - if provided, overrides the default. <=0 - disables timeout
-    * @alias NativeIface#call
-    */
+     * Generic FutoIn function call interface
+     * Result is passed through AsyncSteps.success() as a map.
+     * @param {AsyncSteps} as - AsyncSteps object
+     * @param {string} name - FutoIn iface function name
+     * @param {object} params - map of func parameters
+     * @param {string|stream.Readable=} upload_data - raw upload data or input stream
+     * @param {stream.Writable=} download_stream - output stream for raw download data
+     * @param {number=} timeout - if provided, overrides the default. <=0 - disables timeout
+     * @alias NativeIface#call
+     */
 
     /**
-    * Get interface info
-    * @returns {InterfaceInfo} - interface info
-    * @alias NativeIface#ifaceInfo
-    */
+     * Get interface info
+     * @returns {InterfaceInfo} - interface info
+     * @alias NativeIface#ifaceInfo
+     */
     ifaceInfo() {
         const info = this._iface_info;
 
@@ -379,18 +385,18 @@ class NativeIface {
     }
 
     /**
-    * Results with DerivedKeyAccessor through as.success()
-    * @param {AsyncSteps} as - step interface
-    * @alias NativeIface#bindDerivedKey
-    */
+     * Results with DerivedKeyAccessor through as.success()
+     * @param {AsyncSteps} as - step interface
+     * @alias NativeIface#bindDerivedKey
+     */
     bindDerivedKey( as ) {
         throw new Error( InvokerError, "Not Implemented" );
     }
 
     /**
-    * Shutdow interface
-    * @private
-    */
+     * Shutdow interface
+     * @private
+     */
     _close() {
         const comms = this._comms;
 
@@ -403,20 +409,18 @@ class NativeIface {
 }
 
 /**
-* Must be object with version => spec pairs in child class, if set.
-*
-* @alias NativeIface._specs
-*/
+ * Must be object with version => spec pairs in child class, if set.
+ * @alias NativeIface._specs
+ */
 NativeIface._specs = null;
 
 /**
-* Must be module name prefix, example: 'MyModule/specs/name_'.
-*
-* If version 1.0 is requested then spec is loaded from
-* 'MyModule/specs/name_1_0'
-*
-* @alias NativeIface._specs_module_prefix
-*/
+ * Must be module name prefix, example: 'MyModule/specs/name_'.
+ *
+ * If version 1.0 is requested then spec is loaded from
+ * 'MyModule/specs/name_1_0'
+ * @alias NativeIface._specs_module_prefix
+ */
 NativeIface._specs_module_prefix = null;
 
 

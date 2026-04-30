@@ -356,6 +356,23 @@ interface, include separately</p>
 </dd>
 </dl>
 
+## Functions
+
+<dl>
+<dt><a href="#NativeIface.spec
+**This helper is designed for derived native interfaces
+which define _specs or _specs_module_prefix static members.**">NativeIface.spec
+**This helper is designed for derived native interfaces
+which define _specs or _specs_module_prefix static members.**(version)</a> ⇒ <code>object</code></dt>
+<dd><p>Get hardcoded iface definition, if available.</p>
+</dd>
+<dt><a href="#SpecTools.checkType
+**THIS ONE IS SLOW for debugging purposes**">SpecTools.checkType
+**THIS ONE IS SLOW for debugging purposes**(info, type, val)</a> ⇒ <code>boolean</code></dt>
+<dd><p>Check if value matches required type</p>
+</dd>
+</dl>
+
 <a name="module_futoin-invoker"></a>
 
 ## futoin-invoker
@@ -465,9 +482,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -582,7 +599,7 @@ interface, include separately
 Get or Set cached value
 
 NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
-  of *params* values
+of *params* values
 
 **Kind**: instance method of [<code>CacheFace</code>](#CacheFace)  
 
@@ -590,9 +607,9 @@ NOTE: the actual cache key is formed with concatenation of *key_prefix* and join
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | step interface |
 | key_prefix | <code>string</code> | unique key prefix |
-| callable | <code>function</code> | func( as, params.. ) - a callable      which is called to generated value on cache miss |
+| callable | <code>AsyncSteps.ExecFunc</code> | func( as, params.. ) - a callable      which is called to generated value on cache miss |
 | params | <code>Array</code> | parameters to be passed to *callable* |
-| ttl_ms | <code>integer</code> | time to live in ms to use, if value is set on cache miss |
+| ttl_ms | <code>number</code> | time to live in ms to use, if value is set on cache miss |
 
 <a name="NativeIface+ifaceInfo"></a>
 
@@ -650,16 +667,16 @@ Cache Native interface registration helper
 
 **Kind**: static method of [<code>CacheFace</code>](#CacheFace)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
-| name | <code>string</code> |  | registration name for CCM |
-| endpoint | <code>string</code> |  | endpoint URL |
-| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
-| [options] | <code>object</code> | <code>{}</code> | registration options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
-| [options.ttl_ms] | <code>integer</code> | <code>1000</code> | default TTL |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) | CCM instance |
+| name | <code>string</code> | registration name for CCM |
+| endpoint | <code>string</code> | endpoint URL |
+| [credentials] | <code>any</code> | see CCM register() |
+| [options] | <code>object</code> | registration options |
+| [options.version] | <code>string</code> | iface version |
+| [options.ttl_ms] | <code>number</code> | default TTL |
 
 <a name="InterfaceInfo"></a>
 
@@ -674,7 +691,7 @@ FutoIn interface info
     * [.version()](#InterfaceInfo+version) ⇒ <code>string</code>
     * [.inherits()](#InterfaceInfo+inherits) ⇒ <code>string</code>
     * [.funcs()](#InterfaceInfo+funcs) ⇒ <code>object</code>
-    * [.constraints()](#InterfaceInfo+constraints) ⇒ <code>array</code>
+    * [.constraints()](#InterfaceInfo+constraints) ⇒ <code>Array</code>
 
 <a name="new_InterfaceInfo_new"></a>
 
@@ -714,11 +731,11 @@ Get list of available functions, may be null
 **Returns**: <code>object</code> - list of functions  
 <a name="InterfaceInfo+constraints"></a>
 
-### interfaceInfo.constraints() ⇒ <code>array</code>
+### interfaceInfo.constraints() ⇒ <code>Array</code>
 Get list of interface constraints, may be null
 
 **Kind**: instance method of [<code>InterfaceInfo</code>](#InterfaceInfo)  
-**Returns**: <code>array</code> - list of constraints  
+**Returns**: <code>Array</code> - list of constraints  
 <a name="LogFace"></a>
 
 ## LogFace ⇐ [<code>NativeIface</code>](#NativeIface)
@@ -921,14 +938,14 @@ AuditLog Native interface registration helper
 
 **Kind**: static method of [<code>LogFace</code>](#LogFace)  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| as | <code>AsyncSteps</code> |  | step interface |
-| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
-| endpoint | <code>string</code> |  | endpoint URL |
-| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
-| [options] | <code>object</code> | <code>{}</code> | registration options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
+| Param | Type | Description |
+| --- | --- | --- |
+| as | <code>AsyncSteps</code> | step interface |
+| ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) | CCM instance |
+| endpoint | <code>string</code> | endpoint URL |
+| [credentials] | <code>any</code> | see CCM register() |
+| [options] | <code>object</code> | registration options |
+| [options.version] | <code>string</code> | iface version |
 
 <a name="NativeIface"></a>
 
@@ -949,7 +966,6 @@ Native Interface for FutoIn ifaces
     * _static_
         * [._specs](#NativeIface._specs)
         * [._specs_module_prefix](#NativeIface._specs_module_prefix)
-        * [.spec(version)](#NativeIface.spec) ⇒ <code>object</code>
 
 <a name="new_NativeIface_new"></a>
 
@@ -1018,20 +1034,6 @@ If version 1.0 is requested then spec is loaded from
 'MyModule/specs/name_1_0'
 
 **Kind**: static property of [<code>NativeIface</code>](#NativeIface)  
-<a name="NativeIface.spec"></a>
-
-### NativeIface.spec(version) ⇒ <code>object</code>
-Get hardcoded iface definition, if available.
-
-**Kind**: static method of [<code>NativeIface</code>](#NativeIface)  
-**Returns**: <code>object</code> - interface spec of required version  
-**Note**: this helper is designed for derived native interfaces
-     which define _specs or _specs_module_prefix static members.  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| version | <code>string</code> | iface version |
-
 <a name="PingFace"></a>
 
 ## PingFace
@@ -1044,7 +1046,6 @@ Base for FTN4 ping-based interfaces
 Register ping interface
 
 **Kind**: static method of [<code>PingFace</code>](#PingFace)  
-**Note**: Iface spec is embedded  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -1052,9 +1053,9 @@ Register ping interface
 | ccm | [<code>AdvancedCCM</code>](#AdvancedCCM) |  | CCM instance |
 | name | <code>string</code> |  | registration name for CCM |
 | endpoint | <code>string</code> |  | endpoint URL |
-| [credentials] | <code>\*</code> | <code></code> | see CCM register() |
-| [options] | <code>object</code> | <code>{}</code> | registration options |
-| [options.version] | <code>string</code> | <code>&quot;1.0&quot;</code> | iface version |
+| [credentials] | <code>any</code> | <code></code> | see CCM register() |
+| [options] | <code>object</code> |  | registration options |
+| [options.version] | <code>string</code> |  | iface version **Iface spec is embedded** |
 
 <a name="SimpleCCM"></a>
 
@@ -1166,9 +1167,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -1294,13 +1295,12 @@ cache v1.x iface name prefix
     * [.secureObjectPrototype()](#SpecTools.secureObjectPrototype)
     * [.globalLoadCache()](#SpecTools.globalLoadCache) ⇒ <code>object</code>
     * [.secureEqualBuffer(a, b)](#SpecTools.secureEqualBuffer) ⇒ <code>boolean</code>
-    * [.checkCompiledType(as, info, type, val)](#SpecTools.checkCompiledType) ⇒ <code>Boolean</code>
-    * [.checkRequestMessage(as, info, name, req)](#SpecTools.checkRequestMessage) ⇒ <code>Boolean</code>
-    * [.checkResponseMessage(as, info, name, rsp)](#SpecTools.checkResponseMessage) ⇒ <code>Boolean</code>
+    * [.checkCompiledType(as, info, type, val)](#SpecTools.checkCompiledType) ⇒ <code>boolean</code>
+    * [.checkRequestMessage(as, info, name, req)](#SpecTools.checkRequestMessage) ⇒ <code>boolean</code>
+    * [.checkResponseMessage(as, info, name, rsp)](#SpecTools.checkResponseMessage) ⇒ <code>boolean</code>
     * ~~[.checkParameterType(info, funcname, varname, value)](#SpecTools.checkParameterType) ⇒ <code>boolean</code>~~
     * ~~[.checkResultType(as, info, funcname, varname, value)](#SpecTools.checkResultType)~~
     * [.parseIface(as, info, specdirs, raw_spec, [load_cache])](#SpecTools.parseIface)
-    * [.checkType(info, type, val)](#SpecTools.checkType) ⇒ <code>Boolean</code>
     * ["error"](#SpecTools.event_error)
 
 <a name="new_SpecTools_new"></a>
@@ -1345,9 +1345,9 @@ NOTE: Browser uses XHR to load specs, Node.js searches in local fs.
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | destination object with "iface" and "version" fields already set |
+| info | <code>object</code> | destination object with "iface" and "version" fields already set |
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
-| [load_cache] | <code>Object</code> | arbitrary object to use for caching |
+| [load_cache] | <code>object</code> | arbitrary object to use for caching |
 
 <a name="SpecTools.genHMAC"></a>
 
@@ -1373,10 +1373,10 @@ NOTE: for simplicity, 'sec' field must not be present
 
 ### SpecTools.secureEquals(a, b) ⇒ <code>boolean</code>
 Secure compare to cover time-based side-channels for attacks
+**Pure JS is used in browser and crypto-based in Node.js**
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
 **Returns**: <code>boolean</code> - true, if match  
-**Note**: Pure JS is used in browser and crypto-based in Node.js  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1413,46 +1413,46 @@ Secure compare to cover time-based side-channels for attacks
 
 <a name="SpecTools.checkCompiledType"></a>
 
-### SpecTools.checkCompiledType(as, info, type, val) ⇒ <code>Boolean</code>
+### SpecTools.checkCompiledType(as, info, type, val) ⇒ <code>boolean</code>
 Check if value matches required type
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>Boolean</code> - true on success  
+**Returns**: <code>boolean</code> - true on success  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | AsyncSteps interface |
-| info | <code>Object</code> | previously loaded iface |
+| info | <code>object</code> | previously loaded iface |
 | type | <code>string</code> | standard or custom iface type |
-| val | <code>\*</code> | value to check |
+| val | <code>any</code> | value to check |
 
 <a name="SpecTools.checkRequestMessage"></a>
 
-### SpecTools.checkRequestMessage(as, info, name, req) ⇒ <code>Boolean</code>
+### SpecTools.checkRequestMessage(as, info, name, req) ⇒ <code>boolean</code>
 Check if request message is valid
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>Boolean</code> - true on success  
+**Returns**: <code>boolean</code> - true on success  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | AsyncSteps interface |
-| info | <code>Object</code> | previously loaded iface |
+| info | <code>object</code> | previously loaded iface |
 | name | <code>string</code> | interface function name |
 | req | <code>object</code> | request message |
 
 <a name="SpecTools.checkResponseMessage"></a>
 
-### SpecTools.checkResponseMessage(as, info, name, rsp) ⇒ <code>Boolean</code>
+### SpecTools.checkResponseMessage(as, info, name, rsp) ⇒ <code>boolean</code>
 Check if response message is valid
 
 **Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>Boolean</code> - true on success  
+**Returns**: <code>boolean</code> - true on success  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | AsyncSteps interface |
-| info | <code>Object</code> | previously loaded iface |
+| info | <code>object</code> | previously loaded iface |
 | name | <code>string</code> | interface function name |
 | rsp | <code>object</code> | response message |
 
@@ -1468,10 +1468,10 @@ Check if parameter value matches required type
 
 | Param | Type | Description |
 | --- | --- | --- |
-| info | <code>Object</code> | previously loaded iface |
+| info | <code>object</code> | previously loaded iface |
 | funcname | <code>string</code> | function name |
 | varname | <code>string</code> | parameter name |
-| value | <code>\*</code> | value to check |
+| value | <code>any</code> | value to check |
 
 <a name="SpecTools.checkResultType"></a>
 
@@ -1485,10 +1485,10 @@ Check if result value matches required type
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | previously loaded iface |
+| info | <code>object</code> | previously loaded iface |
 | funcname | <code>string</code> | function name |
 | varname | <code>string</code> | result variable name |
-| value | <code>\*</code> | value to check |
+| value | <code>any</code> | value to check |
 
 <a name="SpecTools.parseIface"></a>
 
@@ -1500,26 +1500,10 @@ Parse raw futoin spec (preloaded)
 | Param | Type | Description |
 | --- | --- | --- |
 | as | <code>AsyncSteps</code> | step interface |
-| info | <code>Object</code> | destination object with "iface" and "version" fields already set |
+| info | <code>object</code> | destination object with "iface" and "version" fields already set |
 | specdirs | <code>Array</code> | each element - search path/url (string) or raw iface (object) |
-| raw_spec | <code>Object</code> | iface definition object |
-| [load_cache] | <code>Object</code> | cache of already loaded interfaces |
-
-<a name="SpecTools.checkType"></a>
-
-### SpecTools.checkType(info, type, val) ⇒ <code>Boolean</code>
-Check if value matches required type
-
-**Kind**: static method of [<code>SpecTools</code>](#SpecTools)  
-**Returns**: <code>Boolean</code> - true on success  
-**Note**: THIS ONE IS SLOW for debugging purposes  
-**See**: SpecTools#checkCompiledType  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| info | <code>Object</code> | previously loaded iface |
-| type | <code>string</code> | standard or custom iface type |
-| val | <code>\*</code> | value to check |
+| raw_spec | <code>object</code> | iface definition object |
+| [load_cache] | <code>object</code> | cache of already loaded interfaces |
 
 <a name="SpecTools.event_error"></a>
 
@@ -1660,7 +1644,7 @@ Client-side executor for bi-directional communication channels
 <a name="SimpleCCMOptions.targetOrigin"></a>
 
 ### SimpleCCMOptions.targetOrigin
-*browser-only.* Origin of target for *window.postMessage()*
+browser-only.* Origin of target for *window.postMessage()*
 
 **Kind**: static property of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
 <a name="SimpleCCMOptions.retryCount"></a>
@@ -1706,7 +1690,6 @@ Message sniffer callback( iface_info, msg, is_incomming ).
 Useful for audit logging.
 
 **Kind**: static method of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
-**Default**: <code>dummy</code>  
 <a name="SimpleCCMOptions.disconnectSniffer"></a>
 
 ### SimpleCCMOptions.disconnectSniffer()
@@ -1714,7 +1697,6 @@ Bi-directional channel disconnect sniffer callback( iface_info ).
 Useful for audit logging.
 
 **Kind**: static method of [<code>SimpleCCMOptions</code>](#SimpleCCMOptions)  
-**Default**: <code>dummy</code>  
 <a name="SimpleCCM"></a>
 
 ## SimpleCCM
@@ -1818,9 +1800,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -2033,9 +2015,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -2248,9 +2230,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Kind**: instance method of [<code>SimpleCCM</code>](#SimpleCCM)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -2460,9 +2442,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -2636,9 +2618,9 @@ Returns extended API interface as defined in [FTN14 Cache][]
 **Overrides**: [<code>cache</code>](#SimpleCCM+cache)  
 **Returns**: <code>object</code> - FTN14 native face  
 
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [bucket] | <code>string</code> | <code>&quot;default&quot;</code> | cache bucket name |
+| Param | Type | Description |
+| --- | --- | --- |
+| [bucket] | <code>string</code> | cache bucket name |
 
 <a name="SimpleCCM+assertIface"></a>
 
@@ -2724,6 +2706,39 @@ CCM close event. Fired on CCM shutdown.
 **window.FutoInInvoker** - Browser-only reference to futoin-invoker module
 
 **Kind**: global variable  
+<a name="NativeIface.spec
+**This helper is designed for derived native interfaces
+which define _specs or _specs_module_prefix static members.**"></a>
+
+## NativeIface.spec
+\*\*This helper is designed for derived native interfaces
+which define \_specs or \_specs\_module\_prefix static members.\*\*(version) ⇒ <code>object</code>
+Get hardcoded iface definition, if available.
+
+**Kind**: global function  
+**Returns**: <code>object</code> - interface spec of required version  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| version | <code>string</code> | iface version |
+
+<a name="SpecTools.checkType
+**THIS ONE IS SLOW for debugging purposes**"></a>
+
+## SpecTools.checkType
+\*\*THIS ONE IS SLOW for debugging purposes\*\*(info, type, val) ⇒ <code>boolean</code>
+Check if value matches required type
+
+**Kind**: global function  
+**Returns**: <code>boolean</code> - true on success  
+**See**: SpecTools#checkCompiledType  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| info | <code>object</code> | previously loaded iface |
+| type | <code>string</code> | standard or custom iface type |
+| val | <code>any</code> | value to check |
+
 
 
 *documented by [jsdoc-to-markdown](https://github.com/75lb/jsdoc-to-markdown)*.

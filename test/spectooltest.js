@@ -2,8 +2,6 @@
 
 require( './prepare' );
 
-const chai = require( 'chai' );
-const { assert, expect } = chai;
 const _cloneDeep = require( 'lodash/cloneDeep' );
 
 const is_browser = ( typeof window !== 'undefined' );
@@ -36,6 +34,11 @@ const {
 SpecTools.enableSchemaValidator( false );
 
 // SpecTools.on( 'error', ( ...args ) => console.log( args ) );
+
+let expect;
+before( async () => {
+    ( { expect } = ( await import( 'chai' ) ) );
+} );
 
 describe( 'SpecTools', function() {
     let as;
@@ -70,7 +73,7 @@ describe( 'SpecTools', function() {
                 SpecTools.loadIface(
                     as,
                     info,
-                    [ thisDir + '/specs' ]
+                    [ thisDir + '/specs' ],
                 );
 
                 as.add( ( as ) => {
@@ -88,7 +91,7 @@ describe( 'SpecTools', function() {
             SpecTools.loadIface(
                 as,
                 info,
-                [ 'not_existing', specsURL ]
+                [ 'not_existing', specsURL ],
             );
 
             as.add( ( as ) => {
@@ -108,20 +111,20 @@ describe( 'SpecTools', function() {
                 as,
                 info,
                 [ 'not_existing', specsURL ],
-                load_cache
+                load_cache,
             );
 
             as.add( ( as ) => {
                 load_cache[ 'fileface.a:1.1:e' ] = Object.assign(
                     { comes_from_cache : true },
-                    load_cache[ 'fileface.a:1.1:e' ]
+                    load_cache[ 'fileface.a:1.1:e' ],
                 );
                 Object.freeze( load_cache[ 'fileface.a:1.1:e' ] );
                 SpecTools.loadIface(
                     as,
                     info,
                     [ 'not_existing', specsURL ],
-                    load_cache
+                    load_cache,
                 );
             } ) ;
             as.add( ( as ) => {
@@ -151,7 +154,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Invalid ftn3rev field" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.1 import', $as_test(
@@ -169,7 +172,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Import is FTN3 v1.1 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.1 custom types', $as_test(
@@ -187,7 +190,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Custom types is FTN3 v1.1 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.1 BiDirectChannel', $as_test(
@@ -205,7 +208,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "BiDirectChannel is FTN3 v1.1 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.2 BiDirectChannel', $as_test(
@@ -224,7 +227,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "MessageSignature is FTN3 v1.2 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.3 seclvl', $as_test(
@@ -247,7 +250,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Function seclvl is FTN3 v1.3 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.4 type shortcut: types', $as_test(
@@ -268,7 +271,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type shortcut is FTN3 v1.4 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.4 type shortcut: map fields', $as_test(
@@ -294,7 +297,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type shortcut is FTN3 v1.4 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.4 type shortcut: params', $as_test(
@@ -319,7 +322,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type shortcut is FTN3 v1.4 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.4 type shortcut: resultvar', $as_test(
@@ -344,7 +347,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type shortcut is FTN3 v1.4 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.5 min/maxlen', $as_test(
@@ -369,7 +372,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "String min/maxlen is FTN3 v1.5 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.6 elemtype', $as_test(
@@ -394,7 +397,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Map elemtype is FTN3 v1.6 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.6 enum', $as_test(
@@ -415,7 +418,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Enum/Set is FTN3 v1.6 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.6 type variant: types', $as_test(
@@ -436,7 +439,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type variant is FTN3 v1.6 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.6 type variant: result', $as_test(
@@ -461,7 +464,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type variant is FTN3 v1.6 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.6 type variant: params', $as_test(
@@ -486,7 +489,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Type variant is FTN3 v1.6 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.7 custom result type', $as_test(
@@ -509,7 +512,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Custom result type FTN3 v1.7 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.8 maxreqsize', $as_test(
@@ -532,7 +535,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.8 maxrspsize', $as_test(
@@ -555,7 +558,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Function maxreqsize/maxrspsize is FTN3 v1.8 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.9 BinaryData', $as_test(
@@ -574,7 +577,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "BinaryData is FTN3 v1.9 feature" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check v1.9 BinaryData', $as_test( ( as ) => {
@@ -631,7 +634,7 @@ describe( 'SpecTools', function() {
                             expect( as.state.error_info ).equal(
                                 "'data' type is FTN3 v1.9 feature" );
                             as.success();
-                        }
+                        },
                     );
                 } );
 
@@ -648,7 +651,7 @@ describe( 'SpecTools', function() {
                             expect( as.state.error_info ).equal(
                                 "'data' type is FTN3 v1.9 feature" );
                             as.success();
-                        }
+                        },
                     );
                 } );
             } ) );
@@ -668,7 +671,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Not supported FTN3 revision for Executor" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should check unsupported major revision', $as_test(
@@ -686,7 +689,7 @@ describe( 'SpecTools', function() {
                     expect( as.state.error_info ).equal(
                         "Not supported FTN3 revision" );
                     as.success();
-                }
+                },
             ) );
 
             it( 'should allow unsupported minor revision for Invoker', $as_test(
@@ -700,7 +703,7 @@ describe( 'SpecTools', function() {
                     const info2 = Object.assign( { _invoker_use: true }, info );
 
                     SpecTools.loadIface( as, info2, [ iface ] );
-                }
+                },
             ) );
         } );
 
@@ -712,14 +715,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : 2.4,
                     },
-                    [ 'somedir', testspec ]
+                    [ 'somedir', testspec ],
                 );
             },
             function( as, err ) {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^Failed to load valid spec for/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should load iface without funcs', $as_test( ( as ) => {
@@ -734,7 +737,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.4',
                     },
-                ]
+                ],
             );
         } ) );
 
@@ -746,14 +749,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.4',
                     },
-                    [ 'somedir', testspec ]
+                    [ 'somedir', testspec ],
                 );
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^Failed to load valid spec for/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid inherit', $as_test(
@@ -768,7 +771,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.4',
                         inherit: '1.0:abcedf',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -776,7 +779,7 @@ describe( 'SpecTools', function() {
                     "Invalid inherit ifacever: 1.0:abcedf" );
                 expect( err ).equal( 'InvokerError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid imports', $as_test(
@@ -792,7 +795,7 @@ describe( 'SpecTools', function() {
                         version : '2.4',
                         ftn3rev: '1.1',
                         imports: [ '1.0:abcedf' ],
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -800,7 +803,7 @@ describe( 'SpecTools', function() {
                     "Invalid import ifacever: 1.0:abcedf" );
                 expect( err ).equal( 'InvokerError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on incompatible base imports', $as_test(
@@ -822,7 +825,7 @@ describe( 'SpecTools', function() {
                     }, {
                         iface : 'test.b',
                         version : '2.0',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -830,7 +833,7 @@ describe( 'SpecTools', function() {
                     "Incompatible iface versions: test.b 1.0/2.0" );
                 expect( err ).equal( 'InvokerError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid function name', $as_test(
@@ -845,14 +848,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( as.state.error_info ).equal( 'Invalid function name: Func' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid type name', $as_test(
@@ -870,7 +873,7 @@ describe( 'SpecTools', function() {
                         iface : spec.iface,
                         version : spec.version,
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -878,7 +881,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).equal( 'Invalid type name: tp' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing "type" in custom type field', $as_test(
@@ -896,14 +899,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( as.state.error_info ).equal( 'Missing "type" for custom type: T' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing "type" in custom type field', $as_test(
@@ -926,14 +929,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( as.state.error_info ).equal( 'Missing "type" for custom type field: TT[ff]' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing base "type"', $as_test(
@@ -956,7 +959,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -964,7 +967,7 @@ describe( 'SpecTools', function() {
                     'Unknown type Missing in test.spec:2.3' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid elemtype', $as_test(
@@ -986,7 +989,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -994,7 +997,7 @@ describe( 'SpecTools', function() {
                     'Invalid "elemtype" for custom type: E' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on type redefinition', $as_test(
@@ -1021,7 +1024,7 @@ describe( 'SpecTools', function() {
                             T : 'string',
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1029,7 +1032,7 @@ describe( 'SpecTools', function() {
                     'Iface "test.a" type redefinition: T' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing parameter in derived', $as_test(
@@ -1065,7 +1068,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1073,7 +1076,7 @@ describe( 'SpecTools', function() {
                     'Invalid parameter count for: "fnc"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid parameter order in derived', $as_test(
@@ -1110,7 +1113,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1119,7 +1122,7 @@ describe( 'SpecTools', function() {
                     'Invalid parameter order for "fnc/a"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on parameter type mismatch in derived', $as_test(
@@ -1156,7 +1159,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1165,7 +1168,7 @@ describe( 'SpecTools', function() {
                     'Parameter type mismatch "fnc/b"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on parameter type mismatch in derived (shortcut)', $as_test(
@@ -1202,7 +1205,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1211,7 +1214,7 @@ describe( 'SpecTools', function() {
                     'Parameter type mismatch "fnc/b"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on parameter type mismatch in derived (mixed)', $as_test(
@@ -1250,7 +1253,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1259,7 +1262,7 @@ describe( 'SpecTools', function() {
                     'Parameter type mismatch "fnc/b"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing "default" in derived', $as_test(
@@ -1295,7 +1298,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1304,7 +1307,7 @@ describe( 'SpecTools', function() {
                     'Missing default for "fnc/b"' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on "rawresult" mismatch in derived', $as_test(
@@ -1333,7 +1336,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1342,7 +1345,7 @@ describe( 'SpecTools', function() {
                     `'rawresult' flag mismatch for "fnc"` );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on "rawupload" mismatch in derived', $as_test(
@@ -1371,7 +1374,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1380,7 +1383,7 @@ describe( 'SpecTools', function() {
                     `'rawupload' flag mismatch for "fnc"` );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on "seclvl" mismatch in derived', $as_test(
@@ -1409,7 +1412,7 @@ describe( 'SpecTools', function() {
                             },
                         },
                         ftn3rev : '1.9',
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1418,7 +1421,7 @@ describe( 'SpecTools', function() {
                     `'seclvl' mismatch for "fnc"` );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on missing constraints in derived', $as_test(
@@ -1441,7 +1444,7 @@ describe( 'SpecTools', function() {
                         version : '1.1',
                         ftn3rev : '1.9',
                         requires: [ 'Missing', 'Abc' ],
-                    } ]
+                    } ],
                 );
             },
             ( as, err ) => {
@@ -1450,7 +1453,7 @@ describe( 'SpecTools', function() {
                     `Missing constraints from inherited: Missing` );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid param name', $as_test(
@@ -1471,7 +1474,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1479,7 +1482,7 @@ describe( 'SpecTools', function() {
                     'Invalid parameter name: func(P)' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid result name', $as_test(
@@ -1500,7 +1503,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1508,7 +1511,7 @@ describe( 'SpecTools', function() {
                     'Invalid resultvar name: func(R)' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on params without type', $as_test(
@@ -1532,7 +1535,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
                 as.successStep();
             },
@@ -1540,7 +1543,7 @@ describe( 'SpecTools', function() {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^Missing type for params/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on result without type', $as_test(
@@ -1562,14 +1565,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^Missing type for result/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on params not object', $as_test(
@@ -1586,14 +1589,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^Invalid params object/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on param not object', $as_test(
@@ -1612,7 +1615,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
                 as.successStep();
             },
@@ -1621,7 +1624,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).equal(
                     'Invalid parameter definition: missingResult(a)' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on result not object', $as_test(
@@ -1638,7 +1641,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1646,7 +1649,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).equal(
                     'Invalid result object: missingResult' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on resultvar not object', $as_test(
@@ -1665,7 +1668,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1673,7 +1676,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).equal(
                     'Invalid resultvar definition: missingResult(a)' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid "regex"', $as_test(
@@ -1696,7 +1699,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ spec ]
+                    [ spec ],
                 );
             },
             ( as, err ) => {
@@ -1711,7 +1714,7 @@ describe( 'SpecTools', function() {
                 }
 
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on throws not array', $as_test(
@@ -1733,14 +1736,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^"throws" is not array/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on "throws" without result', $as_test(
@@ -1757,7 +1760,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1765,7 +1768,7 @@ describe( 'SpecTools', function() {
                     '"throws" without result: missingResult' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on invalid "throws"', $as_test(
@@ -1783,7 +1786,7 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
@@ -1791,7 +1794,7 @@ describe( 'SpecTools', function() {
                     'Invalid "throws": testError' );
                 expect( err ).equal( 'InternalError' );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on requires not array', $as_test(
@@ -1814,14 +1817,14 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
             },
             ( as, err ) => {
                 expect( err ).equal( 'InternalError' );
                 expect( as.state.error_info ).match( /^"requires" is not array/ );
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should load with no requires', $as_test(
@@ -1843,9 +1846,9 @@ describe( 'SpecTools', function() {
                         iface : 'test.spec',
                         version : '2.3',
                     },
-                    [ 'somedir', spec ]
+                    [ 'somedir', spec ],
                 );
-            }
+            },
         ) );
 
         it ( 'should fail on integer type mismatch', $as_test(
@@ -1859,7 +1862,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).match( /^Type mismatch for parameter/ );
                 expect( as.state.var ).be.true;
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should fail on boolean type mismatch', $as_test(
@@ -1873,7 +1876,7 @@ describe( 'SpecTools', function() {
                 expect( as.state.error_info ).match( /^Type mismatch for parameter/ );
                 expect( as.state.var ).be.true;
                 as.success();
-            }
+            },
         ) );
 
         it ( 'should correctly process imports', $as_test( ( as ) => {
@@ -2094,7 +2097,7 @@ describe( 'SpecTools', function() {
                             ( as, err ) => {
                                 expect( as.state.error_info ).match( /^Type mismatch for parameter/ );
                                 as.success( 'OK' );
-                            }
+                            },
                         ).add( ( as, ok ) => {
                             expect( ok ).equal( 'OK' );
                         } );
@@ -2579,7 +2582,7 @@ describe( 'SpecTools', function() {
                             .digest();
 
                         expect( testres.toString( 'hex' ) ).equal(
-                            res1.toString( 'hex' )
+                            res1.toString( 'hex' ),
                         );
 
                         expect( SpecTools.checkHMAC( res1, res2 ) ).be.true;
@@ -2618,7 +2621,7 @@ describe( 'SpecTools', function() {
                                 },
                             },
                         },
-                    } ]
+                    } ],
                 );
                 SpecTools.loadIface(
                     as,
@@ -2638,7 +2641,7 @@ describe( 'SpecTools', function() {
                                 },
                             },
                         },
-                    } ]
+                    } ],
                 );
             } ) );
 
@@ -2661,7 +2664,7 @@ describe( 'SpecTools', function() {
                                     },
                                 },
                             },
-                        } ]
+                        } ],
                     );
                 },
                 ( as, err ) => {
@@ -2669,7 +2672,7 @@ describe( 'SpecTools', function() {
                         `JSON Schema validation failed: data/funcs/fnc/params/a must be object` );
                     expect( err ).to.equal( 'InternalError' );
                     as.success();
-                }
+                },
             ) );
 
             it ( 'should detect invalid ftn3rev', $as_test(
@@ -2684,7 +2687,7 @@ describe( 'SpecTools', function() {
                             iface : 'test.a',
                             version : '1.0',
                             ftn3rev : '1.0.b',
-                        } ]
+                        } ],
                     );
                 },
                 ( as, err ) => {
@@ -2692,7 +2695,7 @@ describe( 'SpecTools', function() {
                         `Invalid ftn3rev field` );
                     expect( err ).to.equal( 'InternalError' );
                     as.success();
-                }
+                },
             ) );
         } );
     }

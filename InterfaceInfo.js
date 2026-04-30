@@ -31,46 +31,46 @@ class InterfaceInfo {
     }
 
     /**
-    * Get FutoIn interface name
-    * @returns {string} name
-    * @alias InterfaceInfo#name
-    */
+     * Get FutoIn interface name
+     * @returns {string} name
+     * @alias InterfaceInfo#name
+     */
     name() {
         return this._raw_info.iface;
     }
 
     /**
-    * Get FutoIn interface version
-    * @returns {string} version
-    * @alias InterfaceInfo#version
-    */
+     * Get FutoIn interface version
+     * @returns {string} version
+     * @alias InterfaceInfo#version
+     */
     version() {
         return this._raw_info.version;
     }
 
     /**
-    * Get list of inherited interfaces starting from the most derived, may be null
-    * @returns {string} inherited interface name-ver
-    * @alias InterfaceInfo#inherits
-    */
+     * Get list of inherited interfaces starting from the most derived, may be null
+     * @returns {string} inherited interface name-ver
+     * @alias InterfaceInfo#inherits
+     */
     inherits() {
         return this._raw_info.inherits;
     }
 
     /**
-    * Get list of available functions, may be null
-    * @returns {object} list of functions
-    * @alias InterfaceInfo#funcs
-    */
+     * Get list of available functions, may be null
+     * @returns {object} list of functions
+     * @alias InterfaceInfo#funcs
+     */
     funcs() {
         return this._raw_info.funcs;
     }
 
     /**
-    * Get list of interface constraints, may be null
-    * @returns {array} list of constraints
-    * @alias InterfaceInfo#constraints
-    */
+     * Get list of interface constraints, may be null
+     * @returns {Array} list of constraints
+     * @alias InterfaceInfo#constraints
+     */
     constraints() {
         return this._raw_info.constraints;
     }

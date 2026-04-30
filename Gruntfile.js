@@ -2,6 +2,8 @@
 
 var fs = require( 'fs' );
 
+process.env.CHROME_BIN = '/usr/bin/chromium';
+
 module.exports = function( grunt ) {
     grunt.initConfig( {
         pkg: grunt.file.readJSON( 'package.json' ),
@@ -116,6 +118,7 @@ module.exports = function( grunt ) {
         },
         karma: {
             test: {
+                /*
                 browsers: [ 'FirefoxHeadless' ],
                 customLaunchers: {
                     FirefoxHeadless: {
@@ -126,6 +129,13 @@ module.exports = function( grunt ) {
                         prefs: {
                             'browser.cache.disk.enable': false,
                         },
+                    },
+                },
+                */
+                browsers: [ 'ChromeHeadless' ],
+                customLaunchers: {
+                    ChromeHeadless: {
+                        base: 'Chrome',
                     },
                 },
                 frameworks: [ 'mocha' ],
@@ -154,7 +164,7 @@ module.exports = function( grunt ) {
                         served: true, included: true, nocache: true },
                     { src: [ 'dist/server_func.js' ],
                         served: true, included: false, nocache: true },
-                    { src: [ 'node_modules/chai/chai.js' ],
+                    { src: [ 'node_modules/chai/index.js' ],
                         served: true, included: false, nocache: true },
                     { src: [ 'test/iframe.html' ],
                         served: true, included: false, nocache: false },

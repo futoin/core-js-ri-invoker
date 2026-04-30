@@ -1,13 +1,11 @@
 'use strict';
 
-const expect = require( 'chai' ).expect;
-
 var fail_next = false;
 var log_count = 0;
 var cached_value;
 
 
-function processServerRequest( freq, data, coder ) {
+function processServerRequest( freq, data, coder, expect ) {
     var func = freq.f.split( ':' );
 
     if ( func.length !== 3 ) {
@@ -31,7 +29,9 @@ function processServerRequest( freq, data, coder ) {
     } else if ( func[0] === 'futoin.cache' &&
               func[1] === '1.0' ) {
         if ( freq.p.key === 'mykey1_2' &&
-             ( func[2] === 'get' || freq.p.ttl === 10 ) ) {} else if ( freq.p.key === 'mykey' &&
+             ( func[2] === 'get' || freq.p.ttl === 10 ) ) {
+            // pass
+        } else if ( freq.p.key === 'mykey' &&
              ( func[2] === 'get' || freq.p.ttl === 1000 ) ) {
             cached_value = null;
         } else {
@@ -76,6 +76,7 @@ function processServerRequest( freq, data, coder ) {
         if ( fail_next ) {
             return null;
         }
+        // fallthrough
 
     case 'testFunc' :
         expect( freq.p.a ).equal( '1' );

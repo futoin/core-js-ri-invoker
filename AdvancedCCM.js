@@ -25,13 +25,15 @@ const _extend = require( 'lodash/extend' );
 const AdvancedCCMImpl = require( './lib/AdvancedCCMImpl' );
 const SimpleCCM = require( './SimpleCCM' );
 
+/* global AsyncSteps */
+
 /**
  * Advanced CCM - Reference Implementation
  * @param {object} options - see AdvancedCCMOptions
  * @see {@link http://specs.futoin.org/final/preview/ftn7_iface_invoker_concept-1.html FTN7: FutoIn Invoker Concept}
  * @alias AdvancedCCM
  * @class
- * @extends SimpleCCM
+ * @augments SimpleCCM
  * @see AdvancedCCMOptions
  */
 class AdvancedCCM extends SimpleCCM {
@@ -40,25 +42,25 @@ class AdvancedCCM extends SimpleCCM {
     }
 
     /**
-    * Try to load internal registration info from cache
-    * DO NOT USE, this is only a compliance with the spec.
-    * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
-    * @param {string} cache_l1_endpoint - URI or any other resource identifier of iface implementing peer, accepted by CCM implementation
-    * @alias AdvancedCCM#initFromCache
-    * @ignore
-    */
+     * Try to load internal registration info from cache
+     * DO NOT USE, this is only a compliance with the spec.
+     * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
+     * @param {string} cache_l1_endpoint - URI or any other resource identifier of iface implementing peer, accepted by CCM implementation
+     * @alias AdvancedCCM#initFromCache
+     * @ignore
+     */
     initFromCache( as, cache_l1_endpoint ) {
         void cache_l1_endpoint;
         as.error( NotImplemented, "Caching is not supported yet" );
     }
 
     /**
-    * Save internal registration info to cache
-    * DO NOT USE, this is only a compliance with the spec.
-    * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
-    * @alias AdvancedCCM#cacheInit
-    * @ignore
-    */
+     * Save internal registration info to cache
+     * DO NOT USE, this is only a compliance with the spec.
+     * @param {AsyncSteps} as - AsyncSteps instance as registration may be waiting for external resources
+     * @alias AdvancedCCM#cacheInit
+     * @ignore
+     */
     cacheInit( as ) {
         void as;
         // Fail silently
